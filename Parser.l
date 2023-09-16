@@ -415,11 +415,11 @@ Parser_get_current_stack_index () {
     return SQL_IPV4_ADDR_VALUE;
 }
 
-[1-9][0-9]* {
+-?[1-9][0-9]* {
     return SQL_INTEGER_VALUE;
 }
 
-[0-9]*\.[0-9]+ {
+-?[0-9]*\.[0-9]+ {
     return SQL_DOUBLE_VALUE;
 }
 
@@ -455,69 +455,212 @@ Parser_get_current_stack_index () {
 /* #include other parser .c src files here */
 #include "ExpressionParser.c"
 
-int 
-main (int argc, char **argv) {
+void
+Expression_Evaluation () {
     
     parse_init();
 
-    //strcpy (lex_buffer , "mmin (sin (sqr (sqrt (a + b) +  mmax (b * c, 2))), mmax(d, e))\n");
-    //strcpy (lex_buffer , "sqrt(10 + 6)\n");
-    //strcpy (lex_buffer , "mmax(3 * 5, 2)\n");
-    strcpy (lex_buffer , "mmax (sqr (4), sqrt (25)) + 5\n");
-    //strcpy (lex_buffer, "mmax(6, mmax(8, mmax (3, mmax (5, 7))))\n");
+    while (1) {
 
-    yy_scan_string (lex_buffer);
-   
-   err = PARSER_CALL(E);
+        printf ("Math Expr: ");
+        fgets (lex_buffer, sizeof (lex_buffer), stdin);
 
-    assert (err = PARSE_SUCCESS);
-    token_code = cyylexlh ();
-    assert (token_code == EOL);
+        if (lex_buffer[0] == '\n') {
+            lex_buffer[0] = 0;
+            continue;
+        }
+        yy_scan_string (lex_buffer);
+        err = PARSER_CALL(E);
 
-    int size_out = 0;
-    lex_data_t **postfix = mexpr_convert_infix_to_postfix (
+        if (err == PARSE_ERR) {
+            printf ("Invalid Expression\n");
+            Parser_stack_reset ();
+            continue;
+        }
+
+        int size_out = 0;
+        lex_data_t **postfix = mexpr_convert_infix_to_postfix (
                                             &undo_stack.data[0], undo_stack.top + 1, &size_out);
+        int i;
+        lex_data_t *lex_data;        
 
-    int i;
-    lex_data_t *lex_data;
+#if 0
+        printf ("Postfix expression : ");
+        for (i = 0; i < size_out; i++) {
 
-    printf ("Postfix expression : \n");
-
-    for (i = 0; i < size_out; i++) {
-
-        lex_data = postfix[i];
-        printf ("%s ", (char *)lex_data->token_val);
-    }
-
-    printf("\n");
-    
-    mexpt_node_t *root = 
-        mexpr_convert_postfix_to_expression_tree (postfix, size_out);
-
-    mexpr_debug_print_expression_tree (root);
-
-    printf ("Evaluation Expression Tree : \n");
-
-    res_t res = mexpt_evaluate (root);
-
-    if (res.rc) {
-
-        if (double_is_integer (res.ovalue)) {
-
-            int temp = (int)res.ovalue;
-            printf ("Result = %d\n", temp);
+            lex_data = postfix[i];
+            printf ("%s ", (char *)lex_data->token_val);
         }
-        else {
-            printf ("Result = %lf\n", res.ovalue);
-        }
-    }
-    else {
-        
-        printf ("Evaluation Failed\n");
-    }
 
-    mexpt_destroy (root);
-    Parser_stack_reset ();
-    return 0;
+        printf("\n");
+#endif 
+
+        mexpt_node_t *root = 
+            mexpr_convert_postfix_to_expression_tree (postfix, size_out);
+
+#if 0
+        printf ("Expression Tree : \n");
+        mexpr_debug_print_expression_tree (root);
+        printf ("\n");
+#endif 
+
+         res_t res = mexpt_evaluate (root);
+
+        if (res.rc) {
+
+            if (double_is_integer (res.ovalue)) {
+
+                int temp = (int)res.ovalue;
+                printf ("Result = %d\n", temp);
+            }
+            else {
+                printf ("Result = %lf\n", res.ovalue);
+            }
+        }
+
+        free(postfix);
+        mexpt_destroy (root);
+        Parser_stack_reset ();
+    }
+   
 }
 
+void
+Inequality_Evaluation () {
+    
+    parse_init();
+
+    while (1) {
+
+        printf ("Ineq Expr: ");
+        fgets (lex_buffer, sizeof (lex_buffer), stdin);
+
+        if (lex_buffer[0] == '\n') {
+            lex_buffer[0] = 0;
+            continue;
+        }
+
+        yy_scan_string (lex_buffer);
+        err = PARSER_CALL(E);
+
+        if (err == PARSE_ERR) {
+            printf ("Invalid Expression\n");
+            Parser_stack_reset ();
+            continue;
+        }
+
+        int size_out = 0;
+        lex_data_t **postfix = mexpr_convert_infix_to_postfix (
+                                            &undo_stack.data[0], undo_stack.top + 1, &size_out);
+
+        mexpt_node_t *root1 = 
+            mexpr_convert_postfix_to_expression_tree (postfix, size_out); 
+
+        free(postfix);
+
+        int token_code_ineqop = cyylex();
+
+        switch (token_code_ineqop) {
+
+            case SQL_LESS_THAN:
+            case SQL_GREATER_THAN:
+            case SQL_EQ:
+            case SQL_NOT_EQ:
+            break;
+            default:
+                printf ("Error : Ineq Op Not Supported/Specified\n");
+                Parser_stack_reset ();
+                mexpt_destroy (root1);
+                continue;
+        }
+
+        int chkp = undo_stack.top + 1;
+
+        err = PARSER_CALL(E);
+
+        if (err == PARSE_ERR) {
+            printf ("Invalid Expression\n");
+            Parser_stack_reset ();
+            mexpt_destroy (root1);
+            continue;
+        }
+
+        size_out = 0;
+        postfix = mexpr_convert_infix_to_postfix (
+                                            &undo_stack.data[chkp], undo_stack.top + 1, &size_out);
+
+        mexpt_node_t *root2 = 
+            mexpr_convert_postfix_to_expression_tree (postfix, size_out); 
+
+        free (postfix);
+
+        res_t lrc = mexpt_evaluate (root1);
+        res_t rrc = mexpt_evaluate (root2);
+
+        assert (lrc.rc && rrc.rc);
+
+        bool rc;
+        char op_str[3];
+
+        switch (token_code_ineqop) {
+            
+            case SQL_LESS_THAN:
+                rc = lrc.ovalue < rrc.ovalue;
+                op_str[0] = '<';  op_str[1] = '\0'; 
+                break;
+            case SQL_GREATER_THAN:
+                rc = lrc.ovalue > rrc.ovalue;
+                op_str[0] = '>';  op_str[1] = '\0'; 
+                break;
+            case SQL_EQ:
+                rc = (lrc.ovalue == rrc.ovalue);
+                op_str[0] = '=';  op_str[1] = '\0'; 
+                break;
+            case SQL_NOT_EQ: 
+                rc = (lrc.ovalue != rrc.ovalue);
+                op_str[0] = '!';  op_str[1] = '=';  op_str[2] = '\0';  
+                break;
+            default :
+                assert(0);
+        }
+
+        printf ("Result : ");
+
+        if (double_is_integer (lrc.ovalue)) {
+            printf ("(%d)  ", (int) lrc.ovalue);
+        }
+        else {
+            printf ("(%lf)  ", lrc.ovalue);
+        }
+
+        printf ("%s  ", op_str);
+
+        if (double_is_integer (rrc.ovalue)) {
+            printf ("(%d)  ", (int) rrc.ovalue);
+        }
+        else {
+            printf ("(%lf)  ", rrc.ovalue);
+        }
+
+        if (rc) {
+            printf ("   TRUE\n");
+        }
+        else {
+            printf ("   FALSE\n");
+        }
+
+        Parser_stack_reset ();
+        mexpt_destroy (root1);
+        mexpt_destroy (root2);
+    }
+}
+
+int 
+main (int argc, char **argv) {
+
+    while (1) {
+        //Expression_Evaluation();
+        Inequality_Evaluation();
+    }
+    return 0;
+}

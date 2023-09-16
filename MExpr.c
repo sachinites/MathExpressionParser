@@ -168,6 +168,7 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
             else
             {
                     while (!isStackEmpty(stack) &&
+                        !Math_is_unary_operator(lex_data->token_code) &&
                         (Math_operator_precedence(lex_data->token_code) <= 
                           Math_operator_precedence(((lex_data_t *)stack->slot[stack->top])->token_code))) {
                         
@@ -391,7 +392,7 @@ mexpt_evaluate (mexpt_node_t *root) {
 
         case SQL_MATH_MINUS:
         {
-            res.ovalue = rrc.ovalue - lrc.ovalue;                    
+            res.ovalue = lrc.ovalue - rrc.ovalue;                    
         }
         break;
 
@@ -403,17 +404,17 @@ mexpt_evaluate (mexpt_node_t *root) {
 
         case SQL_MATH_DIV:
         {
-            if (lrc.ovalue == 0) {
+            if (rrc.ovalue == 0) {
                 res.rc = false;
                 return res;
             }
-            res.ovalue = rrc.ovalue / lrc.ovalue;           
+            res.ovalue = lrc.ovalue / rrc.ovalue;           
         }
         break;
 
         case SQL_MATH_POW:
         {
-            res.ovalue = pow(rrc.ovalue , lrc.ovalue);           
+            res.ovalue = pow(lrc.ovalue , rrc.ovalue);           
         }
         break;
 
@@ -422,3 +423,4 @@ mexpt_evaluate (mexpt_node_t *root) {
     res.rc = true;
     return res;
 }
+
