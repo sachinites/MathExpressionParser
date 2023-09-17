@@ -6,11 +6,17 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 
-/* #include the files which contains Constants and IDs*/
+/* Mandatory : #include the Parser Interface */
+#include "ParserExport.h"
+
+
+/* #include the files which contains Constants and IDs. These constants
+    must match with those in Parser.l file */
 #include "SQLParserStruct.h"
 #include "common.h"
 
-/* #include MExpr.h */
+
+/* #include Other User heler file MExpr.h */
 #include "MExpr.h"
 
 #if 0
