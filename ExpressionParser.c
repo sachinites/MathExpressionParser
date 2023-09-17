@@ -45,6 +45,12 @@ Combining everything, final grammar is :
 8. G -> max | min | pow   // binary functions 
 */
 
+#include <stdlib.h>
+#include <assert.h>
+#include "ParserExport.h"
+#include "SQLParserStruct.h"
+#include "common.h"
+
 parse_rc_t Ineq () ;
 parse_rc_t G ();
 parse_rc_t P ();

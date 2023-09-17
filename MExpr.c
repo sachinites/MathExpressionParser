@@ -424,3 +424,233 @@ mexpt_evaluate (mexpt_node_t *root) {
     return res;
 }
 
+mexpt_node_t *
+Expression_build_expression_tree () {
+    
+    parse_init();
+
+    printf ("Math Expr: ");
+
+    int stack_chkp = undo_stack.top + 1;
+
+    err = PARSER_CALL(E);
+
+    if (err == PARSE_ERR) {
+        printf ("Invalid Expression\n");
+        Parser_stack_reset ();
+        return NULL;
+    }
+
+    int size_out = 0;
+    lex_data_t **postfix = mexpr_convert_infix_to_postfix (
+                                            &undo_stack.data[stack_chkp], undo_stack.top + 1 - stack_chkp, &size_out);
+    
+    int i;
+    lex_data_t *lex_data;        
+
+#if 0
+        printf ("Postfix expression : ");
+        for (i = 0; i < size_out; i++) {
+
+            lex_data = postfix[i];
+            printf ("%s ", (char *)lex_data->token_val);
+        }
+
+        printf("\n");
+#endif 
+
+    mexpt_node_t *root = 
+            mexpr_convert_postfix_to_expression_tree (postfix, size_out);
+
+#if 0
+        printf ("Expression Tree : \n");
+        mexpr_debug_print_expression_tree (root);
+        printf ("\n");
+#endif 
+
+        free(postfix);
+        return root; 
+}
+
+int
+Inequality_build_expression_trees (mexpt_node_t **tree1, mexpt_node_t **tree2) {
+
+    int token_code_ineqop;
+
+    *tree1 = NULL;
+    *tree2 = NULL;
+
+    printf ("Ineq Expr: ");
+
+    *tree1 = Expression_build_expression_tree();
+
+    if ((*tree1) == NULL) {
+        Parser_stack_reset();
+        return 0;
+    }
+
+    token_code_ineqop = cyylex();
+
+    switch (token_code_ineqop) {
+
+        case SQL_LESS_THAN:
+        case SQL_GREATER_THAN:
+        case SQL_EQ:
+        case SQL_NOT_EQ:
+            break;
+        default:
+            printf("Error : Ineq Op Not Supported/Specified\n");
+            Parser_stack_reset();
+            mexpt_destroy(*tree1);
+            *tree1 = NULL;
+            return 0;
+    }
+
+     int chkp = undo_stack.top + 1;
+
+     *tree2 = Expression_build_expression_tree();
+
+     if ((*tree2) == NULL) {
+
+         Parser_stack_reset();
+         mexpt_destroy(*tree1);
+         *tree1 = NULL;
+         return 0;
+     }
+
+    return token_code_ineqop;
+}
+
+#if 0
+/* Test Math Expressions */
+int 
+main (int argc, char **argv) {
+
+    while (1) {
+        
+        printf ("MExpr : ");
+        
+        fgets (lex_buffer, sizeof (lex_buffer), stdin);
+
+        if (lex_buffer[0] == '\n') {
+            lex_buffer[0] = 0;
+            continue;
+        }
+
+        lex_set_scan_buffer (lex_buffer);
+        mexpt_node_t *root = Expression_build_expression_tree();
+        if (!root) continue;
+        
+        res_t res = mexpt_evaluate (root);
+
+        if (res.rc) {
+
+            if (double_is_integer (res.ovalue)) {
+
+                int temp = (int)res.ovalue;
+                printf ("Result = %d\n", temp);
+            }
+            else {
+                printf ("Result = %lf\n", res.ovalue);
+            }
+        }
+
+        mexpt_destroy (root);
+        Parser_stack_reset ();
+    }
+
+    return 0;
+}
+
+#else 
+
+/* Test Inequalities */
+int 
+main (int argc, char **argv) {
+
+    int op_token_code;
+    mexpt_node_t *tree1, *tree2;
+
+    while (1) {
+        
+        printf ("Ineq : ");
+
+        fgets (lex_buffer, sizeof (lex_buffer), stdin);
+
+        if (lex_buffer[0] == '\n') {
+            lex_buffer[0] = 0;
+            continue;
+        }
+
+        lex_set_scan_buffer (lex_buffer);
+
+        op_token_code = Inequality_build_expression_trees (&tree1, &tree2);
+
+        if (op_token_code == 0) {
+            continue;
+        }
+
+        res_t lrc = mexpt_evaluate (tree1);
+        res_t rrc = mexpt_evaluate (tree2);        
+
+        assert (lrc.rc && rrc.rc);
+
+         bool rc;
+        char op_str[3];
+
+        switch (op_token_code) {
+            
+            case SQL_LESS_THAN:
+                rc = lrc.ovalue < rrc.ovalue;
+                op_str[0] = '<';  op_str[1] = '\0'; 
+                break;
+            case SQL_GREATER_THAN:
+                rc = lrc.ovalue > rrc.ovalue;
+                op_str[0] = '>';  op_str[1] = '\0'; 
+                break;
+            case SQL_EQ:
+                rc = (lrc.ovalue == rrc.ovalue);
+                op_str[0] = '=';  op_str[1] = '\0'; 
+                break;
+            case SQL_NOT_EQ: 
+                rc = (lrc.ovalue != rrc.ovalue);
+                op_str[0] = '!';  op_str[1] = '=';  op_str[2] = '\0';  
+                break;
+            default :
+                assert(0);
+        }
+
+        printf ("Result : ");
+
+        if (double_is_integer (lrc.ovalue)) {
+            printf ("(%d)  ", (int) lrc.ovalue);
+        }
+        else {
+            printf ("(%lf)  ", lrc.ovalue);
+        }
+
+        printf ("%s  ", op_str);
+
+        if (double_is_integer (rrc.ovalue)) {
+            printf ("(%d)  ", (int) rrc.ovalue);
+        }
+        else {
+            printf ("(%lf)  ", rrc.ovalue);
+        }
+
+        if (rc) {
+            printf ("   TRUE\n");
+        }
+        else {
+            printf ("   FALSE\n");
+        }
+
+        mexpt_destroy (tree1);
+        mexpt_destroy (tree2);
+        Parser_stack_reset ();
+    }
+    
+    return 0;
+}
+
+#endif 

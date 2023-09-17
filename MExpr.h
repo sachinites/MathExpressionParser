@@ -47,4 +47,14 @@ mexpt_evaluate (mexpt_node_t *root);
 bool 
 double_is_integer (double d);
 
+mexpt_node_t *
+Expression_build_expression_tree ();
+
+int
+Inequality_build_expression_trees (mexpt_node_t **tree1, mexpt_node_t **tree2);
+
+extern parse_rc_t E () ;
+extern parse_rc_t Q () ;
+
+
 #endif 
