@@ -357,7 +357,7 @@ lex_set_scan_buffer (const char *buffer) {
     return SQL_IPV4_ADDR_VALUE;
 }
 
--?[1-9][0-9]* {
+0|-?[1-9][0-9]* {
     return SQL_INTEGER_VALUE;
 }
 
