@@ -5,19 +5,66 @@
 #include <stdbool.h>
 #include "ParserExport.h"
 
+typedef struct mexpt_tree_ mexpt_tree_t;
+
+
 typedef struct mexpt_node_ {
 
+    /* Based on token_code, this node represents one of these nodes :
+            1. Operand Node  (identified by token_code). The relevant fields are packed under opd_node
+            2. Math Operator node  (identified by token_code). No more relevant fields needed
+            3. Ineq Node  (identified by token_code = SQL_WHERE). The relevant fields are packed under ineq_node
+            4. Logical Operator Node (identified by token_code = SQL_OR or SQL_AND)
+    */
     int token_code;
-    /* Below fields are relevant only when this node is operand nodes*/
-    bool is_resolved;   /* Have we obtained the math value of this operand*/
-    double math_val;   /* Actual Math Value */
-    uint8_t variable_name[32];
+
+    union {
+
+        /* Below fields are relevant only when this node is operand nodes*/
+        struct {
+
+            bool is_resolved;   /* Have we obtained the math value of this operand*/
+            double math_val;   /* Actual Math Value */
+            uint8_t variable_name[32];
+        } opd_node;
+
+
+        /* Below fields are relevant only when this node is INEQ operator node*/
+        struct {
+
+            struct mexpt_tree_ *left_exp_tree;
+            int ineq_op_code;
+            struct mexpt_tree_ *right_exp_tree;
+
+        } ineq_node;
+
+
+        struct {
+
+            /* Nothing to define as of now */
+        } math_op_node;
+
+        struct {
+
+            /* Nothig to define as of now*/
+        } log_op_node;
+
+    } u;
 
     struct mexpt_node_ *left;
     struct mexpt_node_ *right;
 
 } mexpt_node_t;
 
+
+
+struct mexpt_tree_ {
+
+     mexpt_node_t *root;
+    bool is_resolved;
+};
+
+ 
 typedef struct res_{
 
     bool rc;
@@ -47,14 +94,15 @@ mexpt_evaluate (mexpt_node_t *root);
 bool 
 double_is_integer (double d);
 
-mexpt_node_t *
-Expression_build_expression_tree ();
+parse_rc_t
+Expression_build_expression_tree (mexpt_tree_t **mexpt_tree);
 
-int
-Inequality_build_expression_trees (mexpt_node_t **tree1, mexpt_node_t **tree2);
+parse_rc_t
+Inequality_build_expression_trees (mexpt_tree_t  **tree1, mexpt_tree_t  **tree2, int *ineq_token_code) ;
 
-extern parse_rc_t E () ;
-extern parse_rc_t Q () ;
+extern parse_rc_t E () ; // Math Expressions
+extern parse_rc_t Q () ; // Inequality
+extern parse_rc_t S () ;  // Logical Expressions
 
 
 #endif 

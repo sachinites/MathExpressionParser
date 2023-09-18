@@ -28,6 +28,7 @@ Math_is_operator (int token_code) {
         case SQL_MATH_SQR:
         case SQL_MATH_SQRT:
         case BRACK_START:
+        case BRACK_END:
         return true;
     }
 
@@ -70,6 +71,21 @@ Math_is_binary_operator (int token_code) {
     return false;
 }
 
+static inline bool 
+Math_is_ineq_operator (int token_code) {
+
+    switch (token_code) {
+
+        case SQL_LESS_THAN:
+        case SQL_GREATER_THAN:
+        case  SQL_EQ:
+        case SQL_NOT_EQ:
+        return true;
+    }
+
+    return false;    
+}
+
 /* Higher the returned value, higher the precedence. 
     Return Minimum value for '(*/
 static int 
@@ -94,6 +110,7 @@ Math_operator_precedence (int token_code) {
         case SQL_MATH_SQRT:
             return 1;
         case BRACK_START:
+        case BRACK_END:
             return 0;
     }
     printf ("token id - %d\n", token_code);
@@ -197,29 +214,54 @@ mexpr_create_mexpt_node (
     mexpt_node_t *mexpt_node;
 
     mexpt_node = (mexpt_node_t *)calloc (1, sizeof (mexpt_node_t));
-    mexpt_node->token_code = token_id;
 
+    /* If this node is a Math Operator node*/
     if (Math_is_operator (token_id)) {
-            return mexpt_node;
+        mexpt_node->token_code = token_id;
+        return mexpt_node;
     }
 
-    switch (token_id)
-    {
-    case SQL_IDENTIFIER:
-    case SQL_IDENTIFIER_IDENTIFIER:
-        strncpy(mexpt_node->variable_name, operand, len);
-        mexpt_node->is_resolved = false;
-        break;
-    case SQL_INTEGER_VALUE:
-        mexpt_node->math_val = (double)atoi(operand);
-        mexpt_node->is_resolved = true;
-        break;
-    case SQL_DOUBLE_VALUE:
-        mexpt_node->math_val = strtod(operand, &endptr);
-        mexpt_node->is_resolved = true;
-        break;
-    default:
-        assert(0);
+    /* If this node is a Math Operand Node*/
+    switch (token_id) {
+
+        case SQL_IDENTIFIER:
+        case SQL_IDENTIFIER_IDENTIFIER:
+            strncpy(mexpt_node->u.opd_node.variable_name, operand, len);
+            mexpt_node->u.opd_node.is_resolved = false;
+            mexpt_node->u.opd_node.math_val = 0;
+            mexpt_node->token_code = token_id;
+            return mexpt_node;
+        case SQL_INTEGER_VALUE:
+            mexpt_node->u.opd_node.math_val = (double)atoi(operand);
+            mexpt_node->u.opd_node.is_resolved = true;
+            mexpt_node->token_code = token_id;
+            return mexpt_node;
+        case SQL_DOUBLE_VALUE:
+            mexpt_node->u.opd_node.math_val = strtod(operand, &endptr);
+            mexpt_node->u.opd_node.is_resolved = true;
+            mexpt_node->token_code = token_id;
+            return mexpt_node;
+        default:
+            break;
+    }
+
+    /* IF this node is a MATH-INEQ node*/
+
+    if (Math_is_ineq_operator (token_id)) {
+
+        mexpt_node->token_code = SQL_WHERE;
+        mexpt_node->u.ineq_node.ineq_op_code = token_id;
+        /* To be assigned by caller */
+        mexpt_node->u.ineq_node.left_exp_tree = NULL;
+        mexpt_node->u.ineq_node.right_exp_tree = NULL;
+        return mexpt_node;
+    }
+
+    if (token_id == SQL_OR ||
+         token_id == SQL_AND) {
+
+        mexpt_node->token_code = token_id;
+        return mexpt_node;
     }
 
     return mexpt_node;
@@ -328,9 +370,9 @@ mexpt_evaluate (mexpt_node_t *root) {
 
         assert (!Math_is_operator (root->token_code));
 
-        if (!root->is_resolved) return res;
+        if (!root->u.opd_node.is_resolved) return res;
 
-        res.ovalue = root->math_val;
+        res.ovalue = root->u.opd_node.math_val;
         res.rc = true;
         return res;
     }
@@ -424,10 +466,12 @@ mexpt_evaluate (mexpt_node_t *root) {
     return res;
 }
 
-mexpt_node_t *
-Expression_build_expression_tree () {
+parse_rc_t
+Expression_build_expression_tree (mexpt_tree_t **mexpt_tree) {
     
     parse_init();
+
+    *mexpt_tree = NULL; 
 
     printf ("Math Expr: ");
 
@@ -437,8 +481,7 @@ Expression_build_expression_tree () {
 
     if (err == PARSE_ERR) {
         printf ("Invalid Expression\n");
-        Parser_stack_reset ();
-        return NULL;
+        RETURN_PARSE_ERROR;
     }
 
     int size_out = 0;
@@ -462,6 +505,10 @@ Expression_build_expression_tree () {
     mexpt_node_t *root = 
             mexpr_convert_postfix_to_expression_tree (postfix, size_out);
 
+    (*mexpt_tree) = (mexpt_tree_t  *)calloc (1, sizeof (mexpt_tree_t));
+    (*mexpt_tree)->is_resolved = true;
+    (*mexpt_tree)->root = root;
+
 #if 0
         printf ("Expression Tree : \n");
         mexpr_debug_print_expression_tree (root);
@@ -469,29 +516,27 @@ Expression_build_expression_tree () {
 #endif 
 
         free(postfix);
-        return root; 
+        RETURN_PARSE_SUCCESS; 
 }
 
-int
-Inequality_build_expression_trees (mexpt_node_t **tree1, mexpt_node_t **tree2) {
+parse_rc_t
+Inequality_build_expression_trees (mexpt_tree_t  **tree1, mexpt_tree_t  **tree2, int *ineq_token_code) {
 
-    int token_code_ineqop;
+    parse_init ();
 
     *tree1 = NULL;
     *tree2 = NULL;
+    *ineq_token_code = 0;
 
     printf ("Ineq Expr: ");
 
-    *tree1 = Expression_build_expression_tree();
+    err = Expression_build_expression_tree(tree1);
 
-    if ((*tree1) == NULL) {
-        Parser_stack_reset();
-        return 0;
-    }
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-    token_code_ineqop = cyylex();
+   token_code = cyylex();
 
-    switch (token_code_ineqop) {
+    switch (token_code) {
 
         case SQL_LESS_THAN:
         case SQL_GREATER_THAN:
@@ -500,23 +545,26 @@ Inequality_build_expression_trees (mexpt_node_t **tree1, mexpt_node_t **tree2) {
             break;
         default:
             printf("Error : Ineq Op Not Supported/Specified\n");
-            Parser_stack_reset();
-            mexpt_destroy(*tree1);
+            mexpt_destroy((*tree1)->root);
+            free(*tree1);
             *tree1 = NULL;
-            return 0;
+            RETURN_PARSE_ERROR;
     }
+
+    *ineq_token_code = token_code;
 
      int chkp = undo_stack.top + 1;
 
-     *tree2 = Expression_build_expression_tree();
+     err  = Expression_build_expression_tree(tree2);
 
-     if ((*tree2) == NULL) {
+     if (err == PARSE_ERR) {
 
-         Parser_stack_reset();
-         mexpt_destroy(*tree1);
+           mexpt_destroy((*tree1)->root);
+           free(*tree1);
          *tree1 = NULL;
-         return 0;
+          RETURN_PARSE_ERROR;
      }
 
-    return token_code_ineqop;
+    RETURN_PARSE_SUCCESS;
 }
+

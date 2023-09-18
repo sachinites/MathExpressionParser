@@ -3,19 +3,17 @@
 
 A Grammar to parse mathematical expression !
 
-1. S -> E
-2. E -> E + T | E - T | T
-3. T -> T * F | T / F | F
-4. F -> ( E ) | INTEGER | DECIMAL | VAR
+1. E -> E + T | E - T | T
+2. T -> T * F | T / F | F
+3. F -> ( E ) | INTEGER | DECIMAL | VAR
 
 Grammar for Inequalities : 
 
 Add this production Rule as Ist rule to above Grammar 
-0. Q -> S Ineq S  
+0. Q -> E Ineq E | (Q)  
 
 Overall Grammar is :
-0. Q -> S Ineq S  
-1. S -> E
+1. Q -> E Ineq E | (Q)  
 2. E -> E + T | E - T | T
 3. T -> T * F | T / F | F
 4. F -> ( E ) | INTEGER | DECIMAL | VAR
@@ -32,8 +30,8 @@ E' -> + T E' | - T E' |  $   ( $ represents epsilon)
 T -> F T'
 T' -> * F T' |   / F T'  |  $
 
-Combining everything, final grammar is :
-===============================
+Combining everything, final grammar is for computing one Inequality
+==================================================
 
 1. Q  ->   E Ineq E  | ( Q )
 2. E  ->   T E'
@@ -43,6 +41,69 @@ Combining everything, final grammar is :
 6. F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | G ( E, E)
 7. P -> sqrt | sqr | sin        // urinary fns
 8. G -> max | min | pow   // binary functions 
+
+Implementing Logical Operators also (and , or ) which combines various inequalities
+
+1. S -> S or J | J
+2. J -> J and K | K
+3. K -> (S) | D | K lop Q
+4. D -> Q lop Q
+5. lop -> and | or
+
+Removing Left Recursion :
+1. S -> S or J | J
+    S -> J S'
+    S' -> or J S' | $
+2. J -> J and K | K
+    J -> K J'
+    J' -> and K J' | $
+3. K -> (S) | D | K lop Q
+    K -> (S) K' | D K' 
+    K' -> lop Q K' | $
+
+Overall Grammar will be :
+===================
+1. S -> J S'
+2. S' -> or J S' | $
+3. J -> K J'
+4. J' -> and K J' | $
+5. K -> (S) K' | D K' 
+6. K' -> lop Q K' | $
+7. D -> Q lop Q
+8. lop -> and | or
+
+The above is the Grammar we will use to finally implement Logical Expression Parsing.
+The predence of 'and' and 'or' will be handled at the infix to postfix conversion.
+
+Overall Grammar to  represent an expression containing atleast two inequalities
+joined by Logical operaration(s)  is below.
+For example :   salary > amount and age > 30
+                         (salary > amount and age > 30 ) or ( pin_code = 560103 or age > 60)
+
+
+Rules for Grammar Parsing :
+
+1. For a Production Rule, A -> BC | DE , Rule contains two alternatives :
+        A -> BC   or   A -> DE 
+        Explore A -> BC, if success , return SUCCESS
+        if fails, try second alternative (A ->DE), if success return SUCCESS, else return ERROR
+        i.e. we apply alternatives until we succeed. Alternatives could be applied in any order.
+
+2.    For a Production Rule, A -> BC | DE | $, Rule contains three alternatives :
+        A -> BC   or   A -> DE    or     A -> $
+        Explore A -> BC, if success , return SUCCESS
+        if fails, try second alternative A -> DE, if success return SUCCESS, else return SUCCESS
+        i.e. we apply alternatives until we succeed. Alternatives could be applied in any order.
+        If all alternatives failed, then return SUCCESS ($ means, return SUCCESS even if none of the alternatives succeed)
+
+3. For a Production Rule, A -> BCD, 
+        Non Terminal Symbol C is explored only when previous one B has succeeded.
+        Non Terminal Symbol D is explored only when previous one C has succeeded.
+        At any point, the exploration fails, We are done with A -> BCD production rule and return Error,
+        and look for exploration of alterntive rule if present , eg, A -> EF
+
+4. While Returning an Error, POP all elements of the stack that was pushed as a result of exploration of 
+    production rule which has failed. This will be done automatically by 'RETURN_PARSE_ERROR' macro.
 */
 
 #include <stdlib.h>
@@ -59,8 +120,16 @@ parse_rc_t T_dash () ;
 parse_rc_t T () ;
 parse_rc_t E_dash () ;
 parse_rc_t E () ;
+
 parse_rc_t Q () ;
 
+parse_rc_t D ();
+parse_rc_t K ();
+parse_rc_t K_dash ();
+parse_rc_t J_dash () ;
+parse_rc_t J () ;
+parse_rc_t  S_dash () ;
+parse_rc_t  S () ;
 
 parse_rc_t
 Ineq () {
@@ -356,8 +425,193 @@ Q () {
                         case PARSE_ERR:
                             RETURN_PARSE_ERROR;
                         case PARSE_SUCCESS:
-                            RETURN_PARSE_SUCCESS;
+                            RETURN_PARSE_SUCCESS; // Q -> E Ineq E
                     }
             }
     }
+}
+
+
+// D -> Q lop Q
+parse_rc_t
+D () {
+
+    parse_init();
+
+    err = PARSER_CALL(Q);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    token_code = cyylex();
+
+    if (token_code != SQL_OR &&
+            token_code != SQL_AND) {
+
+        RETURN_PARSE_ERROR;
+    }
+
+    err = PARSER_CALL(Q);
+
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+     RETURN_PARSE_SUCCESS;
+}
+
+// K' -> lop Q K' | $
+parse_rc_t
+K_dash () {
+
+    parse_init();
+
+    token_code = cyylex();
+
+    if (token_code != SQL_AND &&
+        token_code != SQL_OR) {
+
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = PARSER_CALL(Q);
+
+    if (err == PARSE_ERR) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = PARSER_CALL(K_dash);
+
+    if (err == PARSE_ERR) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    RETURN_PARSE_SUCCESS;
+}
+
+/* K -> (S) K' | D K'   */
+parse_rc_t
+K () {
+
+    parse_init();
+
+    int initial_chkp;
+    CHECKPOINT(initial_chkp);
+
+    do {
+
+        token_code = cyylex();
+
+        if (token_code != BRACK_START) break;
+
+        err = PARSER_CALL(S);
+
+        if (err == PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != BRACK_END) break;
+
+        err = PARSER_CALL(K_dash);
+
+        if (err == PARSE_ERR) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+
+    err = PARSER_CALL(D);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = PARSER_CALL(K_dash);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
+}
+
+/*  J' -> and K J' | $ */
+parse_rc_t
+J_dash () {
+
+    parse_init();
+
+    token_code = cyylex();
+
+    if (token_code != SQL_AND) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = PARSER_CALL(K);
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    err = PARSER_CALL(J_dash);
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    RETURN_PARSE_SUCCESS;
+}
+
+/* J -> K J' */
+parse_rc_t
+J () {
+
+    parse_init();
+
+    err = PARSER_CALL(K);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = PARSER_CALL(J_dash);
+
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+     RETURN_PARSE_SUCCESS;
+}
+
+
+/* S' -> or J S' | $ */
+parse_rc_t
+S_dash () {   
+
+    parse_init();
+
+    token_code = cyylex();
+
+    if (token_code != SQL_OR) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = PARSER_CALL(J);
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    err = PARSER_CALL(S_dash);
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    RETURN_PARSE_SUCCESS;
+}
+
+ /*S -> J S'  */
+parse_rc_t
+S () {     
+
+    parse_init();
+
+   err = PARSER_CALL(J);
+
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+   err = PARSER_CALL(S_dash);
+
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
 }

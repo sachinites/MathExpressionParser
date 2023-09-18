@@ -19,14 +19,16 @@
 /* #include Other User heler file MExpr.h */
 #include "MExpr.h"
 
-#if 0
-/* Test Math Expressions */
+#if 1
+/* Test Math Expressions (Math Expressions, Inequalities and Logical Expressions ) */
 int 
 main (int argc, char **argv) {
 
+    parse_init();
+
     while (1) {
         
-        printf ("MExpr : ");
+        printf ("Type Expr: ");
         
         fgets (lex_buffer, sizeof (lex_buffer), stdin);
 
@@ -36,119 +38,51 @@ main (int argc, char **argv) {
         }
 
         lex_set_scan_buffer (lex_buffer);
-        mexpt_node_t *root = Expression_build_expression_tree();
-        if (!root) continue;
-        
-        res_t res = mexpt_evaluate (root);
 
-        if (res.rc) {
+        do {
 
-            if (double_is_integer (res.ovalue)) {
+            err = PARSER_CALL(S);
 
-                int temp = (int)res.ovalue;
-                printf ("Result = %d\n", temp);
+            if (err == PARSE_SUCCESS) {
+
+                printf ("Logical Expression Parsed Successfully\n");
+                break;
             }
-            else {
-                printf ("Result = %lf\n", res.ovalue);
+
+            err = PARSER_CALL(Q);
+
+            if (err == PARSE_SUCCESS) {
+
+                printf ("Inequality Expression Parsed Successfully\n");
+                break;
             }
-        }
 
-        mexpt_destroy (root);
-        Parser_stack_reset ();
-    }
+            err = PARSER_CALL(E);
 
-    return 0;
-}
+            if (err == PARSE_SUCCESS) {
 
-#else 
+                printf ("Math Expression Parsed Successfully\n");
+                break;
+            }
 
-/* Test Inequalities */
-int 
-main (int argc, char **argv) {
+        } while(0);
 
-    int op_token_code;
-    mexpt_node_t *tree1, *tree2;
+        if (err == PARSE_ERR) {
 
-    while (1) {
-        
-        printf ("Ineq : ");
-
-        fgets (lex_buffer, sizeof (lex_buffer), stdin);
-
-        if (lex_buffer[0] == '\n') {
-            lex_buffer[0] = 0;
+            printf ("Failed to parse Expression\n");
+            assert (curr_ptr == lex_buffer);
             continue;
-        }
+        }        
 
-        lex_set_scan_buffer (lex_buffer);
+        /* Let us print the tokens*/
+        int len; void *value;
+        ITERATE_LEX_STACK_BEGIN(0 , INT32_MAX , token_code, len, value) {
 
-        op_token_code = Inequality_build_expression_trees (&tree1, &tree2);
+            printf ("token_code = %d,  len = %d,  value = %s\n", token_code, len, (char *)value);
 
-        if (op_token_code == 0) {
-            continue;
-        }
+        } ITERATE_LEX_STACK_END;
 
-        res_t lrc = mexpt_evaluate (tree1);
-        res_t rrc = mexpt_evaluate (tree2);        
-
-        assert (lrc.rc && rrc.rc);
-
-         bool rc;
-        char op_str[3];
-
-        switch (op_token_code) {
-            
-            case SQL_LESS_THAN:
-                rc = lrc.ovalue < rrc.ovalue;
-                op_str[0] = '<';  op_str[1] = '\0'; 
-                break;
-            case SQL_GREATER_THAN:
-                rc = lrc.ovalue > rrc.ovalue;
-                op_str[0] = '>';  op_str[1] = '\0'; 
-                break;
-            case SQL_EQ:
-                rc = (lrc.ovalue == rrc.ovalue);
-                op_str[0] = '=';  op_str[1] = '\0'; 
-                break;
-            case SQL_NOT_EQ: 
-                rc = (lrc.ovalue != rrc.ovalue);
-                op_str[0] = '!';  op_str[1] = '=';  op_str[2] = '\0';  
-                break;
-            default :
-                assert(0);
-        }
-
-        printf ("Result : ");
-
-        if (double_is_integer (lrc.ovalue)) {
-            printf ("(%d)  ", (int) lrc.ovalue);
-        }
-        else {
-            printf ("(%lf)  ", lrc.ovalue);
-        }
-
-        printf ("%s  ", op_str);
-
-        if (double_is_integer (rrc.ovalue)) {
-            printf ("(%d)  ", (int) rrc.ovalue);
-        }
-        else {
-            printf ("(%lf)  ", rrc.ovalue);
-        }
-
-        if (rc) {
-            printf ("   TRUE\n");
-        }
-        else {
-            printf ("   FALSE\n");
-        }
-
-        mexpt_destroy (tree1);
-        mexpt_destroy (tree2);
-        Parser_stack_reset ();
+        Parser_stack_reset();
     }
-    
-    return 0;
 }
-
 #endif 
