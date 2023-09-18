@@ -23,9 +23,12 @@ typedef struct mexpt_node_ {
         /* Below fields are relevant only when this node is operand nodes*/
         struct {
 
-            bool is_resolved;   /* Have we obtained the math value of this operand*/
+            bool is_numeric;     /* Is this Operand Number or AlphaNumberic ?*/
+            bool is_resolved;    /* Have we obtained the math value of this operand*/
             double math_val;   /* Actual Math Value */
-            uint8_t variable_name[32];
+            unsigned char variable_name[32 /* PARSER_OPERAND_LEN */];
+            void *app_data;
+            
         } opd_node;
 
 

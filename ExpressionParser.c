@@ -45,8 +45,8 @@ Combining everything, final grammar is for computing one Inequality
 Implementing Logical Operators also (and , or ) which combines various inequalities
 
 1. S -> S or J | J
-2. J -> J and K | K
-3. K -> (S) | D | K lop Q
+2. J -> J and K | K 
+3. K -> (S) | D | K lop Q | Q lop K
 4. D -> Q lop Q
 5. lop -> and | or
 
@@ -57,8 +57,8 @@ Removing Left Recursion :
 2. J -> J and K | K
     J -> K J'
     J' -> and K J' | $
-3. K -> (S) | D | K lop Q
-    K -> (S) K' | D K' 
+3. K -> (S) | D | K lop Q | Q lop K
+    K -> (S) K' |  D K' |  Q lop K K'
     K' -> lop Q K' | $
 
 Overall Grammar will be :
@@ -67,7 +67,7 @@ Overall Grammar will be :
 2. S' -> or J S' | $
 3. J -> K J'
 4. J' -> and K J' | $
-5. K -> (S) K' | D K' 
+5. K -> (S) K' | D K' | Q lop K K'
 6. K' -> lop Q K' | $
 7. D -> Q lop Q
 8. lop -> and | or
@@ -489,7 +489,7 @@ K_dash () {
     RETURN_PARSE_SUCCESS;
 }
 
-/* K -> (S) K' | D K'   */
+/* K -> (S) K' | D K'  | Q lop K K'  */
 parse_rc_t
 K () {
 
@@ -498,6 +498,7 @@ K () {
     int initial_chkp;
     CHECKPOINT(initial_chkp);
 
+    //  (S) K'
     do {
 
         token_code = cyylex();
@@ -521,14 +522,43 @@ K () {
     } while (0);
 
     RESTORE_CHKP(initial_chkp);
+    // D K' 
+    do {
 
-    err = PARSER_CALL(D);
+        err = PARSER_CALL(D);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) break;
+
+        err = PARSER_CALL(K_dash);
+
+        if (err == PARSE_ERR) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+
+    // Q lop K K' 
+    err = PARSER_CALL(Q);
+
+    if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+
+    token_code = cyylex();
+
+    if (token_code != SQL_OR &&
+        token_code != SQL_AND) {
+
+        RETURN_PARSE_ERROR;
+    }
+
+    err = PARSER_CALL(K);
+
+    if (err = PARSE_ERR) RETURN_PARSE_ERROR;
 
     err = PARSER_CALL(K_dash);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err = PARSE_ERR) RETURN_PARSE_ERROR;
 
     RETURN_PARSE_SUCCESS;
 }
