@@ -243,7 +243,7 @@ F () {
 
         err = PARSER_CALL(P);
 
-        if (err = PARSE_ERR) break;
+        if (err == PARSE_ERR) break;
 
         token_code = cyylex();
 
@@ -251,7 +251,7 @@ F () {
 
         err = PARSER_CALL(E);
 
-        if (err = PARSE_ERR) break;
+        if (err == PARSE_ERR) break;
 
         token_code = cyylex();
 
@@ -269,7 +269,7 @@ F () {
 
         err = PARSER_CALL(G);
 
-        if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
         token_code = cyylex();
 
@@ -277,7 +277,7 @@ F () {
 
         err = PARSER_CALL(E);
 
-        if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
         token_code = cyylex();
 
@@ -285,7 +285,7 @@ F () {
 
         err = PARSER_CALL(E);
 
-        if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
         token_code = cyylex();
 
@@ -562,7 +562,7 @@ K () {
     // Q lop K K' 
     err = PARSER_CALL(Q);
 
-    if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
     token_code = cyylex();
 
@@ -574,11 +574,11 @@ K () {
 
     err = PARSER_CALL(K);
 
-    if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
     err = PARSER_CALL(K_dash);
 
-    if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
     RETURN_PARSE_SUCCESS;
 }

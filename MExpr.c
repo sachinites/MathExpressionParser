@@ -29,6 +29,12 @@ Math_is_operator (int token_code) {
         case SQL_MATH_SQRT:
         case BRACK_START:
         case BRACK_END:
+        case SQL_OR:
+        case SQL_AND:
+        case SQL_LESS_THAN:
+        case SQL_GREATER_THAN:
+        case SQL_EQ:
+        case SQL_NOT_EQ:
         return true;
     }
 
@@ -65,6 +71,12 @@ Math_is_binary_operator (int token_code) {
         case SQL_MATH_MUL:
         case SQL_MATH_DIV:
         case SQL_MATH_POW:
+        case SQL_AND:
+        case SQL_OR:
+        case SQL_GREATER_THAN:
+        case SQL_LESS_THAN:
+        case SQL_EQ:
+        case SQL_NOT_EQ:
         return true;
     }
 
@@ -86,6 +98,19 @@ Math_is_ineq_operator (int token_code) {
     return false;    
 }
 
+static inline bool 
+Math_is_logical_operator (int token_code) {
+
+    switch (token_code) {
+
+        case SQL_OR:
+        case SQL_AND:
+        return true;
+    }
+
+    return false;    
+}
+
 /* Higher the returned value, higher the precedence. 
     Return Minimum value for '(*/
 static int 
@@ -95,25 +120,33 @@ Math_operator_precedence (int token_code) {
 
     switch (token_code) {
 
-        case SQL_MATH_PLUS:
-        case SQL_MATH_MINUS:
-            return 2;
-        case SQL_MATH_MUL:
-        case SQL_MATH_DIV:
-            return 3;
         case SQL_MATH_MAX:
         case SQL_MATH_MIN:
         case SQL_MATH_POW:
-            return 4;
+            return 7;
+        case SQL_MATH_MUL:
+        case SQL_MATH_DIV:
+            return 6;            
+        case SQL_MATH_PLUS:
+        case SQL_MATH_MINUS:
+            return 5;
         case SQL_MATH_SIN:
         case SQL_MATH_SQR:
         case SQL_MATH_SQRT:
+            return 4;
+        case SQL_LESS_THAN:
+        case SQL_GREATER_THAN:
+        case SQL_NOT_EQ:
+        case SQL_EQ:
+            return 3;
+        case SQL_AND:
+            return 2;
+        case SQL_OR:
             return 1;
         case BRACK_START:
         case BRACK_END:
             return 0;
     }
-    printf ("token id - %d\n", token_code);
     assert(0);
     return 0;
 } 
@@ -243,25 +276,6 @@ mexpr_create_mexpt_node (
             return mexpt_node;
         default:
             break;
-    }
-
-    /* IF this node is a MATH-INEQ node*/
-
-    if (Math_is_ineq_operator (token_id)) {
-
-        mexpt_node->token_code = SQL_WHERE;
-        mexpt_node->u.ineq_node.ineq_op_code = token_id;
-        /* To be assigned by caller */
-        mexpt_node->u.ineq_node.left_exp_tree = NULL;
-        mexpt_node->u.ineq_node.right_exp_tree = NULL;
-        return mexpt_node;
-    }
-
-    if (token_id == SQL_OR ||
-         token_id == SQL_AND) {
-
-        mexpt_node->token_code = token_id;
-        return mexpt_node;
     }
 
     return mexpt_node;

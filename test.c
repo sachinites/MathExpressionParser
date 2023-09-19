@@ -74,6 +74,7 @@ main (int argc, char **argv) {
             continue;
         }        
 
+#if 0
         /* Let us print the tokens*/
         int len; void *value;
         ITERATE_LEX_STACK_BEGIN(0 , INT32_MAX , token_code, len, value) {
@@ -81,6 +82,31 @@ main (int argc, char **argv) {
             printf ("token_code = %d,  len = %d,  value = %s\n", token_code, len, (char *)value);
 
         } ITERATE_LEX_STACK_END;
+#endif 
+
+        {
+            /* Infix to post fix conversion */
+            int sizeout = 0;
+
+            lex_data_t **postfix = mexpr_convert_infix_to_postfix 
+                                (&undo_stack.data[0], undo_stack.top + 1, &sizeout);
+
+           int i = 0;
+           for (; i < sizeout; i++) {
+
+                  printf ("%s ", (char *)postfix[i]->token_val);
+           }
+            printf ("\n");
+
+            mexpt_node_t *exp_tree_root;
+
+            exp_tree_root = mexpr_convert_postfix_to_expression_tree (postfix, sizeout);
+
+            mexpr_debug_print_expression_tree (exp_tree_root);
+            printf ("\n");
+            
+            free (postfix);
+        }
 
         Parser_stack_reset();
     }
