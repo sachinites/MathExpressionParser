@@ -102,8 +102,8 @@ Rules for Grammar Parsing :
         At any point, the exploration fails, We are done with A -> BCD production rule and return Error,
         and look for exploration of alterntive rule if present , eg, A -> EF
 
-4. While Returning an Error, POP all elements of the stack that was pushed as a result of exploration of 
-    production rule which has failed. This will be done automatically by 'RETURN_PARSE_ERROR' macro.
+4. While Returning an Error, POP all elements of the stack that was pushed as a result of exploration  
+    of production rule which has failed. This will be done automatically by 'RETURN_PARSE_ERROR' macro.
 */
 
 #include <stdlib.h>
@@ -137,6 +137,7 @@ Ineq () {
     parse_init();
 
     token_code = cyylex();
+
     switch(token_code) {
         case SQL_LESS_THAN:
         case SQL_GREATER_THAN:
@@ -147,7 +148,6 @@ Ineq () {
             RETURN_PARSE_ERROR;
     }
 
-    assert(err == PARSE_SUCCESS);
     RETURN_PARSE_SUCCESS;
 }
 
@@ -186,206 +186,225 @@ P () {
         case SQL_MATH_SIN:
             RETURN_PARSE_SUCCESS;
         default:
-            RETURN_PARSE_ERROR
+            RETURN_PARSE_ERROR;
     }
 }
 
+/* F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | G ( E, E) */
 parse_rc_t
 F () {
 
-     parse_init();
+    parse_init();
+
+    int initial_chkp;
+    CHECKPOINT(initial_chkp);
 
     token_code = cyylex();
 
-    switch (token_code) {
+    // ( E )
+    do {
+        
+        if (token_code != BRACK_START) break;
 
-        case BRACK_START:
-        {
-            err = PARSER_CALL(E);
-            switch (err) {
-                case PARSE_ERR:
-                    RETURN_PARSE_ERROR;
-                case PARSE_SUCCESS:
-                {
-                    token_code = cyylex();
-                    if (token_code != BRACK_END) {
-                        RETURN_PARSE_ERROR;
-                    }
-                    RETURN_PARSE_SUCCESS;
-                }
+        err = PARSER_CALL(E);
+
+        if (err == PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != BRACK_END) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+
+    // INTEGER | DECIMAL | VAR
+    do {
+
+        token_code = cyylex();
+
+        switch (token_code) {
+            case SQL_INTEGER_VALUE:
+            case SQL_DOUBLE_VALUE:
+            case SQL_IDENTIFIER:
+            case SQL_IDENTIFIER_IDENTIFIER:
+                RETURN_PARSE_SUCCESS;
+            default:
                 break;
-            }
         }
-        break;
-        case SQL_INTEGER_VALUE:
-        case SQL_DOUBLE_VALUE:
-        case SQL_IDENTIFIER:
-        case SQL_IDENTIFIER_IDENTIFIER:
-            RETURN_PARSE_SUCCESS;
-        default:
-            yyrewind(1);
-            err = PARSER_CALL(P);
-            switch(err) {
-                case PARSE_ERR:
-                    err = PARSER_CALL(G);
-                    switch(err) {
-                        case PARSE_ERR:
-                            RETURN_PARSE_ERROR;
-                        case PARSE_SUCCESS:
-                            token_code = cyylex();
-                            switch(token_code) {
-                                case BRACK_START:
-                                    err = PARSER_CALL(E);
-                                    switch(err) {
-                                        case PARSE_ERR:
-                                            RETURN_PARSE_ERROR;
-                                        case PARSE_SUCCESS:
-                                            token_code = cyylex();
-                                            switch(token_code) {
-                                                case COMMA:
-                                                    err = PARSER_CALL(E);
-                                                    switch(err) {
-                                                        case PARSE_ERR:
-                                                            RETURN_PARSE_ERROR;
-                                                        case PARSE_SUCCESS:
-                                                            token_code = cyylex();
-                                                            if (token_code != BRACK_END) {
-                                                                RETURN_PARSE_ERROR;
-                                                            }
-                                                            RETURN_PARSE_SUCCESS;
-                                                    }
-                                                default:
-                                                    RETURN_PARSE_ERROR;
-                                            }
-                                    }
-                                default:
-                                    RETURN_PARSE_ERROR;
-                            }
-                    }
-                case PARSE_SUCCESS:
-                    token_code = cyylex();
-                    switch(token_code){
-                        case BRACK_START:
-                            err = PARSER_CALL(E);
-                            switch(err) {
-                                case PARSE_ERR:
-                                    RETURN_PARSE_ERROR;
-                                case PARSE_SUCCESS:
-                                    token_code = cyylex();
-                                    if (token_code != BRACK_END) {
-                                        RETURN_PARSE_ERROR;
-                                    }
-                                    RETURN_PARSE_SUCCESS;
-                            }
-                    }
-            }
-    }
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+
+    // P ( E ) 
+    do {
+
+        err = PARSER_CALL(P);
+
+        if (err = PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != BRACK_START) break;
+
+        err = PARSER_CALL(E);
+
+        if (err = PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != BRACK_END) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+
+    // G ( E, E)
+
+    do {
+
+        err = PARSER_CALL(G);
+
+        if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+
+        token_code = cyylex();
+
+        if (token_code != BRACK_START) RETURN_PARSE_ERROR;
+
+        err = PARSER_CALL(E);
+
+        if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+
+        token_code = cyylex();
+
+        if (token_code != COMMA) RETURN_PARSE_ERROR;
+
+        err = PARSER_CALL(E);
+
+        if (err = PARSE_ERR) RETURN_PARSE_ERROR;
+
+        token_code = cyylex();
+
+        if (token_code != BRACK_END) RETURN_PARSE_ERROR;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
 }
 
+/* T' ->   * F T' |   / F T'  |  $ */
 parse_rc_t
 T_dash () {
 
     parse_init();
 
-    token_code = cyylex();
-    switch(token_code){
+    int initial_chkp;
+    CHECKPOINT(initial_chkp);
 
-        case SQL_MATH_MUL:
-        case SQL_MATH_DIV:
-        {
-            err = PARSER_CALL(F);
-            switch (err) {
-                case PARSE_ERR:
-                    RETURN_PARSE_ERROR;
-                case PARSE_SUCCESS:
-                    err = PARSER_CALL(T_dash);
-                    switch (err) {
-                        case PARSE_ERR:
-                            RETURN_PARSE_ERROR;
-                        case PARSE_SUCCESS:
-                            RETURN_PARSE_SUCCESS;
-                    }
-            }
-        }
-        break;
-        default:
-            yyrewind(1);
-            RETURN_PARSE_SUCCESS;
+    token_code = cyylex();
+
+    if (token_code != SQL_MATH_MUL &&
+            token_code != SQL_MATH_DIV) {
+        
+        RESTORE_CHKP(initial_chkp);
+        RETURN_PARSE_SUCCESS;
     }
+
+    err = PARSER_CALL(F);
+
+    if (err == PARSE_ERR) {
+
+        RESTORE_CHKP(initial_chkp);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = PARSER_CALL(T_dash);
+
+    if (err == PARSE_ERR) {
+
+        RESTORE_CHKP(initial_chkp);
+        RETURN_PARSE_SUCCESS;        
+    }
+
+    RETURN_PARSE_SUCCESS;
 }
 
-
+// 4. T  ->   F T'
 parse_rc_t
 T () {
 
     parse_init();
 
     err = PARSER_CALL(F);
-    switch (err) {
-        case PARSE_ERR:
-            RETURN_PARSE_ERROR;
-        case PARSE_SUCCESS:
-            err = PARSER_CALL(T_dash);
-            switch(err) {
-                case PARSE_ERR:
-                    RETURN_PARSE_ERROR;
-                case PARSE_SUCCESS:
-                    RETURN_PARSE_SUCCESS;
-            }
-    }
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = PARSER_CALL(T_dash);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
 }
 
+//  E'  ->  + T E' | - T E' |  $
 parse_rc_t
 E_dash () {
 
     parse_init();
 
+    int initial_chkp;
+    CHECKPOINT(initial_chkp);
+
     token_code = cyylex();
 
-    switch (token_code) {
-        case SQL_MATH_PLUS:
-        case SQL_MATH_MINUS:
-        {
-            err = PARSER_CALL(T);
-            switch(err){
-                case PARSE_ERR:
-                    RETURN_PARSE_ERROR;
-                case PARSE_SUCCESS:
-                    err = PARSER_CALL(E_dash);
-                    switch(err) {
-                        case PARSE_ERR:
-                            RETURN_PARSE_ERROR;
-                        case PARSE_SUCCESS:
-                             RETURN_PARSE_SUCCESS;
-                    }
-            }
-        }
-        break;
-        default:
-            yyrewind(1);
-            RETURN_PARSE_SUCCESS;
+    if (token_code != SQL_MATH_PLUS &&
+            token_code != SQL_MATH_MINUS) {
+        
+        RESTORE_CHKP(initial_chkp);
+        RETURN_PARSE_SUCCESS;
     }
+
+    err = PARSER_CALL(T);
+
+    if (err == PARSE_ERR) {
+
+        RESTORE_CHKP(initial_chkp);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = PARSER_CALL(E_dash);
+
+    if (err == PARSE_ERR) {
+
+        RESTORE_CHKP(initial_chkp);
+        RETURN_PARSE_SUCCESS;        
+    }
+
+    RETURN_PARSE_SUCCESS;
 }
 
+/* E  ->   T E' */
 parse_rc_t
 E () {
 
     parse_init();
 
     err = PARSER_CALL(T);
-    switch (err) {
-        case PARSE_ERR:
-            RETURN_PARSE_ERROR;
-        case PARSE_SUCCESS:
-            err = PARSER_CALL(E_dash);
-            switch(err) {
-                case PARSE_ERR:
-                   RETURN_PARSE_ERROR;
-                case PARSE_SUCCESS:
-                    RETURN_PARSE_SUCCESS;
-            }
-    }
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = PARSER_CALL(E_dash);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
 }
+
+/* Q  ->   E Ineq E  | ( Q ) */
 
 parse_rc_t
 Q () {
@@ -395,40 +414,41 @@ Q () {
     
     CHECKPOINT(chkp_initial);
 
-    token_code = cyylex();
+     // Q -> (Q)
+    do {
 
-    while (token_code == BRACK_START) {
+        token_code = cyylex();
+
+        if (token_code != BRACK_START) break;
 
         err = PARSER_CALL(Q);
+
         if (err == PARSE_ERR) break;
-        
+
         token_code = cyylex();
+
         if (token_code != BRACK_END) break;
 
-        RETURN_PARSE_SUCCESS;   // Q -> (Q)
-    }
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
 
     RESTORE_CHKP(chkp_initial);
 
+    // E Ineq E
     err = PARSER_CALL(E);
-    switch (err) {
-        case PARSE_ERR:
-            RETURN_PARSE_ERROR;
-        case PARSE_SUCCESS:
-            err = PARSER_CALL(Ineq);
-            switch(err) {
-                case PARSE_ERR:
-                    RETURN_PARSE_ERROR;
-                case PARSE_SUCCESS:
-                    err = PARSER_CALL(E);
-                    switch (err) {
-                        case PARSE_ERR:
-                            RETURN_PARSE_ERROR;
-                        case PARSE_SUCCESS:
-                            RETURN_PARSE_SUCCESS; // Q -> E Ineq E
-                    }
-            }
-    }
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = PARSER_CALL(Ineq);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = PARSER_CALL(E);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
 }
 
 
