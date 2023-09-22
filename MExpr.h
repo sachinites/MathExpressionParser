@@ -105,8 +105,6 @@ struct mexpt_tree_ {
 #define mexpt_iterate_operands(tree_ptr, node_ptr)  \
     for (node_ptr = tree_ptr->opd_list_head; node_ptr; node_ptr = node_ptr->list_next)  \
 
-
-
 typedef struct lex_data_ lex_data_t;
 
 lex_data_t **
@@ -123,7 +121,7 @@ void
 mexpr_debug_print_expression_tree (mexpt_node_t *root) ;
 
 void 
-mexpt_destroy (mexpt_node_t *root);
+mexpt_destroy (mexpt_node_t *root, bool free_app_data);
 
 mexpr_tree_res_t
 mexpt_evaluate (mexpt_node_t *root);

@@ -390,9 +390,10 @@ mexpr_convert_postfix_to_expression_tree (
                 if (!tree->opd_list_head) {
                     tree->opd_list_head = mexpt_node;
                 }
-
-                mexpt_node->list_next = tree->opd_list_head;
-                tree->opd_list_head = mexpt_node;
+                else {
+                    mexpt_node->list_next = tree->opd_list_head;
+                    tree->opd_list_head = mexpt_node;
+                }
             }
 
         }
@@ -449,15 +450,16 @@ mexpr_debug_print_expression_tree (mexpt_node_t *root) {
 }
 
 void 
-mexpt_destroy(mexpt_node_t *root) {
+mexpt_destroy(mexpt_node_t *root, bool free_app_data) {
 
     if (root != NULL) {
 
-        mexpt_destroy(root->left);
-        mexpt_destroy(root->right);
+        mexpt_destroy(root->left, free_app_data);
+        mexpt_destroy(root->right, free_app_data);
 
-        if (root->token_code == MATH_IDENTIFIER ||
-            root->token_code == MATH_IDENTIFIER_IDENTIFIER) {
+        if ((root->token_code == MATH_IDENTIFIER ||
+            root->token_code == MATH_IDENTIFIER_IDENTIFIER) &&
+            free_app_data) {
 
             free(root->u.opd_node.app_data);
         }
