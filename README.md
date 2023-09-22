@@ -44,3 +44,8 @@ If you are integrating your own application with this Library, pls follow the be
 gcc -g -c MExpr.c -o MExpr.o
 gcc -g -c ExpressionParser.c -o ExpressionParser.o
 gcc -g -c ParserMexpr.c -o ParserMexpr.o
+
+7. Revisit below #define values defined in Mexpr.h if you want to update them as per your aplication needs :
+
+#define MEXPR_TREE_OPERAND_LEN_MAX  128
+#define MAX_EXPR_LEN    512

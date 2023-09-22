@@ -25,6 +25,7 @@ typedef enum mexpr_enums_ {
     MATH_PLUS,
     MATH_MINUS,
     MATH_SIN,
+    MATH_COS,
     MATH_POW,
     MATH_INTEGER_VALUE,
     MATH_DOUBLE_VALUE,

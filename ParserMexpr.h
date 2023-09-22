@@ -1,6 +1,8 @@
 #ifndef __PARSER_MEXPR__
 #define __PARSER_MEXPR__
 
+#include <stdbool.h>
+
 #include "MExpr.h"
 
 mexpt_tree_t *

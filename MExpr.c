@@ -107,6 +107,7 @@ Math_is_operator (int token_code) {
         case MATH_MIN:
         case MATH_POW:
         case MATH_SIN:
+	    case MATH_COS:
         case MATH_SQR:
         case MATH_SQRT:
         case MATH_BRACKET_START:
@@ -131,6 +132,7 @@ Math_is_unary_operator (int token_code) {
     switch (token_code) {
 
         case MATH_SIN:
+	    case MATH_COS:
         case MATH_SQR:
         case MATH_SQRT:
         return true;
@@ -213,6 +215,7 @@ Math_operator_precedence (int token_code) {
         case MATH_MINUS:
             return 5;
         case MATH_SIN:
+	    case MATH_COS:
         case MATH_SQR:
         case MATH_SQRT:
             return 4;
@@ -341,18 +344,17 @@ mexpr_create_mexpt_node (
 
         case MATH_IDENTIFIER:
         case MATH_IDENTIFIER_IDENTIFIER:
-            strncpy(mexpt_node->u.opd_node.variable_name, operand, len);
+            strncpy(mexpt_node->u.opd_node.opd_value.variable_name, operand, len);
             mexpt_node->u.opd_node.is_resolved = false;
-            mexpt_node->u.opd_node.math_val = 0;
             mexpt_node->token_code = token_id;
             return mexpt_node;
         case MATH_INTEGER_VALUE:
-            mexpt_node->u.opd_node.math_val = (double)atoi(operand);
+            mexpt_node->u.opd_node.opd_value.math_val= (double)atoi(operand);
             mexpt_node->u.opd_node.is_resolved = true;
             mexpt_node->token_code = token_id;
             return mexpt_node;
         case MATH_DOUBLE_VALUE:
-            mexpt_node->u.opd_node.math_val = strtod(operand, &endptr);
+            mexpt_node->u.opd_node.opd_value.math_val = strtod(operand, &endptr);
             mexpt_node->u.opd_node.is_resolved = true;
             mexpt_node->token_code = token_id;
             return mexpt_node;
@@ -363,13 +365,16 @@ mexpr_create_mexpt_node (
     return mexpt_node;
 }
 
-mexpt_node_t *
+mexpt_tree_t *
 mexpr_convert_postfix_to_expression_tree (
                                     lex_data_t **lex_data, int size) {
 
     int i;
+    mexpt_tree_t *tree;
     mexpt_node_t *mexpt_node;
     Stack_t *stack = get_new_stack();
+
+    tree = (mexpt_tree_t *)calloc (1, sizeof (mexpt_tree_t));
 
     for (i = 0; i < size; i++) {
 
@@ -378,6 +383,18 @@ mexpr_convert_postfix_to_expression_tree (
             mexpt_node = mexpr_create_mexpt_node (
                                     lex_data[i]->token_code, lex_data[i]->token_len, lex_data[i]->token_val);
             push(stack, (void *)mexpt_node);
+
+            if (mexpt_node->token_code == MATH_IDENTIFIER ||
+                mexpt_node->token_code == MATH_IDENTIFIER_IDENTIFIER) {
+
+                if (!tree->opd_list_head) {
+                    tree->opd_list_head = mexpt_node;
+                }
+
+                mexpt_node->list_next = tree->opd_list_head;
+                tree->opd_list_head = mexpt_node;
+            }
+
         } 
 
         else if (Math_is_binary_operator (lex_data[i]->token_code)){
@@ -403,10 +420,10 @@ mexpr_convert_postfix_to_expression_tree (
 
     }
 
-    mexpt_node_t *root = pop(stack);
+    tree->root = pop(stack);
     assert (isStackEmpty (stack));
     free_stack(stack);
-    return root;
+    return tree;
 }
 
 void 
@@ -438,6 +455,12 @@ mexpt_destroy(mexpt_node_t *root) {
 
         mexpt_destroy(root->left);
         mexpt_destroy(root->right);
+
+        if (root->token_code == MATH_IDENTIFIER ||
+            root->token_code == MATH_IDENTIFIER_IDENTIFIER) {
+
+            free(root->u.opd_node.app_data);
+        }
         free(root);
     }
 }
@@ -449,28 +472,31 @@ mexpr_double_is_integer (double d) {
     return int_part == d;
 }
 
-res_t
+mexpr_tree_res_t
 mexpt_evaluate (mexpt_node_t *root) {
 
-    res_t res;
-    res.rc = false;
-    res.ovalue = 0;
+    mexpr_tree_res_t res;
+    res.retc = failure_type_t;
 
     if (!root) return res;
 
-    res_t lrc = mexpt_evaluate (root->left);
-    res_t rrc = mexpt_evaluate (root->right);
+    mexpr_tree_res_t lrc = mexpt_evaluate (root->left);
+    mexpr_tree_res_t rrc = mexpt_evaluate (root->right);
 
     /* If I am leaf */
     if (!root->left && !root->right) {
 
-        assert (!Math_is_operator (root->token_code));
+        switch (root->token_code) {
 
-        if (!root->u.opd_node.is_resolved) return res;
-
-        res.ovalue = root->u.opd_node.math_val;
-        res.rc = true;
-        return res;
+            case MATH_IDENTIFIER:
+            case MATH_IDENTIFIER_IDENTIFIER:
+                return root->u.opd_node.compute_fn_ptr(root->u.opd_node.app_data);
+            case MATH_INTEGER_VALUE:
+            case MATH_DOUBLE_VALUE:
+                res.retc = numeric_type_t;
+                res.u.ovalue = root->u.opd_node.opd_value.math_val;
+                return res;
+        }
     }
 
     /* If I am half node*/
@@ -478,34 +504,43 @@ mexpt_evaluate (mexpt_node_t *root) {
     {
         assert (Math_is_unary_operator (root->token_code));
 
-        if (!lrc.rc) return res;
+        if (!lrc.retc) return res;
 
         switch (root->token_code)
         {
             case MATH_SIN:
             {
-                res.ovalue = sin(lrc.ovalue);
+                res.retc = numeric_type_t;
+                res.u.ovalue = sin(lrc.u.ovalue);
             }
             break;
 
+	    case MATH_COS:
+	    {
+		res.retc = numeric_type_t;
+		 res.u.ovalue = cos (lrc.u.ovalue);
+	    }
+	    break;
+
             case MATH_SQRT:
             {
-                res.ovalue = sqrt(lrc.ovalue);
+                res.retc = numeric_type_t;
+                res.u.ovalue = sqrt(lrc.u.ovalue);                
             }
             break;
 
             case MATH_SQR:
             {
-                res.ovalue = lrc.ovalue * lrc.ovalue;
+                res.retc = numeric_type_t;
+                res.u.ovalue = lrc.u.ovalue * lrc.u.ovalue;
             }
             break;
         }
-        res.rc = true;
         return res;
     }
 
     /* If I am Full node */
-    if (!lrc.rc || !rrc.rc) return res;
+    if (lrc.retc == failure_type_t || rrc.retc == failure_type_t) return res;
 
     assert (Math_is_binary_operator (root->token_code));
 
@@ -513,52 +548,197 @@ mexpt_evaluate (mexpt_node_t *root) {
 
         case MATH_MAX:
         {
-            res.ovalue = lrc.ovalue < rrc.ovalue ? rrc.ovalue : lrc.ovalue;
+            res.retc = numeric_type_t;
+            res.u.ovalue = lrc.u.ovalue < rrc.u.ovalue ? rrc.u.ovalue : lrc.u.ovalue;
         }
         break;
         case MATH_MIN:
         {
-            res.ovalue = lrc.ovalue < rrc.ovalue ? lrc.ovalue : rrc.ovalue;
+            res.retc = numeric_type_t;
+            res.u.ovalue = lrc.u.ovalue < rrc.u.ovalue ? lrc.u.ovalue : rrc.u.ovalue;
         }
         break;
 
         case MATH_PLUS:
         {
-             res.ovalue = lrc.ovalue + rrc.ovalue;         
+             res.retc = numeric_type_t;
+             res.u.ovalue = lrc.u.ovalue + rrc.u.ovalue;         
         }
         break;
 
         case MATH_MINUS:
         {
-            res.ovalue = lrc.ovalue - rrc.ovalue;                    
+            res.retc = numeric_type_t;
+            res.u.ovalue = lrc.u.ovalue - rrc.u.ovalue;                    
         }
         break;
 
         case MATH_MUL:
         {
-            res.ovalue = rrc.ovalue * lrc.ovalue;                            
+            res.retc = numeric_type_t;
+            res.u.ovalue = rrc.u.ovalue * lrc.u.ovalue;                            
         }
         break;
 
         case MATH_DIV:
         {
-            if (rrc.ovalue == 0) {
-                res.rc = false;
+            if (rrc.u.ovalue == 0) {
+                res.retc = failure_type_t;
                 return res;
             }
-            res.ovalue = lrc.ovalue / rrc.ovalue;           
+            res.retc = numeric_type_t;
+            res.u.ovalue = lrc.u.ovalue / rrc.u.ovalue;           
         }
         break;
 
         case MATH_POW:
         {
-            res.ovalue = pow(lrc.ovalue , rrc.ovalue);           
+            res.retc = numeric_type_t;
+            res.u.ovalue = pow(lrc.u.ovalue , rrc.u.ovalue);           
         }
         break;
 
-    }
+        case MATH_LESS_THAN:
+            res.retc = boolean_type_t;
+            res.u.rc = lrc.u.ovalue < rrc.u.ovalue;
+            return res;
 
-    res.rc = true;
+        case MATH_GREATER_THAN:
+            res.retc = boolean_type_t;
+            res.u.rc = lrc.u.ovalue > rrc.u.ovalue;
+            return res;
+
+        case MATH_EQ:
+            if (lrc.retc == alphanum_type_t) {
+                res.retc = boolean_type_t;
+                res.u.rc = strcmp (lrc.u.o_str_value, rrc.u.o_str_value) == 0;
+                return res;
+            }
+            if (lrc.retc == numeric_type_t) {
+                res.retc = boolean_type_t;
+                res.u.rc = lrc.u.ovalue == rrc.u.ovalue;
+                return res;
+            }
+        break;
+
+        case MATH_NOT_EQ:
+            if (lrc.retc == alphanum_type_t) {
+                res.retc = boolean_type_t;
+                res.u.rc = strcmp (lrc.u.o_str_value, rrc.u.o_str_value) != 0;
+                return res;
+            }
+            if (lrc.retc == numeric_type_t) {
+                res.retc = boolean_type_t;
+                res.u.rc = lrc.u.ovalue != rrc.u.ovalue;
+                return res;
+            }        
+        break;
+
+        case MATH_AND:
+        {
+            if (lrc.retc == rrc.retc &&
+                    lrc.retc == boolean_type_t) {
+                
+                res.retc = boolean_type_t;
+                res.u.rc = lrc.retc && rrc.retc;
+                return res;
+            }
+        }
+        break;
+        case MATH_OR:
+        {
+            if (lrc.retc == rrc.retc &&
+                    lrc.retc == boolean_type_t) {
+                
+                res.retc = boolean_type_t;
+                res.u.rc = lrc.retc || rrc.retc;
+                return res;
+            }
+        }        
+        break;
+    }
     return res;
 }
 
+static ret_codes_t
+mexpr_validate_expression_tree_internal (mexpt_node_t *node) {
+
+    if (!node) return failure_type_t ;
+    
+    ret_codes_t lrc = mexpr_validate_expression_tree_internal (node->left);
+    ret_codes_t rrc = mexpr_validate_expression_tree_internal (node->right);
+
+    /* Operand Nodes*/
+    switch (node->token_code) {
+
+        case MATH_IDENTIFIER:
+        case MATH_IDENTIFIER_IDENTIFIER:
+            if (!node->u.opd_node.is_resolved) return failure_type_t;
+            if (node->u.opd_node.is_numeric) return numeric_type_t;
+            return alphanum_type_t;
+        case MATH_INTEGER_VALUE:
+        case MATH_DOUBLE_VALUE:
+            if (!node->u.opd_node.is_resolved) return failure_type_t;
+            return numeric_type_t;
+        case MATH_STRING_VALUE:
+            if (!node->u.opd_node.is_resolved) return failure_type_t;
+           return alphanum_type_t;
+    }
+
+    switch (node->token_code ) {
+
+        case MATH_MAX:
+        case MATH_MIN:
+        case MATH_POW:
+        case MATH_MUL:
+        case MATH_DIV:
+        case MATH_PLUS:
+        case MATH_MINUS:
+            if (lrc !=  numeric_type_t ||
+                    rrc !=  numeric_type_t) return failure_type_t;
+            return numeric_type_t;
+        case MATH_SIN:
+        case MATH_COS:
+        case MATH_SQR:
+        case MATH_SQRT:
+            if (lrc == numeric_type_t) return lrc;
+            return failure_type_t;
+        case MATH_LESS_THAN:
+        case MATH_GREATER_THAN:
+            if (lrc == numeric_type_t &&
+                rrc == numeric_type_t) return boolean_type_t;
+            return failure_type_t;
+        case MATH_NOT_EQ:
+        case MATH_EQ:
+            if (lrc == rrc && lrc != failure_type_t) return boolean_type_t;
+            return failure_type_t;
+        case MATH_AND:
+        case MATH_OR:
+            if (lrc == rrc && lrc == boolean_type_t) return boolean_type_t;
+            return failure_type_t;
+    }
+
+    return failure_type_t;
+}
+
+bool
+mexpr_validate_expression_tree (mexpt_tree_t *tree) {
+
+    return (mexpr_validate_expression_tree_internal (tree->root) != failure_type_t);
+}
+
+void 
+mexpt_tree_operand_node_assign_properties (
+                mexpt_node_t *node,
+                bool is_numeric,
+                void *app_data,
+                mexpr_tree_res_t (*compute_fn_ptr)(void *)) {
+
+    assert (node->token_code == MATH_IDENTIFIER ||
+            node->token_code == MATH_IDENTIFIER_IDENTIFIER);
+
+    node->u.opd_node.is_numeric = is_numeric;
+    node->u.opd_node.is_resolved = true;
+    node->u.opd_node.app_data =  app_data;
+    node->u.opd_node.compute_fn_ptr = compute_fn_ptr;
+}

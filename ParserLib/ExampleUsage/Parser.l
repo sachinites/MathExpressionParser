@@ -212,6 +212,10 @@ lex_set_scan_buffer (const char *buffer) {
     return MATH_SIN;
 }
 
+"cos" {
+    return MATH_COS;
+}
+
 "pow" {
     return MATH_POW;
 }

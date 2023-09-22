@@ -25,9 +25,11 @@ typedef enum mexpr_enums_ {
     MATH_PLUS,
     MATH_MINUS,
     MATH_SIN,
+    MATH_COS,
     MATH_POW,
     MATH_INTEGER_VALUE,
     MATH_DOUBLE_VALUE,
+    MATH_STRING_VALUE,
     MATH_COMMA,
     MATH_TOKEN_MAX = 5050
     

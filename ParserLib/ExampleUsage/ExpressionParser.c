@@ -191,6 +191,7 @@ P () {
         case MATH_SQRT:
         case MATH_SQR:
         case MATH_SIN:
+	case MATH_COS:
             RETURN_PARSE_SUCCESS;
         default:
             RETURN_PARSE_ERROR;

@@ -192,6 +192,10 @@ lex_set_scan_buffer (const char *buffer) {
     return MATH_DIV;
 }
 
+"," {
+    return MATH_COMMA;
+}
+
 "sqrt" {
     return MATH_SQRT;
 }
@@ -210,6 +214,10 @@ lex_set_scan_buffer (const char *buffer) {
 
 "sin" {
     return MATH_SIN;
+}
+
+"cos" {
+    return MATH_COS;
 }
 
 "pow" {
