@@ -7,18 +7,19 @@
 #include <arpa/inet.h>
 
 /* Mandatory : #include the Parser Interface */
-#include "ParserExport.h"
+#include "UserParserL.h"
+
+/* #include if you want to use MExpr APIs*/
+#include "MExpr.h"
+
+/* If you want to parse the string using CFGs*/
+parse_rc_t S (); 
+parse_rc_t Q (); 
+parse_rc_t E (); 
 
 
 /* #include the files which contains Constants and IDs. These constants
     must match with those in Parser.l file */
-#include "SQLParserStruct.h"
-#include "common.h"
-
-
-/* #include Other User heler file MExpr.h */
-#include "MExpr.h"
-
 #if 1
 /* Test Math Expressions (Math Expressions, Inequalities and Logical Expressions ) */
 int 

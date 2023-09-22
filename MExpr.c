@@ -5,10 +5,92 @@
 #include <math.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
-#include "SQLParserStruct.h"
-#include "common.h"
-#include "stack/stack.h"
+#include "MexprEnums.h"
 #include "MExpr.h"
+#include "UserParserL.h"
+
+/* ====================x================x=================== */
+/* Internal Stack Implementation */
+
+#define MAX_STACK_SIZE 256
+
+typedef struct stack{
+    int top;
+    void* slot[MAX_STACK_SIZE];
+    int count_of_push;
+    int count_of_pop;
+}Stack_t;
+
+static Stack_t*
+get_new_stack(void);
+static int push(Stack_t *stack, void *node);
+static void* pop(Stack_t *stack);
+static int isStackEmpty(Stack_t *stack);
+static void free_stack(Stack_t *stack);
+static void* StackGetTopElem(Stack_t *stack);
+
+Stack_t*
+get_new_stack(void)
+{
+    Stack_t *stack = (Stack_t *)calloc(1, sizeof(Stack_t));
+    if(!stack)
+        return NULL;
+    memset(stack, 0, sizeof(Stack_t));
+    stack->top = -1;
+    stack->count_of_push = 0;
+    stack->count_of_pop = 0;
+    return stack;
+}
+
+void* 
+StackGetTopElem(Stack_t *stack) {
+
+    if(!stack || stack->top == -1)  return NULL;
+    return stack->slot[stack->top];
+}
+
+int 
+isStackEmpty(Stack_t *stack) {
+
+    assert(stack);
+    if (stack->top == -1) return 1;
+    return 0;
+}
+
+void* 
+pop(Stack_t *stack) {
+
+    void *ret = NULL;
+    if(!stack) return NULL;
+    if(stack->top == -1) return NULL;
+    ret = stack->slot[stack->top];
+    stack->slot[stack->top] = NULL;
+    stack->top--;
+    stack->count_of_pop++;
+    return ret;
+}
+
+int 
+push(Stack_t *stack, void *node) {
+    if(!stack || !node) return -1;
+    if(stack->top < MAX_STACK_SIZE) {
+        stack->top++;
+        stack->slot[stack->top] = node;
+        stack->count_of_push++;
+        return 0;
+     }
+    return -1;
+}
+
+void
+free_stack(Stack_t *stack)
+{
+    if(!stack) return;
+    free(stack);
+}
+
+/* Internal Stack Implementation FINISHED*/
+/* ====================x================x=================== */
 
 static inline bool 
 Math_is_operator (int token_code) {
@@ -17,24 +99,24 @@ Math_is_operator (int token_code) {
 
     switch (token_code) {
 
-        case SQL_MATH_PLUS:
-        case SQL_MATH_MINUS:
-        case SQL_MATH_MUL:
-        case SQL_MATH_DIV:
-        case SQL_MATH_MAX:
-        case SQL_MATH_MIN:
-        case SQL_MATH_POW:
-        case SQL_MATH_SIN:
-        case SQL_MATH_SQR:
-        case SQL_MATH_SQRT:
-        case BRACK_START:
-        case BRACK_END:
-        case SQL_OR:
-        case SQL_AND:
-        case SQL_LESS_THAN:
-        case SQL_GREATER_THAN:
-        case SQL_EQ:
-        case SQL_NOT_EQ:
+        case MATH_PLUS:
+        case MATH_MINUS:
+        case MATH_MUL:
+        case MATH_DIV:
+        case MATH_MAX:
+        case MATH_MIN:
+        case MATH_POW:
+        case MATH_SIN:
+        case MATH_SQR:
+        case MATH_SQRT:
+        case MATH_BRACKET_START:
+        case MATH_BRACKET_END:
+        case MATH_OR:
+        case MATH_AND:
+        case MATH_LESS_THAN:
+        case MATH_GREATER_THAN:
+        case MATH_EQ:
+        case MATH_NOT_EQ:
         return true;
     }
 
@@ -48,9 +130,9 @@ Math_is_unary_operator (int token_code) {
 
     switch (token_code) {
 
-        case SQL_MATH_SIN:
-        case SQL_MATH_SQR:
-        case SQL_MATH_SQRT:
+        case MATH_SIN:
+        case MATH_SQR:
+        case MATH_SQRT:
         return true;
     }
 
@@ -64,19 +146,19 @@ Math_is_binary_operator (int token_code) {
 
     switch (token_code) {
 
-        case SQL_MATH_MAX:
-        case SQL_MATH_MIN:
-        case SQL_MATH_PLUS:
-        case SQL_MATH_MINUS:
-        case SQL_MATH_MUL:
-        case SQL_MATH_DIV:
-        case SQL_MATH_POW:
-        case SQL_AND:
-        case SQL_OR:
-        case SQL_GREATER_THAN:
-        case SQL_LESS_THAN:
-        case SQL_EQ:
-        case SQL_NOT_EQ:
+        case MATH_MAX:
+        case MATH_MIN:
+        case MATH_PLUS:
+        case MATH_MINUS:
+        case MATH_MUL:
+        case MATH_DIV:
+        case MATH_POW:
+        case MATH_AND:
+        case MATH_OR:
+        case MATH_GREATER_THAN:
+        case MATH_LESS_THAN:
+        case MATH_EQ:
+        case MATH_NOT_EQ:
         return true;
     }
 
@@ -88,10 +170,10 @@ Math_is_ineq_operator (int token_code) {
 
     switch (token_code) {
 
-        case SQL_LESS_THAN:
-        case SQL_GREATER_THAN:
-        case  SQL_EQ:
-        case SQL_NOT_EQ:
+        case MATH_LESS_THAN:
+        case MATH_GREATER_THAN:
+        case MATH_EQ:
+        case MATH_NOT_EQ:
         return true;
     }
 
@@ -103,8 +185,8 @@ Math_is_logical_operator (int token_code) {
 
     switch (token_code) {
 
-        case SQL_OR:
-        case SQL_AND:
+        case MATH_OR:
+        case MATH_AND:
         return true;
     }
 
@@ -120,31 +202,31 @@ Math_operator_precedence (int token_code) {
 
     switch (token_code) {
 
-        case SQL_MATH_MAX:
-        case SQL_MATH_MIN:
-        case SQL_MATH_POW:
+        case MATH_MAX:
+        case MATH_MIN:
+        case MATH_POW:
             return 7;
-        case SQL_MATH_MUL:
-        case SQL_MATH_DIV:
+        case MATH_MUL:
+        case MATH_DIV:
             return 6;            
-        case SQL_MATH_PLUS:
-        case SQL_MATH_MINUS:
+        case MATH_PLUS:
+        case MATH_MINUS:
             return 5;
-        case SQL_MATH_SIN:
-        case SQL_MATH_SQR:
-        case SQL_MATH_SQRT:
+        case MATH_SIN:
+        case MATH_SQR:
+        case MATH_SQRT:
             return 4;
-        case SQL_LESS_THAN:
-        case SQL_GREATER_THAN:
-        case SQL_NOT_EQ:
-        case SQL_EQ:
+        case MATH_LESS_THAN:
+        case MATH_GREATER_THAN:
+        case MATH_NOT_EQ:
+        case MATH_EQ:
             return 3;
-        case SQL_AND:
+        case MATH_AND:
             return 2;
-        case SQL_OR:
+        case MATH_OR:
             return 1;
-        case BRACK_START:
-        case BRACK_END:
+        case MATH_BRACKET_START:
+        case MATH_BRACKET_END:
             return 0;
     }
     assert(0);
@@ -154,7 +236,7 @@ Math_operator_precedence (int token_code) {
 static bool 
 mexpr_is_white_space (int token_code) {
 
-    return (token_code == 0 || token_code == EOL || token_code == WHITE_SPACE);
+    return (token_code == 0 || token_code == PARSER_EOL || token_code == PARSER_WHITE_SPACE);
 }
 
 lex_data_t **
@@ -167,7 +249,7 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     Stack_t *stack = get_new_stack();
 
     lex_data_t **lex_data_arr_out = 
-        (lex_data_t**)calloc(MAX_MEXPR_LEN, sizeof(lex_data_t *));
+        (lex_data_t**)calloc(MAX_EXPR_LEN, sizeof(lex_data_t *));
 
     for (i = 0; i < sizein; i++) {
 
@@ -175,14 +257,14 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
             if (mexpr_is_white_space (lex_data->token_code)) continue;
 
-            if (lex_data->token_code == BRACK_START)
+            if (lex_data->token_code == MATH_BRACKET_START)
             {
                     push(stack, (void *)lex_data);
             }
-            else if (lex_data->token_code == BRACK_END)
+            else if (lex_data->token_code == MATH_BRACKET_END)
             {
                     while (!isStackEmpty(stack) && 
-                        (((lex_data_t *)stack->slot[stack->top])->token_code != BRACK_START)) {
+                        (((lex_data_t *)stack->slot[stack->top])->token_code != MATH_BRACKET_START)) {
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                     }
                     pop(stack);
@@ -200,10 +282,10 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
                     }
             }
 
-            else if (lex_data->token_code == COMMA) {
+            else if (lex_data->token_code == MATH_COMMA) {
 
                 while (!isStackEmpty(stack) && 
-                    (((lex_data_t *)stack->slot[stack->top])->token_code != BRACK_START)) {
+                    (((lex_data_t *)stack->slot[stack->top])->token_code != MATH_BRACKET_START)) {
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                 }
             }
@@ -257,19 +339,19 @@ mexpr_create_mexpt_node (
     /* If this node is a Math Operand Node*/
     switch (token_id) {
 
-        case SQL_IDENTIFIER:
-        case SQL_IDENTIFIER_IDENTIFIER:
+        case MATH_IDENTIFIER:
+        case MATH_IDENTIFIER_IDENTIFIER:
             strncpy(mexpt_node->u.opd_node.variable_name, operand, len);
             mexpt_node->u.opd_node.is_resolved = false;
             mexpt_node->u.opd_node.math_val = 0;
             mexpt_node->token_code = token_id;
             return mexpt_node;
-        case SQL_INTEGER_VALUE:
+        case MATH_INTEGER_VALUE:
             mexpt_node->u.opd_node.math_val = (double)atoi(operand);
             mexpt_node->u.opd_node.is_resolved = true;
             mexpt_node->token_code = token_id;
             return mexpt_node;
-        case SQL_DOUBLE_VALUE:
+        case MATH_DOUBLE_VALUE:
             mexpt_node->u.opd_node.math_val = strtod(operand, &endptr);
             mexpt_node->u.opd_node.is_resolved = true;
             mexpt_node->token_code = token_id;
@@ -361,7 +443,7 @@ mexpt_destroy(mexpt_node_t *root) {
 }
 
 bool 
-double_is_integer (double d) {
+mexpr_double_is_integer (double d) {
 
     double int_part = floor (d);
     return int_part == d;
@@ -400,19 +482,19 @@ mexpt_evaluate (mexpt_node_t *root) {
 
         switch (root->token_code)
         {
-            case SQL_MATH_SIN:
+            case MATH_SIN:
             {
                 res.ovalue = sin(lrc.ovalue);
             }
             break;
 
-            case SQL_MATH_SQRT:
+            case MATH_SQRT:
             {
                 res.ovalue = sqrt(lrc.ovalue);
             }
             break;
 
-            case SQL_MATH_SQR:
+            case MATH_SQR:
             {
                 res.ovalue = lrc.ovalue * lrc.ovalue;
             }
@@ -429,36 +511,36 @@ mexpt_evaluate (mexpt_node_t *root) {
 
     switch (root->token_code) {
 
-        case SQL_MATH_MAX:
+        case MATH_MAX:
         {
             res.ovalue = lrc.ovalue < rrc.ovalue ? rrc.ovalue : lrc.ovalue;
         }
         break;
-        case SQL_MATH_MIN:
+        case MATH_MIN:
         {
             res.ovalue = lrc.ovalue < rrc.ovalue ? lrc.ovalue : rrc.ovalue;
         }
         break;
 
-        case SQL_MATH_PLUS:
+        case MATH_PLUS:
         {
              res.ovalue = lrc.ovalue + rrc.ovalue;         
         }
         break;
 
-        case SQL_MATH_MINUS:
+        case MATH_MINUS:
         {
             res.ovalue = lrc.ovalue - rrc.ovalue;                    
         }
         break;
 
-        case SQL_MATH_MUL:
+        case MATH_MUL:
         {
             res.ovalue = rrc.ovalue * lrc.ovalue;                            
         }
         break;
 
-        case SQL_MATH_DIV:
+        case MATH_DIV:
         {
             if (rrc.ovalue == 0) {
                 res.rc = false;
@@ -468,7 +550,7 @@ mexpt_evaluate (mexpt_node_t *root) {
         }
         break;
 
-        case SQL_MATH_POW:
+        case MATH_POW:
         {
             res.ovalue = pow(lrc.ovalue , rrc.ovalue);           
         }
@@ -478,107 +560,5 @@ mexpt_evaluate (mexpt_node_t *root) {
 
     res.rc = true;
     return res;
-}
-
-parse_rc_t
-Expression_build_expression_tree (mexpt_tree_t **mexpt_tree) {
-    
-    parse_init();
-
-    *mexpt_tree = NULL; 
-
-    printf ("Math Expr: ");
-
-    int stack_chkp = undo_stack.top + 1;
-
-    err = PARSER_CALL(E);
-
-    if (err == PARSE_ERR) {
-        printf ("Invalid Expression\n");
-        RETURN_PARSE_ERROR;
-    }
-
-    int size_out = 0;
-    lex_data_t **postfix = mexpr_convert_infix_to_postfix (
-                                            &undo_stack.data[stack_chkp], undo_stack.top + 1 - stack_chkp, &size_out);
-    
-    int i;
-    lex_data_t *lex_data;        
-
-#if 0
-        printf ("Postfix expression : ");
-        for (i = 0; i < size_out; i++) {
-
-            lex_data = postfix[i];
-            printf ("%s ", (char *)lex_data->token_val);
-        }
-
-        printf("\n");
-#endif 
-
-    mexpt_node_t *root = 
-            mexpr_convert_postfix_to_expression_tree (postfix, size_out);
-
-    (*mexpt_tree) = (mexpt_tree_t  *)calloc (1, sizeof (mexpt_tree_t));
-    (*mexpt_tree)->is_resolved = true;
-    (*mexpt_tree)->root = root;
-
-#if 0
-        printf ("Expression Tree : \n");
-        mexpr_debug_print_expression_tree (root);
-        printf ("\n");
-#endif 
-
-        free(postfix);
-        RETURN_PARSE_SUCCESS; 
-}
-
-parse_rc_t
-Inequality_build_expression_trees (mexpt_tree_t  **tree1, mexpt_tree_t  **tree2, int *ineq_token_code) {
-
-    parse_init ();
-
-    *tree1 = NULL;
-    *tree2 = NULL;
-    *ineq_token_code = 0;
-
-    printf ("Ineq Expr: ");
-
-    err = Expression_build_expression_tree(tree1);
-
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
-
-   token_code = cyylex();
-
-    switch (token_code) {
-
-        case SQL_LESS_THAN:
-        case SQL_GREATER_THAN:
-        case SQL_EQ:
-        case SQL_NOT_EQ:
-            break;
-        default:
-            printf("Error : Ineq Op Not Supported/Specified\n");
-            mexpt_destroy((*tree1)->root);
-            free(*tree1);
-            *tree1 = NULL;
-            RETURN_PARSE_ERROR;
-    }
-
-    *ineq_token_code = token_code;
-
-     int chkp = undo_stack.top + 1;
-
-     err  = Expression_build_expression_tree(tree2);
-
-     if (err == PARSE_ERR) {
-
-           mexpt_destroy((*tree1)->root);
-           free(*tree1);
-         *tree1 = NULL;
-          RETURN_PARSE_ERROR;
-     }
-
-    RETURN_PARSE_SUCCESS;
 }
 

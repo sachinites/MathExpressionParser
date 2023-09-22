@@ -1,0 +1,29 @@
+Here we highlight the steps to make use of parser library in your project.
+
+When I say parser library , it means two files : Parser.l ( lex file ) and ParserExport.h . You can find both these files at top level Dir a.k.a ParserLib/ 
+
+We create a new Dir called ExampleUsage and copy paste both files Parser.l and ParserExport.h file in this dir again because we have to modify them slightly, so making copies again. 
+
+ExpressionParser.c/MexprEnums.h are files which represents and application which make use of Parser library files to write its parsing logic. As the name suggest, ExpressionParser.c file implements the parsic logic for Mathematical Expressions (fn E), Inequalities ( fn Q) and logical Expressions ( fn S). All applications must also provide header file which contains IDs for tokens. In this case, that file is MexprEnums.h 
+
+ParserLib :  Parser.l , ParserExport.h
+Application Files : ExpressionParser.c/MexprEnums.h 
+
+Steps to Integrate ParserLib in Application (ExpressionParser.c) :
+
+1. #include the application Enums hdr file (MexprEnums.h ) in Parser.l file. Line 140 in Parser.l 
+2. Write Regular expressions returning application token codes in Parser.l file 
+3. #include ParserExport.h file in application file which implements Parsing logic (ExpressionParser.c)
+
+Thats it. Integration is completed. 
+
+
+Note : 
+If application is made up of multiple src files - src1.c, src2.c and all src files can #include ParserExport.h to write parsing logic.
+Note that, there is only one instance of Parser, So all parsing logic should be done in a single thread only.
+
+Compilation :
+lex Parser.l
+gcc -g -c lex.yy.c -o lex.yy.o
+gcc -g -c ExpressionParser.c -o ExpressionParser.o
+gcc -g ExpressionParser.o lex.yy.o -o exe -lfl

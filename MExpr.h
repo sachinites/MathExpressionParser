@@ -3,10 +3,21 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "ParserExport.h"
+
+#include "MexprEnums.h"
+
+#define MEXPR_TREE_OPERAND_LEN_MAX  128
+#define MAX_EXPR_LEN    512
 
 typedef struct mexpt_tree_ mexpt_tree_t;
 
+typedef struct res_{
+
+    bool rc;
+    double ovalue;
+    unsigned char o_str_value[128];
+    
+} res_t; 
 
 typedef struct mexpt_node_ {
 
@@ -26,7 +37,7 @@ typedef struct mexpt_node_ {
             bool is_numeric;     /* Is this Operand Number or AlphaNumberic ?*/
             bool is_resolved;    /* Have we obtained the math value of this operand*/
             double math_val;   /* Actual Math Value */
-            unsigned char variable_name[32 /* PARSER_OPERAND_LEN */];
+            unsigned char variable_name[MEXPR_TREE_OPERAND_LEN_MAX];
             void *app_data;
             
         } opd_node;
@@ -60,23 +71,15 @@ typedef struct mexpt_node_ {
 } mexpt_node_t;
 
 
-
 struct mexpt_tree_ {
 
      mexpt_node_t *root;
-    bool is_resolved;
 };
 
- 
-typedef struct res_{
-
-    bool rc;
-    double ovalue;
-    
-} res_t; 
+typedef struct lex_data_ lex_data_t;
 
 lex_data_t **
-mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int*size_out);
+mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out);
 
 mexpt_node_t *
 mexpr_convert_postfix_to_expression_tree (
@@ -95,17 +98,6 @@ res_t
 mexpt_evaluate (mexpt_node_t *root);
 
 bool 
-double_is_integer (double d);
-
-parse_rc_t
-Expression_build_expression_tree (mexpt_tree_t **mexpt_tree);
-
-parse_rc_t
-Inequality_build_expression_trees (mexpt_tree_t  **tree1, mexpt_tree_t  **tree2, int *ineq_token_code) ;
-
-extern parse_rc_t E () ; // Math Expressions
-extern parse_rc_t Q () ; // Inequality
-extern parse_rc_t S () ;  // Logical Expressions
-
+mexpr_double_is_integer (double d);
 
 #endif 

@@ -112,7 +112,7 @@ Rules for Grammar Parsing :
 #include <assert.h>
 
 // Must include ParserExport.h
-#include "UserParserL.h"
+#include "ParserExport.h"
 
 // must include application specific hdr file which contains token IDs.
 // This file need tobe included in Parser.l file as well.
@@ -671,4 +671,74 @@ S () {
    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
     RETURN_PARSE_SUCCESS;
+}
+
+/* main fn to demonstrate the Expression Parser */
+#include <stdio.h>
+int 
+main (int argc, char **argv) {
+
+    parse_init();
+
+    while (1) {
+        
+        printf ("Type Expr: ");
+        
+        fgets (lex_buffer, sizeof (lex_buffer), stdin);
+
+        if (lex_buffer[0] == '\n') {
+            lex_buffer[0] = 0;
+            continue;
+        }
+
+        lex_set_scan_buffer (lex_buffer);
+
+        do {
+
+            err = PARSER_CALL(S);
+
+            if (err == PARSE_SUCCESS) {
+
+                printf ("Logical Expression Parsed Successfully\n");
+                break;
+            }
+
+            err = PARSER_CALL(Q);
+
+            if (err == PARSE_SUCCESS) {
+
+                printf ("Inequality Expression Parsed Successfully\n");
+                break;
+            }
+
+            err = PARSER_CALL(E);
+
+            if (err == PARSE_SUCCESS) {
+
+                printf ("Math Expression Parsed Successfully\n");
+                break;
+            }
+
+        } while(0);
+
+        if (err == PARSE_ERR) {
+
+            printf ("Failed to parse Expression\n");
+            assert (curr_ptr == lex_buffer);
+            continue;
+        }        
+
+#if 0
+        /* Let us print the tokens*/
+        int len; void *value;
+        ITERATE_LEX_STACK_BEGIN(0 , INT32_MAX , token_code, len, value) {
+
+            printf ("token_code = %d,  len = %d,  value = %s\n", token_code, len, (char *)value);
+
+        } ITERATE_LEX_STACK_END;
+#endif 
+        Parser_stack_reset();
+    }
+
+    return 0;
 }
