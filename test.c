@@ -25,14 +25,18 @@ main (int argc, char **argv) {
 
         lex_set_scan_buffer (lex_buffer);
 
-        //tree = Parser_Mexpr_build_math_expression_tree ();
         tree = Parser_Mexpr_Condition_build_expression_tree ();
 
         if (!tree) {
+            tree = Parser_Mexpr_build_math_expression_tree ();
+        }
+
+        if (!tree) {
             printf ("Error : Exp Tree could not built\n");
-            Parser_stack_reset();
             continue;
         }
+
+        //mexpr_debug_print_expression_tree  (tree->root);
 
         assert (mexpr_validate_expression_tree (tree));
         
@@ -59,8 +63,8 @@ main (int argc, char **argv) {
                 printf ("%s\n", res.u.o_str_value);
         }
         else if (res.retc == boolean_type_t) {
-            if (res.u.rc) printf ("TRUE\n");
-            else printf  ("FALSE\n");
+            if (res.u.rc) printf (" = TRUE\n");
+            else printf  (" = FALSE\n");
         }
 
         mexpt_destroy (tree->root);

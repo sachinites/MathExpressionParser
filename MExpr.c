@@ -395,7 +395,7 @@ mexpr_convert_postfix_to_expression_tree (
                 tree->opd_list_head = mexpt_node;
             }
 
-        } 
+        }
 
         else if (Math_is_binary_operator (lex_data[i]->token_code)){
 
@@ -640,7 +640,7 @@ mexpt_evaluate (mexpt_node_t *root) {
                     lrc.retc == boolean_type_t) {
                 
                 res.retc = boolean_type_t;
-                res.u.rc = lrc.retc && rrc.retc;
+                res.u.rc = lrc.u.rc && rrc.u.rc;
                 return res;
             }
         }
@@ -651,7 +651,7 @@ mexpt_evaluate (mexpt_node_t *root) {
                     lrc.retc == boolean_type_t) {
                 
                 res.retc = boolean_type_t;
-                res.u.rc = lrc.retc || rrc.retc;
+                res.u.rc = lrc.u.rc || rrc.u.rc;
                 return res;
             }
         }        

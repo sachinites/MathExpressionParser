@@ -102,6 +102,11 @@ struct mexpt_tree_ {
      mexpt_node_t *opd_list_head;
 };
 
+#define mexpt_iterate_operands(tree_ptr, node_ptr)  \
+    for (node_ptr = tree_ptr->opd_list_head; node_ptr; node_ptr = node_ptr->list_next)  \
+
+
+
 typedef struct lex_data_ lex_data_t;
 
 lex_data_t **

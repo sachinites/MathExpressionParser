@@ -40,7 +40,7 @@ Parser_Mexpr_build_math_expression_tree ( ) {
 mexpt_tree_t *
 Parser_Mexpr_Condition_build_expression_tree (void ) {
 
-    mexpt_tree_t * mexpt_tree = NULL; 
+    mexpt_tree_t *tree = NULL; 
 
     int stack_chkp = undo_stack.top + 1;
 
@@ -61,9 +61,8 @@ Parser_Mexpr_Condition_build_expression_tree (void ) {
     int i;
     lex_data_t *lex_data;        
 
-    mexpt_tree_t *tree =
-            mexpr_convert_postfix_to_expression_tree (postfix, size_out);
+    tree = mexpr_convert_postfix_to_expression_tree (postfix, size_out);
 
     free(postfix);
-    return mexpt_tree; 
+    return tree;
 }
