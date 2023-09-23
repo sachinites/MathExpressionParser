@@ -23,8 +23,17 @@ compute_opd_value_fn (void *app_data) {
     }
 
     else if (strcmp (node->u.opd_node.opd_value.variable_name, "c") == 0) {
-        res.retc = alphanum_type_t;
-        res.u.o_str_value = "Abhishek";
+        //res.retc = alphanum_type_t;
+        //res.u.o_str_value = "Abhishek";
+        res.retc = numeric_type_t;
+        res.u.ovalue = (double)4;
+    }
+
+    else if (strcmp (node->u.opd_node.opd_value.variable_name, "d") == 0) {
+        //res.retc = alphanum_type_t;
+        //res.u.o_str_value = "Sagar";
+        res.retc = numeric_type_t;
+        res.u.ovalue = (double)5;
     }
 
     return res;
@@ -63,42 +72,89 @@ main (int argc, char **argv) {
             continue;
         }
 
-        //mexpr_debug_print_expression_tree  (tree->root);
+    #if 0
+        mexpr_debug_print_expression_tree (tree->root);
+        tree = mexpt_clone (tree);
+        printf ("\nPrinting Clone :\n");
+        mexpr_debug_print_expression_tree (tree->root);
+        printf ("\n");
+    #endif
 
-#if 0
+        if (!mexpr_validate_expression_tree (tree)) {
+            
+            printf ("Error : Exp Tree Validation Failed\n");
+
+            mexpt_destroy (tree->root, false);
+            assert (!tree->opd_list_head.lst_right);
+            free(tree);
+            Parser_stack_reset();
+            continue;
+        }
+        printf ("Exp Tree Successfully Validated prior to resolution\n");
+
+
+        printf ("Print Exp Tree Before Optimization\n");
+        mexpr_debug_print_expression_tree (tree->root);
+        printf("\n");
+        mexpt_optimize (tree->root);
+        printf ("Print Exp Tree After Optimization\n");
+        mexpr_debug_print_expression_tree (tree->root);
+        printf ("\n");
+
+#if 1
         {
             mexpt_node_t *node;
-            mexpt_iterate_operands(tree, node) {
+            mexpt_iterate_operands_begin(tree, node) {
 
                 if (strcmp (node->u.opd_node.opd_value.variable_name, "a") == 0) {
-                                   mexpt_tree_operand_node_assign_properties (node, true, 
+                                   mexpt_tree_install_operand_properties (node, true, 
                                              (void *)node, compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "b") == 0) {
-                                mexpt_tree_operand_node_assign_properties (node, true, 
+                                mexpt_tree_install_operand_properties (node, true, 
                                     (void *)node, compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "c") == 0) {
-                                mexpt_tree_operand_node_assign_properties (node, false, 
+
+                                mexpt_tree_install_operand_properties (node, true, 
                                     (void *)node, compute_opd_value_fn); 
                 }
-            }
+                else if (strcmp (node->u.opd_node.opd_value.variable_name, "d") == 0) {
+                                mexpt_tree_install_operand_properties (node, true, 
+                                    (void *)node, compute_opd_value_fn); 
+                }                
+            }mexpt_iterate_operands_end(tree, node);
         }
 #endif 
 
         if (!mexpr_validate_expression_tree (tree)) {
             
             printf ("Error : Exp Tree Validation Failed\n");
+            mexpt_destroy (tree->root, false);
+            assert (!tree->opd_list_head.lst_right);
+            free(tree);
             Parser_stack_reset();
             continue;
         }
+        printf ("Exp Tree Successfully Validated after resolution\n");
 
+#if 1
+        uint8_t cnt = mexpt_remove_unresolved_operands (tree, false);
+        printf ("No of unresolved operands removed = %d\n", cnt);
+
+        if (cnt) {
+            mexpt_optimize (tree->root);
+            printf ("Print Exp Tree After Optimization\n");
+            mexpr_debug_print_expression_tree (tree->root);
+        }
+#endif 
         res = mexpt_evaluate (tree->root);
         
         if (res.retc == failure_type_t) {
 
             printf ("Error : Exp Tree Evaluation Failed\n");
                     mexpt_destroy (tree->root, false);
+                    assert (!tree->opd_list_head.lst_right);
                     free(tree);
                     Parser_stack_reset();
                     continue;
@@ -121,6 +177,7 @@ main (int argc, char **argv) {
         }
 
         mexpt_destroy (tree->root, false);
+        assert (!tree->opd_list_head.lst_right);
         free(tree);
         Parser_stack_reset();
     }

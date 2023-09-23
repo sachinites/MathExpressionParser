@@ -32,8 +32,8 @@ Parser_Mexpr_build_math_expression_tree ( ) {
     lex_data_t *lex_data;        
 
    tree = mexpr_convert_postfix_to_expression_tree (postfix, size_out);
-
     free(postfix);
+
     return tree; 
 }
 
