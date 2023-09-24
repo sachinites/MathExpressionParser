@@ -115,6 +115,7 @@ Math_is_operator (int token_code) {
         case MATH_OR:
         case MATH_AND:
         case MATH_LESS_THAN:
+	    case MATH_LESS_THAN_EQ: 
         case MATH_GREATER_THAN:
         case MATH_EQ:
         case MATH_NOT_EQ:
@@ -159,6 +160,7 @@ Math_is_binary_operator (int token_code) {
         case MATH_OR:
         case MATH_GREATER_THAN:
         case MATH_LESS_THAN:
+	    case MATH_LESS_THAN_EQ:
         case MATH_EQ:
         case MATH_NOT_EQ:
         return true;
@@ -173,6 +175,7 @@ Math_is_ineq_operator (int token_code) {
     switch (token_code) {
 
         case MATH_LESS_THAN:
+	    case MATH_LESS_THAN_EQ:
         case MATH_GREATER_THAN:
         case MATH_EQ:
         case MATH_NOT_EQ:
@@ -194,6 +197,23 @@ Math_is_logical_operator (int token_code) {
 
     return false;    
 }
+
+static inline bool 
+Math_is_operand (int token_code) {
+
+    switch (token_code) {
+
+        case MATH_IDENTIFIER:
+        case MATH_IDENTIFIER_IDENTIFIER:
+        case MATH_INTEGER_VALUE:
+        case MATH_DOUBLE_VALUE:
+        case MATH_STRING_VALUE:
+            return true;
+        default:
+            return false;
+    }
+}
+
 
 /* Higher the returned value, higher the precedence. 
     Return Minimum value for '(*/
@@ -220,6 +240,7 @@ Math_operator_precedence (int token_code) {
         case MATH_SQRT:
             return 4;
         case MATH_LESS_THAN:
+	    case MATH_LESS_THAN_EQ:
         case MATH_GREATER_THAN:
         case MATH_NOT_EQ:
         case MATH_EQ:
@@ -239,7 +260,7 @@ Math_operator_precedence (int token_code) {
 static bool 
 mexpr_is_white_space (int token_code) {
 
-    return (token_code == 0 || token_code == PARSER_EOL || token_code == PARSER_WHITE_SPACE);
+    return (token_code == PARSER_EOL || token_code == PARSER_WHITE_SPACE);
 }
 
 lex_data_t **
@@ -550,6 +571,7 @@ mexpt_evaluate (mexpt_node_t *root) {
                 return res;
             /* Due to optimization leaf may contain : Ineq Op Or Logical Op also*/
             case MATH_LESS_THAN:
+	    case MATH_LESS_THAN_EQ:
             case MATH_GREATER_THAN:
             case MATH_EQ:
             case MATH_NOT_EQ:
@@ -571,7 +593,7 @@ mexpt_evaluate (mexpt_node_t *root) {
     {
         assert (Math_is_unary_operator (root->token_code));
 
-        if (!lrc.retc) return res;
+        if (lrc.retc == failure_type_t) return res;
 
         switch (root->token_code)
         {
@@ -670,6 +692,11 @@ mexpt_evaluate (mexpt_node_t *root) {
             res.u.rc = lrc.u.ovalue < rrc.u.ovalue;
             return res;
 
+	case MATH_LESS_THAN_EQ:
+	    res.retc = boolean_type_t;
+	    res.u.rc = lrc.u.ovalue <= rrc.u.ovalue;
+	    return res;
+
         case MATH_GREATER_THAN:
             res.retc = boolean_type_t;
             res.u.rc = lrc.u.ovalue > rrc.u.ovalue;
@@ -723,6 +750,10 @@ mexpt_evaluate (mexpt_node_t *root) {
             }
         }        
         break;
+
+        default:
+            break;
+
     }
     return res;
 }
@@ -753,6 +784,7 @@ mexpr_validate_expression_tree_internal (mexpt_node_t *node) {
                 if (!node->u.opd_node.is_resolved) return failure_type_t;
                 return alphanum_type_t;
             case MATH_LESS_THAN:
+	    case MATH_LESS_THAN_EQ:
             case MATH_GREATER_THAN:
             case MATH_EQ:
             case MATH_NOT_EQ:
@@ -790,6 +822,7 @@ mexpr_validate_expression_tree_internal (mexpt_node_t *node) {
             if (lrc == numeric_type_t || lrc == unresolved_type_t) return lrc;
             return failure_type_t;
         case MATH_LESS_THAN:
+	case MATH_LESS_THAN_EQ:
         case MATH_GREATER_THAN:
             if (lrc == numeric_type_t &&
                 rrc == numeric_type_t) return boolean_type_t;
@@ -912,6 +945,26 @@ mexpt_optimize (mexpt_node_t *root) {
             root->left = NULL;
             root->right = NULL;
             return true;
+
+
+        case MATH_LESS_THAN_EQ:
+            
+            if (!lrc || !rrc) return false;
+
+            if ((root->left->u.opd_node.opd_value.math_val <=
+                    root->right->u.opd_node.opd_value.math_val )) {
+                rc = true;
+            }
+
+            root->u.ineq_node.is_optimized = true;
+            root->u.ineq_node.result = rc;
+            mexpt_destroy(root->left, true);
+            mexpt_destroy(root->right, true);
+            root->left = NULL;
+            root->right = NULL;
+            return true;
+
+
 
         case MATH_GREATER_THAN:
 
@@ -1413,4 +1466,106 @@ mexpt_clone (mexpt_tree_t *tree) {
     clone_tree->root = new_root;
     mexpt_tree_create_operand_list (clone_tree );
     return clone_tree;
+}
+
+/* NEW IMPLEMENTATION*/
+
+#include "MexprDb.c"
+
+static void 
+mexpr_convert_res_to_var (mexpr_tree_res_t *res, mexpr_var_t *var) {
+
+    var->dtype = (res->retc == numeric_type_t ) ? MEXPR_DTYPE_DOUBLE : MEXPR_DTYPE_STRING;
+
+    switch (var->dtype) {
+
+        case MEXPR_DTYPE_DOUBLE:
+            var->u.d_val = res->u.ovalue;
+            break;
+        case MEXPR_DTYPE_STRING:
+            var->u.str_val = res->u.o_str_value;
+            break;
+        default:
+            assert(0);
+    }
+}
+
+static mexpr_var_t 
+mexpt_compute (int opr_token_code,
+                            mexpr_var_t lrc,
+                            mexpr_var_t rrc) {
+
+    operator_fn_ptr_t opr_fn_ptr = MexprDb[opr_token_code][lrc.dtype][rrc.dtype];
+    return opr_fn_ptr (lrc, rrc);
+}
+
+mexpr_var_t
+mexpt_evaluate_new (mexpt_node_t *root)  {
+
+    mexpr_var_t res;
+    res.dtype = MEXPR_DTYPE_INVALID;
+
+    if (!root) return res;
+
+    mexpr_var_t lrc = mexpt_evaluate_new (root->left);
+    mexpr_var_t rrc = mexpt_evaluate_new (root->right);
+
+        /* If I am leaf */
+    if (!root->left && !root->right) {
+
+        switch (root->token_code) {
+
+            case MATH_IDENTIFIER:
+            case MATH_IDENTIFIER_IDENTIFIER:
+                if ( root->u.opd_node.is_resolved == false) {
+                    res.dtype = MEXPR_DTYPE_INVALID;
+                    return res;
+                }
+               mexpr_tree_res_t temp_rc =  root->u.opd_node.compute_fn_ptr(
+                        root->u.opd_node.opd_value.variable_name,
+                        root->u.opd_node.data_src);
+                mexpr_convert_res_to_var (&temp_rc, &res);
+                return res;
+            case MATH_INTEGER_VALUE:
+                res.dtype = MEXPR_DTYPE_INT;
+                res.u.int_val = (int)  root->u.opd_node.opd_value.math_val;
+                return res;
+            case MATH_DOUBLE_VALUE:
+                res.dtype = MEXPR_DTYPE_DOUBLE;
+                res.u.d_val = root->u.opd_node.opd_value.math_val;
+                return res;
+            case MATH_STRING_VALUE:
+                res.dtype = MEXPR_DTYPE_STRING;
+                res.u.str_val =  root->u.opd_node.opd_value.string_name;
+                return res;
+            default:
+            /* Due to optimization leaf may contain : Ineq Op Or Logical Op also*/
+            if (Math_is_ineq_operator (root->token_code)) {
+                assert (root->u.ineq_node.is_optimized);
+                res.dtype= MEXPR_DTYPE_BOOL;
+                res.u.b_val = root->u.ineq_node.result;
+                return res;
+            }
+            if (Math_is_logical_operator (root->token_code)) {
+                assert (root->u.log_op_node.is_optimized);
+                res.dtype= MEXPR_DTYPE_BOOL;
+                res.u.b_val = root->u.log_op_node.result;
+                return res;
+            }
+            assert(0);
+        }
+    }
+
+    if (root->left && !root->right) {
+
+        assert (Math_is_unary_operator (root->token_code));
+        if (lrc.dtype == MEXPR_DTYPE_INVALID) return res;
+        return mexpt_compute (root->token_code, lrc, lrc);
+    }
+
+    /* If I am Full node */
+    if (lrc.dtype== MEXPR_DTYPE_INVALID || rrc.dtype == MEXPR_DTYPE_INVALID) return res;
+
+     assert (Math_is_binary_operator (root->token_code));
+     return mexpt_compute (root->token_code, lrc, rrc);
 }

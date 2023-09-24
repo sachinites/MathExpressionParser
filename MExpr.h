@@ -6,9 +6,6 @@
 
 #include "MexprEnums.h"
 
-#define MEXPR_TREE_OPERAND_LEN_MAX  128
-#define MAX_EXPR_LEN    512
-
 /*
 1. Appln must create an expression tree
 2. mexpr_validate_expression_tree( ), abort query if failed
@@ -138,6 +135,8 @@ mexpt_destroy (mexpt_node_t *root, bool free_data_src);
 
 mexpr_tree_res_t
 mexpt_evaluate (mexpt_node_t *root);
+mexpr_var_t
+mexpt_evaluate_new (mexpt_node_t *root);
 
 bool 
 mexpr_double_is_integer (double d);

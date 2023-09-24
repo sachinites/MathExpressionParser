@@ -156,6 +156,10 @@ lex_set_scan_buffer (const char *buffer) {
     return MATH_LESS_THAN;
 }
 
+"<=" {
+    return MATH_LESS_THAN_EQ;
+}
+
 ">" {
     return MATH_GREATER_THAN;
 }

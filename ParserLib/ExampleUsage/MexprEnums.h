@@ -7,6 +7,7 @@
 typedef enum mexpr_enums_ {
 
     MATH_LESS_THAN = 5001,
+    MATH_LESS_THAN_EQ,
     MATH_GREATER_THAN,
     MATH_EQ,
     MATH_NOT_EQ,

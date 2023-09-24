@@ -147,6 +147,7 @@ Ineq () {
 
     switch(token_code) {
         case MATH_LESS_THAN:
+	    case MATH_LESS_THAN_EQ:
         case MATH_GREATER_THAN:
         case MATH_EQ:
         case MATH_NOT_EQ:
