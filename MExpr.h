@@ -75,8 +75,8 @@ struct mexpt_node_ {
                 unsigned char variable_name[MEXPR_TREE_OPERAND_LEN_MAX];
             } opd_value;
 
-            void *app_data;
-            mexpr_tree_res_t (*compute_fn_ptr) (void *);
+            void *data_src;
+            mexpr_tree_res_t (*compute_fn_ptr) (unsigned char *, void *);
             
         } opd_node;
 
@@ -134,7 +134,7 @@ void
 mexpr_debug_print_expression_tree (mexpt_node_t *root) ;
 
 void 
-mexpt_destroy (mexpt_node_t *root, bool free_app_data);
+mexpt_destroy (mexpt_node_t *root, bool free_data_src);
 
 mexpr_tree_res_t
 mexpt_evaluate (mexpt_node_t *root);
@@ -149,14 +149,14 @@ void
 mexpt_tree_install_operand_properties (
                 mexpt_node_t *node,
                 bool is_numeric,
-                void *app_data,
-                mexpr_tree_res_t (*compute_fn_ptr)(void *)) ;
+                void *data_src,
+                mexpr_tree_res_t (*compute_fn_ptr)(unsigned char*, void *)) ;
 
 bool
 mexpt_optimize (mexpt_node_t *root);
 
 uint8_t 
-mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_app_data) ;
+mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_data_src) ;
 
 mexpt_tree_t *
 mexpt_clone (mexpt_tree_t *tree);

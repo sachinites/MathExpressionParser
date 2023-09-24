@@ -7,29 +7,28 @@
 
 
 static mexpr_tree_res_t 
-compute_opd_value_fn (void *app_data) {
+compute_opd_value_fn (unsigned char *opd_name,  void *data_src) {
 
     mexpr_tree_res_t  res;
-    mexpt_node_t *node = (mexpt_node_t *)app_data;
 
-    if (strcmp (node->u.opd_node.opd_value.variable_name, "a") == 0) {
+    if (strcmp (opd_name, "a") == 0) {
         res.retc = numeric_type_t;
         res.u.ovalue = (double)2;
     }
 
-    else if (strcmp (node->u.opd_node.opd_value.variable_name, "b") == 0) {
+    else if (strcmp (opd_name, "b") == 0) {
         res.retc = numeric_type_t;
         res.u.ovalue = (double)3;
     }
 
-    else if (strcmp (node->u.opd_node.opd_value.variable_name, "c") == 0) {
+    else if (strcmp (opd_name, "c") == 0) {
         //res.retc = alphanum_type_t;
         //res.u.o_str_value = "Abhishek";
         res.retc = numeric_type_t;
         res.u.ovalue = (double)4;
     }
 
-    else if (strcmp (node->u.opd_node.opd_value.variable_name, "d") == 0) {
+    else if (strcmp (opd_name, "d") == 0) {
         //res.retc = alphanum_type_t;
         //res.u.o_str_value = "Sagar";
         res.retc = numeric_type_t;
@@ -108,20 +107,20 @@ main (int argc, char **argv) {
 
                 if (strcmp (node->u.opd_node.opd_value.variable_name, "a") == 0) {
                                    mexpt_tree_install_operand_properties (node, true, 
-                                             (void *)node, compute_opd_value_fn); 
+                                             NULL, compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "b") == 0) {
                                 mexpt_tree_install_operand_properties (node, true, 
-                                    (void *)node, compute_opd_value_fn); 
+                                    NULL, compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "c") == 0) {
 
                                 mexpt_tree_install_operand_properties (node, true, 
-                                    (void *)node, compute_opd_value_fn); 
+                                    NULL, compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "d") == 0) {
                                 mexpt_tree_install_operand_properties (node, true, 
-                                    (void *)node, compute_opd_value_fn); 
+                                    NULL, compute_opd_value_fn); 
                 }                
             }mexpt_iterate_operands_end(tree, node);
         }

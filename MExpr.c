@@ -490,17 +490,17 @@ mexpt_node_remove_list (mexpt_node_t *node) {
 }
 
 void 
-mexpt_destroy(mexpt_node_t *root, bool free_app_data) {
+mexpt_destroy(mexpt_node_t *root, bool free_data_src) {
 
     if (root != NULL) {
 
-        mexpt_destroy(root->left, free_app_data);
-        mexpt_destroy(root->right, free_app_data);
+        mexpt_destroy(root->left, free_data_src);
+        mexpt_destroy(root->right, free_data_src);
 
         if (root->token_code == MATH_IDENTIFIER ||
             root->token_code == MATH_IDENTIFIER_IDENTIFIER) {
 
-            if (free_app_data) free(root->u.opd_node.app_data);
+            if (free_data_src) free(root->u.opd_node.data_src);
             mexpt_node_remove_list (root);
         }
         free(root);
@@ -536,7 +536,9 @@ mexpt_evaluate (mexpt_node_t *root) {
                     res.retc = failure_type_t;
                     return res;
                 }
-                return root->u.opd_node.compute_fn_ptr(root->u.opd_node.app_data);
+                return root->u.opd_node.compute_fn_ptr(
+                        root->u.opd_node.opd_value.variable_name,
+                        root->u.opd_node.data_src);
             case MATH_INTEGER_VALUE:
             case MATH_DOUBLE_VALUE:
                 res.retc = numeric_type_t;
@@ -1270,15 +1272,15 @@ void
 mexpt_tree_install_operand_properties (
                 mexpt_node_t *node,
                 bool is_numeric,
-                void *app_data,
-                mexpr_tree_res_t (*compute_fn_ptr)(void *)) {
+                void *data_src,
+                mexpr_tree_res_t (*compute_fn_ptr)(unsigned char *, void *)) {
 
     assert (node->token_code == MATH_IDENTIFIER ||
                 node->token_code == MATH_IDENTIFIER_IDENTIFIER);
 
     node->u.opd_node.is_numeric = is_numeric;
     node->u.opd_node.is_resolved = true;
-    node->u.opd_node.app_data =  app_data;
+    node->u.opd_node.data_src =  data_src;
     node->u.opd_node.compute_fn_ptr = compute_fn_ptr;
 }
 
@@ -1298,7 +1300,7 @@ mexpt_get_unresolved_operand_node (mexpt_tree_t *tree) {
 }
 
 uint8_t 
-mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_app_data) {
+mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_data_src) {
 
     uint8_t count = 0;
     mexpt_node_t *opd_node;
@@ -1311,8 +1313,8 @@ mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_app_data) {
 
         if (!opd_node) return count;
 
-        mexpt_destroy (opd_node->left, free_app_data);
-        mexpt_destroy (opd_node->right, free_app_data);
+        mexpt_destroy (opd_node->left, free_data_src);
+        mexpt_destroy (opd_node->right, free_data_src);
         opd_node->left = NULL;
         opd_node->right = NULL;
         opd_node->u.ineq_node.is_optimized = true;
