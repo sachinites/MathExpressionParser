@@ -1555,6 +1555,9 @@ math_or_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
         return rd;
     if (ld == MEXPR_DTYPE_BOOL && rd == MEXPR_DTYPE_UNKNOWN)
         return ld;
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_UNKNOWN)
+        return MEXPR_DTYPE_UNKNOWN;
+
     return MEXPR_DTYPE_INVALID;
 }
 
@@ -1569,6 +1572,9 @@ math_and_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
         return rd;
     if (ld == MEXPR_DTYPE_BOOL && rd == MEXPR_DTYPE_UNKNOWN)
         return ld;
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_UNKNOWN)
+        return MEXPR_DTYPE_UNKNOWN;
+
     return MEXPR_DTYPE_INVALID;
 }
 
@@ -1584,7 +1590,10 @@ math_mul_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
     if (ld == MEXPR_DTYPE_UNKNOWN && (rd == MEXPR_DTYPE_INT || rd == MEXPR_DTYPE_DOUBLE))
         return rd;
      if (rd == MEXPR_DTYPE_UNKNOWN && (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE))
-        return rd;
+        return ld;
+
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_UNKNOWN)
+        return MEXPR_DTYPE_UNKNOWN;
 
     return MEXPR_DTYPE_INVALID;
 }
@@ -1604,6 +1613,9 @@ math_div_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
      if (rd == MEXPR_DTYPE_UNKNOWN && (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE))
         return MEXPR_DTYPE_DOUBLE;
 
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_UNKNOWN)
+        return MEXPR_DTYPE_UNKNOWN;
+
     return MEXPR_DTYPE_INVALID;
 }
 
@@ -1612,8 +1624,10 @@ math_div_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
 static mexpr_dtypes_t 
 math_sqr_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
 
-    if ( (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE || ld == MEXPR_DTYPE_UNKNOWN))
+    if ( (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE) )
         return MEXPR_DTYPE_DOUBLE;
+
+    if (ld == MEXPR_DTYPE_UNKNOWN) return MEXPR_DTYPE_UNKNOWN;
 
     return MEXPR_DTYPE_INVALID;
 }
@@ -1623,8 +1637,11 @@ math_sqr_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
 static mexpr_dtypes_t 
 math_sqrt_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
 
-    if (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE || ld == MEXPR_DTYPE_UNKNOWN)
+    if (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE)
         return MEXPR_DTYPE_DOUBLE;
+
+     if (ld == MEXPR_DTYPE_UNKNOWN) return MEXPR_DTYPE_UNKNOWN;
+
     return MEXPR_DTYPE_INVALID;
 }
 
@@ -1805,7 +1822,7 @@ math_plus_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
                 case MEXPR_DTYPE_UNKNOWN:
                     return MEXPR_DTYPE_DOUBLE;
                 default:
-                    MEXPR_DTYPE_INVALID;
+                    return MEXPR_DTYPE_INVALID;
             }
             break;
         case MEXPR_DTYPE_DOUBLE:
@@ -1851,7 +1868,7 @@ math_minus_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
                 case MEXPR_DTYPE_UNKNOWN:
                     return MEXPR_DTYPE_DOUBLE;
                 default:
-                    MEXPR_DTYPE_INVALID;
+                    return MEXPR_DTYPE_INVALID;
             }
             break;
         case MEXPR_DTYPE_DOUBLE:
