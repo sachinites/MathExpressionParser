@@ -1359,3 +1359,581 @@ static operator_fn_ptr_t MexprDb[MATH_OPR_MAX][MEXPR_DTYPE_MAX][MEXPR_DTYPE_MAX]
 
 
 };
+
+typedef mexpr_dtypes_t (*operator_fn_dtypes_supported_ptr_t) (mexpr_dtypes_t , mexpr_dtypes_t);
+
+// MATH_LESS_THAN_EQ
+static mexpr_dtypes_t 
+math_less_than_eq_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    switch (ld) {
+
+        case MEXPR_DTYPE_INT:
+        case MEXPR_DTYPE_DOUBLE:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        case MEXPR_DTYPE_UNKNOWN:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }            
+        break;
+        default:
+             return MEXPR_DTYPE_INVALID;
+    }
+}
+
+// MATH_LESS_THAN
+static mexpr_dtypes_t 
+math_less_than_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    switch (ld) {
+
+        case MEXPR_DTYPE_INT:
+        case MEXPR_DTYPE_DOUBLE:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        case MEXPR_DTYPE_UNKNOWN:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }            
+        break;
+        default:
+             return MEXPR_DTYPE_INVALID;
+    }
+}
+
+// MATH_GREATER_THAN
+static mexpr_dtypes_t 
+math_greater_than_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    switch (ld) {
+
+        case MEXPR_DTYPE_INT:
+        case MEXPR_DTYPE_DOUBLE:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        case MEXPR_DTYPE_UNKNOWN:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }            
+        break;
+        default:
+             return MEXPR_DTYPE_INVALID;
+    }
+}
+
+// MATH_EQ
+static mexpr_dtypes_t 
+math_eq_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+        switch (ld) {
+
+        case MEXPR_DTYPE_INT:
+        case MEXPR_DTYPE_DOUBLE:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_BOOL;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        case MEXPR_DTYPE_STRING:
+            switch(rd) {
+                case MEXPR_DTYPE_STRING:
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_BOOL;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        case MEXPR_DTYPE_UNKNOWN:
+            switch(rd) {
+                case MEXPR_DTYPE_STRING:
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }            
+        break;
+        default:
+             return MEXPR_DTYPE_INVALID;
+    }
+}
+
+
+// MATH_NOT_EQ
+static mexpr_dtypes_t 
+math_neq_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+        switch (ld) {
+
+        case MEXPR_DTYPE_INT:
+        case MEXPR_DTYPE_DOUBLE:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_BOOL;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        case MEXPR_DTYPE_STRING:
+            switch(rd) {
+                case MEXPR_DTYPE_STRING:
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_BOOL;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        case MEXPR_DTYPE_UNKNOWN:
+            switch(rd) {
+                case MEXPR_DTYPE_STRING:
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_BOOL;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }            
+        break;
+        default:
+             return MEXPR_DTYPE_INVALID;
+    }
+}
+
+// MATH_OR
+static mexpr_dtypes_t 
+math_or_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if (ld == MEXPR_DTYPE_BOOL && rd == MEXPR_DTYPE_BOOL)
+        return MEXPR_DTYPE_BOOL;
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_BOOL)
+        return rd;
+    if (ld == MEXPR_DTYPE_BOOL && rd == MEXPR_DTYPE_UNKNOWN)
+        return ld;
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+// MATH_AND
+static mexpr_dtypes_t 
+math_and_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if (ld == MEXPR_DTYPE_BOOL && rd == MEXPR_DTYPE_BOOL)
+        return MEXPR_DTYPE_BOOL;
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_BOOL)
+        return rd;
+    if (ld == MEXPR_DTYPE_BOOL && rd == MEXPR_DTYPE_UNKNOWN)
+        return ld;
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+// MATH_MUL
+static mexpr_dtypes_t 
+math_mul_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if ( (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE) &&
+            (rd == MEXPR_DTYPE_DOUBLE || rd == MEXPR_DTYPE_INT))
+        return MEXPR_DTYPE_DOUBLE;
+    
+    if (ld == MEXPR_DTYPE_UNKNOWN && (rd == MEXPR_DTYPE_INT || rd == MEXPR_DTYPE_DOUBLE))
+        return rd;
+     if (rd == MEXPR_DTYPE_UNKNOWN && (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE))
+        return rd;
+
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+// MATH_DIV
+static mexpr_dtypes_t 
+math_div_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if ( (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE) &&
+            (rd == MEXPR_DTYPE_DOUBLE || rd == MEXPR_DTYPE_INT))
+        return MEXPR_DTYPE_DOUBLE;
+
+    if (ld == MEXPR_DTYPE_UNKNOWN && (rd == MEXPR_DTYPE_INT || rd == MEXPR_DTYPE_DOUBLE))
+        return MEXPR_DTYPE_DOUBLE;
+
+     if (rd == MEXPR_DTYPE_UNKNOWN && (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE))
+        return MEXPR_DTYPE_DOUBLE;
+
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+// MATH_SQR
+static mexpr_dtypes_t 
+math_sqr_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if ( (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE || ld == MEXPR_DTYPE_UNKNOWN))
+        return MEXPR_DTYPE_DOUBLE;
+
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+// MATH_SQRT
+static mexpr_dtypes_t 
+math_sqrt_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE || ld == MEXPR_DTYPE_UNKNOWN)
+        return MEXPR_DTYPE_DOUBLE;
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+// MATH_MAX
+static mexpr_dtypes_t 
+math_max_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    switch (ld) {
+        case MEXPR_DTYPE_INT:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INT;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_INT;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;        
+
+        case MEXPR_DTYPE_DOUBLE:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_DOUBLE;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;       
+
+
+        case MEXPR_DTYPE_STRING:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_STRING;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_STRING;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;     
+
+        case MEXPR_DTYPE_UNKNOWN:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INT;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_STRING;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        default:
+            return MEXPR_DTYPE_INVALID;
+    }
+
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+// MATH_MIN
+static mexpr_dtypes_t 
+math_min_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    switch (ld) {
+        case MEXPR_DTYPE_INT:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INT;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_INT;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;        
+
+        case MEXPR_DTYPE_DOUBLE:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_DOUBLE;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;       
+
+
+        case MEXPR_DTYPE_STRING:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_INVALID;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_STRING;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_STRING;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;     
+
+        case MEXPR_DTYPE_UNKNOWN:
+
+            switch (ld) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INT;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_STRING;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                break;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+        break;
+        default:
+            return MEXPR_DTYPE_INVALID;
+    }
+
+    return MEXPR_DTYPE_INVALID;
+}
+
+// MATH_PLUS
+static mexpr_dtypes_t 
+math_plus_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    switch (ld) {
+
+        case MEXPR_DTYPE_INT:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INT;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_DOUBLE;
+                default:
+                    MEXPR_DTYPE_INVALID;
+            }
+            break;
+        case MEXPR_DTYPE_DOUBLE:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_DOUBLE;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;            
+        case MEXPR_DTYPE_UNKNOWN:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;                 
+        default:
+             return MEXPR_DTYPE_INVALID;
+    }
+}
+
+// MATH_MINUS
+static mexpr_dtypes_t 
+math_minus_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    switch (ld) {
+
+        case MEXPR_DTYPE_INT:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_INT;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_DOUBLE;
+                default:
+                    MEXPR_DTYPE_INVALID;
+            }
+            break;
+        case MEXPR_DTYPE_DOUBLE:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_DOUBLE;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;            
+        case MEXPR_DTYPE_UNKNOWN:
+            switch (rd) {
+                case MEXPR_DTYPE_INT:
+                case MEXPR_DTYPE_DOUBLE:
+                    return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_UNKNOWN;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;                 
+        default:
+             return MEXPR_DTYPE_INVALID;
+    }
+}
+
+
+// MATH_SIN
+// MATH_COS
+static mexpr_dtypes_t 
+math_trignometry_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE)
+        return MEXPR_DTYPE_DOUBLE;
+    if (ld == MEXPR_DTYPE_UNKNOWN) return MEXPR_DTYPE_UNKNOWN;
+    return MEXPR_DTYPE_INVALID;
+}
+
+
+static mexpr_dtypes_t 
+math_pow_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if ( (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE) &&
+            (rd == MEXPR_DTYPE_DOUBLE || rd == MEXPR_DTYPE_INT))
+        return MEXPR_DTYPE_DOUBLE;
+
+    if (ld == MEXPR_DTYPE_UNKNOWN && (rd == MEXPR_DTYPE_INT || rd == MEXPR_DTYPE_DOUBLE))
+        return MEXPR_DTYPE_DOUBLE;
+
+    if (rd == MEXPR_DTYPE_UNKNOWN && (ld == MEXPR_DTYPE_INT || ld == MEXPR_DTYPE_DOUBLE))
+        return MEXPR_DTYPE_DOUBLE;
+
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_UNKNOWN) 
+        return MEXPR_DTYPE_UNKNOWN;
+
+    return MEXPR_DTYPE_INVALID;
+}
+
+static operator_fn_dtypes_supported_ptr_t MexprDb_dtypes_supported[MATH_OPR_MAX] =
+    {
+        math_less_than_eq_dtypes_supported,
+        math_less_than_dtypes_supported,
+        math_greater_than_dtypes_supported,
+        math_eq_dtypes_supported,
+        math_neq_dtypes_supported,
+        math_or_dtypes_supported,
+        math_and_dtypes_supported,
+        math_mul_dtypes_supported,
+        math_div_dtypes_supported,
+        math_sqr_dtypes_supported,
+        math_sqrt_dtypes_supported,
+        math_max_dtypes_supported,
+        math_min_dtypes_supported,
+        math_plus_dtypes_supported,
+        math_minus_dtypes_supported,
+        math_trignometry_dtypes_supported,
+        math_trignometry_dtypes_supported,
+        math_pow_dtypes_supported,
+        0,
+        0
+    };

@@ -71,6 +71,9 @@ typedef enum mexpr_dtypes_ {
     MEXPR_DTYPE_STRING,
     MEXPR_DTYPE_BOOL,
     MEXPR_DTYPE_MAX,
+    // Dont below below enums above MAX, it will
+    // disrupt the MexprDb
+    MEXPR_DTYPE_UNKNOWN,
     MEXPR_DTYPE_INVALID
 
 } mexpr_dtypes_t;

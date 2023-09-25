@@ -343,6 +343,11 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     return lex_data_arr_out;
 }
 
+ static mexpr_var_t 
+mexpt_compute (int opr_token_code,
+                            mexpr_var_t lrc,
+                            mexpr_var_t rrc);
+
 static mexpt_node_t*
 mexpr_create_mexpt_node (
                 int token_id,
@@ -822,7 +827,7 @@ mexpr_validate_expression_tree_internal (mexpt_node_t *node) {
             if (lrc == numeric_type_t || lrc == unresolved_type_t) return lrc;
             return failure_type_t;
         case MATH_LESS_THAN:
-	case MATH_LESS_THAN_EQ:
+	    case MATH_LESS_THAN_EQ:
         case MATH_GREATER_THAN:
             if (lrc == numeric_type_t &&
                 rrc == numeric_type_t) return boolean_type_t;
@@ -853,6 +858,365 @@ mexpr_validate_expression_tree_internal (mexpt_node_t *node) {
     }
 
     return failure_type_t;
+}
+
+bool
+mexpt_optimize_new (mexpt_node_t *root) {
+
+    bool rc = false;
+    mexpr_var_t res;
+    mexpt_node_t *lchild, *rchild;
+
+    if (!root) return false;
+
+    bool lrc = mexpt_optimize_new  (root->left);
+    bool rrc = mexpt_optimize_new  (root->right);
+
+    /* Leaf node*/
+    if (!root->left && !root->right) {
+        
+        /* If leaf node is resolved and is constant value, then return true*/
+        if (root->u.opd_node.is_resolved &&
+                root->u.opd_node.compute_fn_ptr == NULL) {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /* Half node*/
+    if (root->left && !root->right) {
+
+        if (lrc == false) return false;
+
+        lchild = root->left;
+
+        /* Half node cannot have child with string value*/
+        assert(lchild->u.opd_node.is_numeric);
+
+        res.dtype = MEXPR_DTYPE_DOUBLE;
+        res.u.d_val = lchild->u.opd_node.opd_value.math_val;
+        res = mexpt_compute(root->token_code, res, res);
+
+        /* Passing gouble arg, so expecting double output only*/
+        assert(res.dtype == MEXPR_DTYPE_DOUBLE);
+
+        /* Rejuvenate the self*/
+        root->token_code = MATH_DOUBLE_VALUE;
+        root->left = NULL;
+        root->u.opd_node.is_resolved = true;
+        root->u.opd_node.is_numeric = true;
+        root->u.opd_node.opd_value.math_val = res.u.d_val;
+        mexpt_destroy(lchild, true);
+        return true;
+    }
+
+    /* Full nodes*/
+
+    mexpr_var_t lval, rval;
+
+    switch (root->token_code) {
+
+      case MATH_LESS_THAN:
+      case MATH_LESS_THAN_EQ:
+      case MATH_GREATER_THAN:
+
+          if (!lrc || !rrc) return false;
+
+          lchild = root->left;
+          rchild = root->right;
+
+          /* In Mexpr Tree We store numerc values as double only*/
+          assert(lchild->u.opd_node.is_numeric);
+          assert(rchild->u.opd_node.is_numeric);
+
+          lval.dtype = MEXPR_DTYPE_DOUBLE;
+          lval.u.d_val = lchild->u.opd_node.opd_value.math_val;
+          rval.dtype = MEXPR_DTYPE_DOUBLE;
+          rval.u.d_val = rchild->u.opd_node.opd_value.math_val;
+
+          res = mexpt_compute(root->token_code, lval, rval);
+          assert(res.dtype == MEXPR_DTYPE_BOOL);
+
+          root->u.ineq_node.is_optimized = true;
+          root->u.ineq_node.result = res.u.b_val;
+          mexpt_destroy(root->left, true);
+          mexpt_destroy(root->right, true);
+          root->left = NULL;
+          root->right = NULL;
+          return true;
+
+    /* Support Strings also*/
+    case MATH_EQ:
+    case MATH_NOT_EQ:
+         if (!lrc || !rrc) return false;
+         lchild = root->left;
+         rchild = root->right;
+
+         if (lchild->u.opd_node.is_numeric == false) {
+             // this API is used only after  mexpr_validate_expression_tree( )
+             assert(rchild->u.opd_node.is_numeric == false);
+             assert(lchild->u.opd_node.is_resolved &&
+                    rchild->u.opd_node.is_resolved);
+
+            lval.dtype = MEXPR_DTYPE_STRING;
+            lval.u.str_val = lchild->u.opd_node.opd_value.string_name;
+            rval.dtype = MEXPR_DTYPE_STRING;
+            rval.u.str_val = rchild->u.opd_node.opd_value.string_name;
+
+            res = mexpt_compute (root->token_code, lval, rval);
+            assert(res.dtype == MEXPR_DTYPE_BOOL);
+
+             root->u.ineq_node.is_optimized = true;
+             root->u.ineq_node.result = res.u.b_val;
+
+             mexpt_destroy(root->left, true);
+             mexpt_destroy(root->right, true);
+             root->left = NULL;
+             root->right = NULL;
+             return true;
+         }
+         else
+         {
+             assert(lchild->u.opd_node.is_numeric);
+             assert(rchild->u.opd_node.is_numeric);
+            lval.dtype = MEXPR_DTYPE_DOUBLE;
+            lval.u.d_val = lchild->u.opd_node.opd_value.math_val;
+            rval.dtype = MEXPR_DTYPE_DOUBLE;
+            rval.u.d_val = rchild->u.opd_node.opd_value.math_val;
+
+            res = mexpt_compute (root->token_code, lval, rval);
+            assert(res.dtype == MEXPR_DTYPE_BOOL);
+             root->u.ineq_node.is_optimized = true;
+             root->u.ineq_node.result =res.u.b_val;
+
+             mexpt_destroy(root->left, true);
+             mexpt_destroy(root->right, true);
+             root->left = NULL;
+             root->right = NULL;
+             return true;
+         }
+        break;
+
+
+          case MATH_OR:
+        {
+            if (!lrc && !rrc) return false;
+            lchild = root->left;
+            rchild = root->right;
+            bool l_bool = false, r_bool = false;
+            bool l_bool_set = false, r_bool_set = false;
+            bool optimize_me = false;
+
+            assert (Math_is_ineq_operator (lchild->token_code) ||
+                Math_is_logical_operator (lchild->token_code));
+
+            do {
+
+                if (Math_is_ineq_operator (lchild->token_code) &&
+                        lchild->u.ineq_node.is_optimized) {
+                    
+                    l_bool =  lchild->u.ineq_node.result;
+                    l_bool_set = true;
+                    if (l_bool) optimize_me = true;
+                }
+                else if (Math_is_logical_operator (lchild->token_code) &&
+                        lchild->u.log_op_node.is_optimized) {
+                    
+                    l_bool =  lchild->u.log_op_node.result;
+                    l_bool_set = true;
+                    if (l_bool) optimize_me = true;
+                }
+
+                if (optimize_me) break;
+
+                if (Math_is_ineq_operator (rchild->token_code) &&
+                        rchild->u.ineq_node.is_optimized) {
+                    
+                    r_bool =  rchild->u.ineq_node.result;
+                    r_bool_set = true;
+                    if (r_bool) optimize_me = true;
+                }
+                else if (Math_is_logical_operator (rchild->token_code) &&
+                        rchild->u.log_op_node.is_optimized) {
+                    
+                    r_bool =  rchild->u.log_op_node.result;
+                    r_bool_set = true;
+                    if (r_bool) optimize_me = true;
+                }
+
+            } while (0);
+
+            if (optimize_me) {
+                rc = true; 
+            }
+            else if (l_bool_set && r_bool_set ) {
+                 optimize_me = true;
+                 rc = false;
+            }
+
+            if (optimize_me) {
+
+                root->u.log_op_node.is_optimized = true;
+                root->u.log_op_node.result = rc;
+                mexpt_destroy (lchild, true);
+                mexpt_destroy (rchild, true);
+                root->left = NULL;
+                root->right = NULL;
+                return true;
+            }
+        }
+        break;
+
+
+
+        case MATH_AND:
+        {
+            if (!lrc && !rrc) return false;
+            lchild = root->left;
+            rchild = root->right;
+            bool l_bool = false, r_bool = false;
+            bool l_bool_set = false, r_bool_set = false;
+            bool optimize_me = false;
+
+            assert (Math_is_ineq_operator (lchild->token_code) ||
+                Math_is_logical_operator (lchild->token_code));
+
+            do {
+
+                if (Math_is_ineq_operator (lchild->token_code) &&
+                        lchild->u.ineq_node.is_optimized) {
+                    
+                    l_bool =  lchild->u.ineq_node.result;
+                    l_bool_set = true;
+                    if (!l_bool) optimize_me = true;
+                }
+                else if (Math_is_logical_operator (lchild->token_code) &&
+                        lchild->u.log_op_node.is_optimized) {
+                    
+                    l_bool =  lchild->u.log_op_node.result;
+                    l_bool_set = true;
+                    if (!l_bool) optimize_me = true;
+                }
+
+                if (optimize_me) break;
+
+                if (Math_is_ineq_operator (rchild->token_code) &&
+                        rchild->u.ineq_node.is_optimized) {
+                    
+                    r_bool =  rchild->u.ineq_node.result;
+                    r_bool_set = true;
+                    if (!r_bool) optimize_me = true;
+                }
+                else if (Math_is_logical_operator (rchild->token_code) &&
+                        rchild->u.log_op_node.is_optimized) {
+                    
+                    r_bool =  rchild->u.log_op_node.result;
+                    r_bool_set = true;
+                    if (!r_bool) optimize_me = true;
+                }
+
+            } while (0);
+
+            if (optimize_me) {
+                rc = false;
+            }
+            else if (l_bool_set && r_bool_set ) {
+                 optimize_me = true;
+                 rc = true;
+            }
+
+            if (optimize_me) {
+
+                root->u.log_op_node.is_optimized = true;
+                root->u.log_op_node.result = rc;
+                mexpt_destroy (lchild, true);
+                mexpt_destroy (rchild, true);
+                root->left = NULL;
+                root->right = NULL;
+                return true;
+            }
+        }
+        break;
+
+    /* Supported on Strings also */
+    case MATH_PLUS:
+    case MATH_MINUS:
+            if (!lrc || !rrc) return false;
+            lchild = root->left;
+            rchild = root->right;
+
+            if (lchild->u.opd_node.is_numeric) {
+                lval.dtype = MEXPR_DTYPE_DOUBLE;
+                lval.u.d_val = lchild->u.opd_node.opd_value.math_val ;
+            }
+            else {
+                lval.dtype = MEXPR_DTYPE_STRING;
+                lval.u.str_val = lchild->u.opd_node.opd_value.string_name;
+            }
+            if (rchild->u.opd_node.is_numeric) {
+                rval.dtype = MEXPR_DTYPE_DOUBLE;
+                rval.u.d_val = rchild->u.opd_node.opd_value.math_val ;
+            }
+            else {
+                rval.dtype = MEXPR_DTYPE_STRING;
+                rval.u.str_val = rchild->u.opd_node.opd_value.string_name;
+            }            
+    
+            res = mexpt_compute (root->token_code, lval, rval);
+            
+            if (res.dtype == MEXPR_DTYPE_DOUBLE) {
+                root->token_code = MATH_DOUBLE_VALUE;
+                root->u.opd_node.is_numeric = true;
+                root->u.opd_node.opd_value.math_val = res.u.d_val;
+            }
+            else if (res.dtype == MEXPR_DTYPE_STRING) {
+                root->token_code = MATH_STRING_VALUE;
+                root->u.opd_node.is_numeric = false;
+                memset (root->u.opd_node.opd_value.string_name, 0,
+                    sizeof (root->u.opd_node.opd_value.string_name));
+                strncpy(root->u.opd_node.opd_value.string_name,
+                    res.u.str_val, sizeof (root->u.opd_node.opd_value.string_name));
+            }
+            root->u.opd_node.is_resolved = true;
+            mexpt_destroy(root->left, true);
+            mexpt_destroy(root->right, true);
+            root->left = NULL;
+            root->right = NULL;
+            return true;     
+        break;        
+
+    case MATH_MUL:
+    case MATH_DIV:
+    case MATH_MAX:
+    case MATH_MIN:
+    case MATH_POW:
+            if (!lrc || !rrc) return false;
+            lchild = root->left;
+            rchild = root->right;
+            assert (lchild->u.opd_node.is_numeric); 
+            assert (rchild->u.opd_node.is_numeric);
+            lval.dtype = MEXPR_DTYPE_DOUBLE;
+            lval.u.d_val = lchild->u.opd_node.opd_value.math_val;
+            rval.dtype = MEXPR_DTYPE_DOUBLE;
+            rval.u.d_val = rchild->u.opd_node.opd_value.math_val;
+            res = mexpt_compute (root->token_code, lval, rval);
+            root->token_code = MATH_DOUBLE_VALUE;
+            root->u.opd_node.is_numeric = true;
+            root->u.opd_node.opd_value.math_val = res.u.d_val;
+            root->u.opd_node.is_resolved = true;
+            mexpt_destroy(root->left, true);
+            mexpt_destroy(root->right, true);
+            root->left = NULL;
+            root->right = NULL;
+            return true;     
+        break;              
+
+
+        default:
+            assert(0);
+    }
 }
 
 bool
@@ -903,7 +1267,7 @@ mexpt_optimize (mexpt_node_t *root) {
                 case MATH_SIN:
                     val = sin (val);
                     break;
-                case MATH_COS:
+                case MATH_COS:  
                     val = cos (val);
                     break;
                 default:
@@ -1490,7 +1854,7 @@ mexpr_convert_res_to_var (mexpr_tree_res_t *res, mexpr_var_t *var) {
     }
 }
 
-static mexpr_var_t 
+ mexpr_var_t 
 mexpt_compute (int opr_token_code,
                             mexpr_var_t lrc,
                             mexpr_var_t rrc) {

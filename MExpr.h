@@ -153,6 +153,8 @@ mexpt_tree_install_operand_properties (
 
 bool
 mexpt_optimize (mexpt_node_t *root);
+bool
+mexpt_optimize_new (mexpt_node_t *root);
 
 uint8_t 
 mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_data_src) ;

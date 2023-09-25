@@ -22,17 +22,17 @@ compute_opd_value_fn (unsigned char *opd_name,  void *data_src) {
     }
 
     else if (strcmp (opd_name, "c") == 0) {
-        //res.retc = alphanum_type_t;
-        //res.u.o_str_value = "Abhishek";
-        res.retc = numeric_type_t;
-        res.u.ovalue = (double)4;
+        res.retc = alphanum_type_t;
+        res.u.o_str_value = "Abhishek";
+        //res.retc = numeric_type_t;
+        //res.u.ovalue = (double)4;
     }
 
     else if (strcmp (opd_name, "d") == 0) {
-        //res.retc = alphanum_type_t;
-        //res.u.o_str_value = "Sagar";
-        res.retc = numeric_type_t;
-        res.u.ovalue = (double)5;
+        res.retc = alphanum_type_t;
+        res.u.o_str_value = "Sagar";
+        //res.retc = numeric_type_t;
+        //res.u.ovalue = (double)5;
     }
 
     return res;
@@ -243,7 +243,7 @@ main (int argc, char **argv) {
         printf ("Print Exp Tree Before Optimization\n");
         mexpr_debug_print_expression_tree (tree->root);
         printf("\n");
-        mexpt_optimize (tree->root);
+        mexpt_optimize_new (tree->root);
         printf ("Print Exp Tree After Optimization\n");
         mexpr_debug_print_expression_tree (tree->root);
         printf ("\n");
@@ -290,7 +290,7 @@ main (int argc, char **argv) {
         printf ("No of unresolved operands removed = %d\n", cnt);
 
         if (cnt) {
-            mexpt_optimize (tree->root);
+            mexpt_optimize_new (tree->root);
             printf ("Print Exp Tree After Optimization\n");
             mexpr_debug_print_expression_tree (tree->root);
         }
