@@ -773,6 +773,21 @@ math_plus_opr_fn_double_double_double  (mexpr_var_t lrc, mexpr_var_t rrc) {
     return ret;
 }
 
+static inline mexpr_var_t  
+math_plus_opr_fn_string_string_string (mexpr_var_t lrc, mexpr_var_t rrc) {
+
+    mexpr_var_t  ret;
+    static unsigned char str_out [MEXPR_MAX_STRING_VAL_LEN + MEXPR_MAX_STRING_VAL_LEN];
+
+    assert (lrc.dtype == MEXPR_DTYPE_STRING);
+    assert (rrc.dtype == MEXPR_DTYPE_STRING);
+
+    ret.dtype = MEXPR_DTYPE_STRING;    
+
+    snprintf (str_out, sizeof (str_out), "%s%s", lrc.u.str_val, rrc.u.str_val);
+    ret.u.str_val = str_out;
+    return ret;
+}
 
 // MATH_MINUS
 static inline mexpr_var_t  
@@ -1256,7 +1271,7 @@ static operator_fn_ptr_t MexprDb[MATH_OPR_MAX][MEXPR_DTYPE_MAX][MEXPR_DTYPE_MAX]
 
         math_opr_fn_not_supported, /* string , int */
         math_opr_fn_not_supported, /* string , double */
-        math_opr_fn_not_supported, /* string , string*/
+        math_plus_opr_fn_string_string_string, /* string , string*/
         math_opr_fn_not_supported, /* string , bool*/
 
         math_opr_fn_not_supported,    /* bool , int */
@@ -1831,6 +1846,15 @@ math_plus_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
                     return MEXPR_DTYPE_INVALID;
             }
             break;                 
+        case MEXPR_DTYPE_STRING:
+            switch (rd) {
+                case MEXPR_DTYPE_STRING:
+                 case MEXPR_DTYPE_UNKNOWN:
+                    return MEXPR_DTYPE_STRING;
+                default:
+                    return MEXPR_DTYPE_INVALID;
+            }
+            break;
         default:
              return MEXPR_DTYPE_INVALID;
     }

@@ -133,10 +133,8 @@ mexpr_debug_print_expression_tree (mexpt_node_t *root) ;
 void 
 mexpt_destroy (mexpt_node_t *root, bool free_data_src);
 
-mexpr_tree_res_t
-mexpt_evaluate (mexpt_node_t *root);
 mexpr_var_t
-mexpt_evaluate_new (mexpt_node_t *root);
+mexpt_evaluate (mexpt_node_t *root);
 
 bool 
 mexpr_double_is_integer (double d);
@@ -153,8 +151,6 @@ mexpt_tree_install_operand_properties (
 
 bool
 mexpt_optimize (mexpt_node_t *root);
-bool
-mexpt_optimize_new (mexpt_node_t *root);
 
 uint8_t 
 mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_data_src) ;

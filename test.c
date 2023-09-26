@@ -243,7 +243,7 @@ main (int argc, char **argv) {
         printf ("Print Exp Tree Before Optimization\n");
         mexpr_debug_print_expression_tree (tree->root);
         printf("\n");
-        mexpt_optimize_new (tree->root);
+        mexpt_optimize (tree->root);
         printf ("Print Exp Tree After Optimization\n");
         mexpr_debug_print_expression_tree (tree->root);
         printf ("\n");
@@ -263,11 +263,11 @@ main (int argc, char **argv) {
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "c") == 0) {
 
-                                mexpt_tree_install_operand_properties (node, true, 
+                                mexpt_tree_install_operand_properties (node, false, 
                                     NULL, compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "d") == 0) {
-                                mexpt_tree_install_operand_properties (node, true, 
+                                mexpt_tree_install_operand_properties (node, false, 
                                     NULL, compute_opd_value_fn); 
                 }                
             }mexpt_iterate_operands_end(tree, node);
@@ -290,12 +290,12 @@ main (int argc, char **argv) {
         printf ("No of unresolved operands removed = %d\n", cnt);
 
         if (cnt) {
-            mexpt_optimize_new (tree->root);
+            mexpt_optimize (tree->root);
             printf ("Print Exp Tree After Optimization\n");
             mexpr_debug_print_expression_tree (tree->root);
         }
 #endif 
-        res = mexpt_evaluate_new (tree->root);
+        res = mexpt_evaluate (tree->root);
         
         if (res.dtype== MEXPR_DTYPE_INVALID) {
 
