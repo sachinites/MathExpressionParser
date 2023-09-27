@@ -6,33 +6,33 @@
 #include "ParserMexpr.h"
 
 
-static mexpr_tree_res_t 
-compute_opd_value_fn (unsigned char *opd_name,  void *data_src) {
 
-    mexpr_tree_res_t  res;
 
-    if (strcmp (opd_name, "a") == 0) {
-        res.retc = numeric_type_t;
-        res.u.ovalue = (double)2;
+#include "MexprEnums.h"
+
+static mexpr_var_t
+compute_opd_value_fn (void *data_src) {
+
+    mexpr_var_t res;
+
+    if ((char)data_src == 'a') {
+        res.dtype = MEXPR_DTYPE_INT;
+        res.u.int_val = 2;
     }
 
-    else if (strcmp (opd_name, "b") == 0) {
-        res.retc = numeric_type_t;
-        res.u.ovalue = (double)3;
+    else if ((char)data_src == 'b') {
+        res.dtype = MEXPR_DTYPE_DOUBLE;
+        res.u.d_val = (double)3;
     }
 
-    else if (strcmp (opd_name, "c") == 0) {
-        res.retc = alphanum_type_t;
-        res.u.o_str_value = "Abhishek";
-        //res.retc = numeric_type_t;
-        //res.u.ovalue = (double)4;
+    else if ((char)data_src == 'c') {
+        res.dtype = MEXPR_DTYPE_STRING;
+        res.u.str_val = "Abhishek";
     }
 
-    else if (strcmp (opd_name, "d") == 0) {
-        res.retc = alphanum_type_t;
-        res.u.o_str_value = "Sagar";
-        //res.retc = numeric_type_t;
-        //res.u.ovalue = (double)5;
+    else if ((char)data_src == 'd') {
+        res.dtype = MEXPR_DTYPE_STRING;
+        res.u.str_val = "Sagar";
     }
 
     return res;
@@ -255,20 +255,20 @@ main (int argc, char **argv) {
 
                 if (strcmp (node->u.opd_node.opd_value.variable_name, "a") == 0) {
                                    mexpt_tree_install_operand_properties (node, true, 
-                                             NULL, compute_opd_value_fn); 
+                                             (void *)'a', compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "b") == 0) {
                                 mexpt_tree_install_operand_properties (node, true, 
-                                    NULL, compute_opd_value_fn); 
+                                    (void *)'b', compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "c") == 0) {
 
                                 mexpt_tree_install_operand_properties (node, false, 
-                                    NULL, compute_opd_value_fn); 
+                                    (void *)'c', compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "d") == 0) {
                                 mexpt_tree_install_operand_properties (node, false, 
-                                    NULL, compute_opd_value_fn); 
+                                    (void *)'d', compute_opd_value_fn); 
                 }                
             }mexpt_iterate_operands_end(tree, node);
         }

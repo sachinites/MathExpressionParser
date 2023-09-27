@@ -23,29 +23,6 @@
 
 
 typedef struct mexpt_tree_ mexpt_tree_t;
-
-typedef enum ret_codes_ {
-
-    numeric_type_t        =   -1,
-    boolean_type_t        =    0,
-    alphanum_type_t     =    1,
-    failure_type_t          =    2,
-    unresolved_type_t   =    3,
-
-} ret_codes_t;
-
-typedef struct res_{
-
-    ret_codes_t retc;
-
-    union {
-        bool rc;
-        double ovalue;
-        unsigned char *o_str_value;
-    }u;
-   
-} mexpr_tree_res_t; 
-
 typedef struct mexpt_node_  mexpt_node_t;
 
 struct mexpt_node_ {
@@ -63,9 +40,10 @@ struct mexpt_node_ {
         /* Below fields are relevant only when this node is operand nodes*/
         struct {
 
-            bool is_numeric;     /* Is this Operand Number or AlphaNumberic ?*/
+            
             bool is_resolved;
-
+            
+            bool is_numeric;     /* Is this Operand Number or AlphaNumberic ?*/
             union {
                 double math_val;
                 unsigned char string_name[MEXPR_TREE_OPERAND_LEN_MAX];
@@ -73,7 +51,7 @@ struct mexpt_node_ {
             } opd_value;
 
             void *data_src;
-            mexpr_tree_res_t (*compute_fn_ptr) (unsigned char *, void *);
+            mexpr_var_t (*compute_fn_ptr) (void *);
             
         } opd_node;
 
@@ -147,7 +125,7 @@ mexpt_tree_install_operand_properties (
                 mexpt_node_t *node,
                 bool is_numeric,
                 void *data_src,
-                mexpr_tree_res_t (*compute_fn_ptr)(unsigned char*, void *)) ;
+                mexpr_var_t (*compute_fn_ptr)(void *)) ;
 
 bool
 mexpt_optimize (mexpt_node_t *root);

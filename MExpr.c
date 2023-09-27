@@ -546,7 +546,7 @@ mexpt_tree_install_operand_properties (
                 mexpt_node_t *node,
                 bool is_numeric,
                 void *data_src,
-                mexpr_tree_res_t (*compute_fn_ptr)(unsigned char *, void *)) {
+                mexpr_var_t (*compute_fn_ptr)(void *)) {
 
     assert (node->token_code == MATH_IDENTIFIER ||
                 node->token_code == MATH_IDENTIFIER_IDENTIFIER);
@@ -692,24 +692,6 @@ mexpt_clone (mexpt_tree_t *tree) {
 
 #include "MexprDb.c"
 
-static void 
-mexpr_convert_res_to_var (mexpr_tree_res_t *res, mexpr_var_t *var) {
-
-    var->dtype = (res->retc == numeric_type_t ) ? MEXPR_DTYPE_DOUBLE : MEXPR_DTYPE_STRING;
-
-    switch (var->dtype) {
-
-        case MEXPR_DTYPE_DOUBLE:
-            var->u.d_val = res->u.ovalue;
-            break;
-        case MEXPR_DTYPE_STRING:
-            var->u.str_val = res->u.o_str_value;
-            break;
-        default:
-            assert(0);
-    }
-}
-
  mexpr_var_t 
 mexpt_compute (int opr_token_code,
                             mexpr_var_t lrc,
@@ -741,10 +723,10 @@ mexpt_evaluate (mexpt_node_t *root)  {
                     res.dtype = MEXPR_DTYPE_INVALID;
                     return res;
                 }
-               mexpr_tree_res_t temp_rc =  root->u.opd_node.compute_fn_ptr(
-                        root->u.opd_node.opd_value.variable_name,
+                res.dtype = root->u.opd_node.is_numeric ? MEXPR_DTYPE_DOUBLE : 
+                                    MEXPR_DTYPE_STRING;
+                res =  root->u.opd_node.compute_fn_ptr(
                         root->u.opd_node.data_src);
-                mexpr_convert_res_to_var (&temp_rc, &res);
                 return res;
             case MATH_INTEGER_VALUE:
                 res.dtype = MEXPR_DTYPE_INT;
