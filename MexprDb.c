@@ -1781,7 +1781,6 @@ math_min_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
             }
             break;       
 
-
         case MEXPR_DTYPE_STRING:
 
             switch (ld) {
@@ -1857,6 +1856,8 @@ math_plus_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
                 case MEXPR_DTYPE_INT:
                 case MEXPR_DTYPE_DOUBLE:
                     return MEXPR_DTYPE_DOUBLE;
+                case MEXPR_DTYPE_STRING:
+                    return MEXPR_DTYPE_STRING;
                 case MEXPR_DTYPE_UNKNOWN:
                     return MEXPR_DTYPE_UNKNOWN;
                 default:

@@ -5,7 +5,7 @@ A Grammar to parse mathematical expression !
 
 1. E -> E + T | E - T | T
 2. T -> T * F | T / F | F
-3. F -> ( E ) | INTEGER | DECIMAL | VAR
+3. F -> ( E ) | INTEGER | DECIMAL | VAR | 'SENTENCE'
 
 Grammar for Inequalities : 
 
@@ -16,7 +16,7 @@ Overall Grammar is :
 1. Q -> E Ineq E | (Q)  
 2. E -> E + T | E - T | T
 3. T -> T * F | T / F | F
-4. F -> ( E ) | INTEGER | DECIMAL | VAR
+4. F -> ( E ) | INTEGER | DECIMAL | VAR | 'SENTENCE'
 
 Now remove left recursion from it :
 
@@ -38,7 +38,7 @@ Combining everything, final grammar is for computing one Inequality
 3. E'  ->  + T E' | - T E' |  $
 4. T  ->   F T'
 5. T' ->   * F T' |   / F T'  |  $
-6. F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | G ( E, E)
+6. F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | G ( E, E) | 'SENTENCE'
 7. P -> sqrt | sqr | sin        // urinary fns
 8. G -> max | min | pow   // binary functions 
 
@@ -229,16 +229,18 @@ F () {
 
     RESTORE_CHKP(initial_chkp);
 
-    // INTEGER | DECIMAL | VAR
+    // INTEGER | DECIMAL | VAR | 'SENTENCE'
     do {
 
         token_code = cyylex();
 
         switch (token_code) {
+            
             case MATH_INTEGER_VALUE:
             case MATH_DOUBLE_VALUE:
             case MATH_IDENTIFIER:
             case MATH_IDENTIFIER_IDENTIFIER:
+            case MATH_STRING_VALUE:
                 RETURN_PARSE_SUCCESS;
             default:
                 break;

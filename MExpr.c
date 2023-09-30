@@ -389,8 +389,10 @@ mexpr_create_mexpt_node (
             mexpt_node->token_code = token_id;
             return mexpt_node;
         case MATH_STRING_VALUE:
-            strncpy (mexpt_node->u.opd_node.opd_value.string_name, operand, 
-                sizeof (mexpt_node->u.opd_node.opd_value.string_name));
+            assert (len + 2 <= sizeof (mexpt_node->u.opd_node.opd_value.string_name));
+            strncpy (mexpt_node->u.opd_node.opd_value.string_name, 
+                         (char *)operand + 1,  // skip ' or "
+                         len -2);
             mexpt_node->u.opd_node.is_resolved = true;
             mexpt_node->u.opd_node.is_numeric = false;
             mexpt_node->token_code = token_id;
@@ -1160,8 +1162,6 @@ mexpt_optimize (mexpt_node_t *root) {
 
     case MATH_MUL:
     case MATH_DIV:
-    case MATH_MAX:
-    case MATH_MIN:
     case MATH_POW:
             if (!lrc || !rrc) return false;
             lchild = root->left;
@@ -1184,6 +1184,52 @@ mexpt_optimize (mexpt_node_t *root) {
             return true;     
         break;              
 
+    case MATH_MAX:
+    case MATH_MIN:
+            if (!lrc || !rrc) return false;
+            lchild = root->left;
+            rchild = root->right;
+
+            if (lchild->u.opd_node.is_numeric) {
+                lval.dtype = MEXPR_DTYPE_DOUBLE;
+                lval.u.d_val = lchild->u.opd_node.opd_value.math_val ;
+            }
+            else {
+                lval.dtype = MEXPR_DTYPE_STRING;
+                lval.u.str_val = lchild->u.opd_node.opd_value.string_name;
+            }
+            if (rchild->u.opd_node.is_numeric) {
+                rval.dtype = MEXPR_DTYPE_DOUBLE;
+                rval.u.d_val = rchild->u.opd_node.opd_value.math_val ;
+            }
+            else {
+                rval.dtype = MEXPR_DTYPE_STRING;
+                rval.u.str_val = rchild->u.opd_node.opd_value.string_name;
+            }         
+
+            res = mexpt_compute (root->token_code, lval, rval);
+
+            if (res.dtype == MEXPR_DTYPE_DOUBLE) {
+                root->token_code = MATH_DOUBLE_VALUE;
+                root->u.opd_node.is_numeric = true;
+                root->u.opd_node.opd_value.math_val = res.u.d_val;
+            }
+            else if (res.dtype == MEXPR_DTYPE_STRING) {
+                root->token_code = MATH_STRING_VALUE;
+                root->u.opd_node.is_numeric = false;
+                memset (root->u.opd_node.opd_value.string_name, 0,
+                    sizeof (root->u.opd_node.opd_value.string_name));
+                strncpy(root->u.opd_node.opd_value.string_name,
+                    res.u.str_val, sizeof (root->u.opd_node.opd_value.string_name));
+            }
+
+            root->u.opd_node.is_resolved = true;
+            mexpt_destroy(root->left, true);
+            mexpt_destroy(root->right, true);
+            root->left = NULL;
+            root->right = NULL;
+            return true;     
+        break;           
 
         default:
             assert(0);

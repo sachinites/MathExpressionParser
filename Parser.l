@@ -266,9 +266,29 @@ lex_set_scan_buffer (const char *buffer) {
     return MATH_IDENTIFIER_IDENTIFIER;
 }
 
+'[^']*' {
+    // string enclosed within single quotes
+    return MATH_STRING_VALUE;
+}
+
+\"[^"]*\" {
+    // string enclosed within double quotes
+    return MATH_STRING_VALUE;
+}
+
+
 . {
-    printf ("Non parsable character : %c\n", *yytext);
-    exit(0);
+    // ignore any other character
 }
 
 %%
+
+#if 0
+int 
+main (int argc) {
+
+    int token_code = cyylex();
+    printf ("token_code = %d,  token = %s \n", token_code, yytext);
+    return 0;
+}
+#endif
