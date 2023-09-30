@@ -348,7 +348,7 @@ mexpt_compute (int opr_token_code,
                             mexpr_var_t lrc,
                             mexpr_var_t rrc);
 
-static mexpt_node_t*
+mexpt_node_t*
 mexpr_create_mexpt_node (
                 int token_id,
                 int len,
@@ -370,6 +370,7 @@ mexpr_create_mexpt_node (
 
         case MATH_IDENTIFIER:
         case MATH_IDENTIFIER_IDENTIFIER:
+            assert (len < sizeof(mexpt_node->u.opd_node.opd_value.variable_name));
             strncpy(mexpt_node->u.opd_node.opd_value.variable_name, operand, len);
             mexpt_node->u.opd_node.is_resolved = false;
             mexpt_node->u.opd_node.is_numeric = false;

@@ -34,9 +34,9 @@ math_less_than_eq_opr_fn_int_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
     ret.dtype = MEXPR_DTYPE_BOOL;
 
     int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double ropnd_val = rrc.u.d_val;
 
-    ret.u.b_val = lopnd_val <= ropnd_val;
+    ret.u.b_val = ((double)lopnd_val <= ropnd_val);
     return ret;
 }
 
@@ -49,10 +49,10 @@ math_less_than_eq_opr_fn_double_int_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
     int ropnd_val = rrc.u.int_val;
 
-    ret.u.b_val = lopnd_val <= ropnd_val;
+    ret.u.b_val = lopnd_val <= (double)ropnd_val;
     return ret;
 }
 
@@ -65,8 +65,8 @@ math_less_than_eq_opr_fn_double_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double lopnd_val = lrc.u.int_val;
+    double ropnd_val = rrc.u.int_val;
 
     ret.u.b_val = lopnd_val <= ropnd_val;
     return ret;
@@ -100,9 +100,9 @@ math_less_than_opr_fn_int_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
     ret.dtype = MEXPR_DTYPE_BOOL;
 
     int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double ropnd_val = rrc.u.d_val;
 
-    ret.u.b_val = lopnd_val < ropnd_val;
+    ret.u.b_val = (double)lopnd_val < ropnd_val;
     return ret;
 }
 
@@ -115,10 +115,10 @@ math_less_than_opr_fn_double_int_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
     int ropnd_val = rrc.u.int_val;
 
-    ret.u.b_val = lopnd_val < ropnd_val;
+    ret.u.b_val = lopnd_val < (double)ropnd_val;
     return ret;
 }
 
@@ -131,8 +131,8 @@ math_less_than_opr_fn_double_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
+    double ropnd_val = rrc.u.d_val;
 
     ret.u.b_val = lopnd_val < ropnd_val;
     return ret;
@@ -166,9 +166,9 @@ math_greater_than_opr_fn_int_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
     ret.dtype = MEXPR_DTYPE_BOOL;
 
     int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double ropnd_val = rrc.u.d_val;
 
-    ret.u.b_val = lopnd_val > ropnd_val;
+    ret.u.b_val = (double)lopnd_val > ropnd_val;
     return ret;
 }
 
@@ -181,10 +181,10 @@ math_greater_than_opr_fn_double_int_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
     int ropnd_val = rrc.u.int_val;
 
-    ret.u.b_val = lopnd_val > ropnd_val;
+    ret.u.b_val = lopnd_val > (double)ropnd_val;
     return ret;
 }
 
@@ -197,8 +197,8 @@ math_greater_than_opr_fn_double_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
+    double ropnd_val = rrc.u.d_val;
 
     ret.u.b_val = lopnd_val > ropnd_val;
     return ret;
@@ -231,9 +231,9 @@ math_equal_opr_fn_int_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
     ret.dtype = MEXPR_DTYPE_BOOL;
 
     int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double ropnd_val = rrc.u.d_val;
 
-    ret.u.b_val = (lopnd_val == ropnd_val);
+    ret.u.b_val = ((double)lopnd_val == ropnd_val);
     return ret;
 }
 
@@ -246,10 +246,10 @@ math_equal_opr_fn_double_int_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
     int ropnd_val = rrc.u.int_val;
 
-    ret.u.b_val = (lopnd_val == ropnd_val);
+    ret.u.b_val = (lopnd_val == (double)ropnd_val);
     return ret;
 }
 
@@ -262,8 +262,8 @@ math_equal_opr_fn_double_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
+    double ropnd_val = rrc.u.d_val;
 
     ret.u.b_val = (lopnd_val == ropnd_val);
     return ret;
@@ -314,9 +314,9 @@ math_nequal_opr_fn_int_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
     ret.dtype = MEXPR_DTYPE_BOOL;
 
     int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double ropnd_val = rrc.u.d_val;
 
-    ret.u.b_val = (lopnd_val != ropnd_val);
+    ret.u.b_val = ((double)lopnd_val != ropnd_val);
     return ret;
 }
 
@@ -329,10 +329,10 @@ math_nequal_opr_fn_double_int_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
     int ropnd_val = rrc.u.int_val;
 
-    ret.u.b_val = (lopnd_val != ropnd_val);
+    ret.u.b_val = (lopnd_val != (double)ropnd_val);
     return ret;
 }
 
@@ -345,8 +345,8 @@ math_nequal_opr_fn_double_double_bool (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     ret.dtype = MEXPR_DTYPE_BOOL;
 
-    int lopnd_val = lrc.u.int_val;
-    int ropnd_val = rrc.u.int_val;
+    double lopnd_val = lrc.u.d_val;
+    double ropnd_val = rrc.u.d_val;
 
     ret.u.b_val = (lopnd_val != ropnd_val);
     return ret;
@@ -486,7 +486,7 @@ math_div_opr_fn_int_double_double (mexpr_var_t lrc, mexpr_var_t rrc) {
         return ret;
     }
     
-    ret.u.d_val= (double) (lrc.u.int_val / rrc.u.d_val);
+    ret.u.d_val= (double) ((double)lrc.u.int_val / rrc.u.d_val);
     return ret;
 }
 
@@ -506,7 +506,7 @@ math_div_opr_fn_double_int_double (mexpr_var_t lrc, mexpr_var_t rrc) {
         return ret;
     }
     
-    ret.u.d_val= (double) (lrc.u.int_val / rrc.u.d_val);
+    ret.u.d_val= (double) (lrc.u.d_val / (double)rrc.u.int_val);
     return ret;
 }
 

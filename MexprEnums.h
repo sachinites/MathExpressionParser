@@ -6,7 +6,7 @@
 /* Update the values of these enums to match with the values used by 
     External project which is using this MathExpression Library*/
 
-#define MEXPR_TREE_OPERAND_LEN_MAX  128
+#define MEXPR_TREE_OPERAND_LEN_MAX  192
 #define MEXPR_MAX_STRING_VAL_LEN    256
 #define MAX_EXPR_LEN    512
 #define MEXPR_INVALID_ID   INT32_MAX
@@ -53,15 +53,15 @@ typedef enum mexpr_opnd_enums_ {
 } mexpr_opnd_enums_t;
 
 typedef enum mexpr_generic_enums_ {
-        
-        MATH_IDENTIFIER = MATH_OPRND_MAX + 1,
-        MATH_IDENTIFIER_IDENTIFIER,
-        MATH_COMMA,
-        MATH_MAX_CODE
+
+    MATH_IDENTIFIER = MATH_OPRND_MAX + 1,
+    MATH_IDENTIFIER_IDENTIFIER,
+    MATH_COMMA,
+    MATH_MAX_CODE
 
 } mexpr_generic_enums_t;
 
-#define MEXPR_LIB_MAX_COdE_USED MATH_MAX_CODE
+#define MEXPR_LIB_MAX_CODE_USED MATH_MAX_CODE
 
 
 typedef enum mexpr_dtypes_ {

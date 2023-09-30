@@ -102,6 +102,12 @@ mexpt_tree_t *
 mexpr_convert_postfix_to_expression_tree (
                                     lex_data_t **lex_data, int size) ;
 
+mexpt_node_t*
+mexpr_create_mexpt_node (
+                int token_id,
+                int len,
+                void *operand);
+
 void 
 mexpr_print_mexpt_node (mexpt_node_t *root);
 
@@ -135,5 +141,12 @@ mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_data_src) ;
 
 mexpt_tree_t *
 mexpt_clone (mexpt_tree_t *tree);
+
+static inline bool  
+mexpt_node_is_operand (mexpt_node_t *node) {
+
+    return (node->token_code == MATH_IDENTIFIER ||
+        node->token_code == MATH_IDENTIFIER_IDENTIFIER) ;
+}
 
 #endif 
