@@ -42,8 +42,9 @@ struct mexpt_node_ {
 
             
             bool is_resolved;
+            bool is_numeric;     /* Is this Operand constant Number or constant AlphaNumberic ?*/
             
-            bool is_numeric;     /* Is this Operand Number or AlphaNumberic ?*/
+            /* ToDo : Replace this union with mexpr_var_t */
             union {
                 double math_val;
                 unsigned char string_name[MEXPR_TREE_OPERAND_LEN_MAX];
@@ -129,7 +130,6 @@ mexpr_validate_expression_tree (mexpt_tree_t *);
 void 
 mexpt_tree_install_operand_properties (
                 mexpt_node_t *node,
-                bool is_numeric,
                 void *data_src,
                 mexpr_var_t (*compute_fn_ptr)(void *)) ;
 
@@ -148,5 +148,10 @@ mexpt_node_is_operand (mexpt_node_t *node) {
     return (node->token_code == MATH_IDENTIFIER ||
         node->token_code == MATH_IDENTIFIER_IDENTIFIER) ;
 }
+
+void 
+mexpt_concatenate_mexpt_trees (mexpt_tree_t *parent_tree, 
+                                                       mexpt_node_t *leaf_node,
+                                                       mexpt_tree_t *child_tree);
 
 #endif 

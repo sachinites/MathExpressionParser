@@ -547,14 +547,12 @@ mexpr_double_is_integer (double d) {
 void 
 mexpt_tree_install_operand_properties (
                 mexpt_node_t *node,
-                bool is_numeric,
                 void *data_src,
                 mexpr_var_t (*compute_fn_ptr)(void *)) {
 
     assert (node->token_code == MATH_IDENTIFIER ||
                 node->token_code == MATH_IDENTIFIER_IDENTIFIER);
 
-    node->u.opd_node.is_numeric = is_numeric;
     node->u.opd_node.is_resolved = true;
     node->u.opd_node.data_src =  data_src;
     node->u.opd_node.compute_fn_ptr = compute_fn_ptr;
@@ -1234,4 +1232,55 @@ mexpt_optimize (mexpt_node_t *root) {
         default:
             assert(0);
     }
+}
+
+void 
+mexpt_concatenate_mexpt_trees (mexpt_tree_t *parent_tree, 
+                                                       mexpt_node_t *leaf_node,
+                                                       mexpt_tree_t *child_tree) {
+
+    mexpt_node_t *curr_node;
+
+    assert (leaf_node->left == NULL && leaf_node->right == NULL);
+    assert (child_tree->root);
+    assert (leaf_node->token_code == MATH_IDENTIFIER ||
+                leaf_node->token_code == MATH_IDENTIFIER_IDENTIFIER);
+    assert (!leaf_node->u.opd_node.is_resolved);
+
+    if (!leaf_node->parent) {
+        assert (parent_tree->root == leaf_node);
+        free(leaf_node);
+        parent_tree->root = child_tree->root;
+        child_tree->root = NULL;
+        parent_tree->opd_list_head.lst_right = child_tree->opd_list_head.lst_right;
+        parent_tree->opd_list_head.lst_right->lst_left = &parent_tree->opd_list_head;
+        free(child_tree);
+        return;
+    }
+
+    mexpt_node_t *parent_node = leaf_node->parent;
+
+    if (parent_node->left == leaf_node)
+        parent_node->left = child_tree->root;
+    else
+        parent_node->right = child_tree->root;
+
+    child_tree->root->parent = parent_node;
+    child_tree->root = NULL;
+
+    mexpt_node_remove_list (leaf_node);
+    free(leaf_node);
+
+    mexpt_iterate_operands_begin (parent_tree, curr_node) {
+
+        if (!curr_node->lst_right) break;
+
+    } mexpt_iterate_operands_end (parent_tree, curr_node) ;
+
+    if (!curr_node) {
+        curr_node = &parent_tree->opd_list_head;
+    }
+     curr_node->lst_right = child_tree->opd_list_head.lst_right;
+     curr_node->lst_right->lst_left = curr_node;
+     free(child_tree);
 }

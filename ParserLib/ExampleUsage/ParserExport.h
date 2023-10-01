@@ -62,7 +62,7 @@ extern void process_white_space(int n) ;
     
 #define CHECK_FOR_EOL                \
     {token_code = cyylex();                   \
-    if (token_code == PARSER_EOL) {                \
+    if (token_code == EOL) {                \
         RETURN_PARSE_SUCCESS;   \
     }}
 
@@ -91,5 +91,6 @@ extern void lex_set_scan_buffer (const char *buffer) ;
 /* Common Codes */
 #define PARSER_EOL  10000
 #define PARSER_QUIT 10001
+#define PARSER_WHITE_SPACE  10002
 
 #endif 

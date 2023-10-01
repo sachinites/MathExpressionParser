@@ -78,7 +78,7 @@ process_white_space(int n) {
 
     lex_data_t lex_data;
     curr_ptr += n;
-    lex_data.token_code = 0;
+    lex_data.token_code = PARSER_WHITE_SPACE;
     lex_data.token_len = n;
     lex_data.token_val = NULL;
     lex_push(lex_data);
@@ -152,12 +152,12 @@ lex_set_scan_buffer (const char *buffer) {
     return MATH_BRACKET_END;
 }
 
-"<" {
-    return MATH_LESS_THAN;
-}
-
 "<=" {
     return MATH_LESS_THAN_EQ;
+}
+
+"<" {
+    return MATH_LESS_THAN;
 }
 
 ">" {
@@ -194,6 +194,10 @@ lex_set_scan_buffer (const char *buffer) {
 
 "/" {
     return MATH_DIV;
+}
+
+"," {
+    return MATH_COMMA;
 }
 
 "sqrt" {
@@ -262,9 +266,29 @@ lex_set_scan_buffer (const char *buffer) {
     return MATH_IDENTIFIER_IDENTIFIER;
 }
 
+'[^']*' {
+    // string enclosed within single quotes
+    return MATH_STRING_VALUE;
+}
+
+\"[^"]*\" {
+    // string enclosed within double quotes
+    return MATH_STRING_VALUE;
+}
+
+
 . {
-    printf ("Non parsable character : %c\n", *yytext);
-    exit(0);
+    // ignore any other character
 }
 
 %%
+
+#if 0
+int 
+main (int argc) {
+
+    int token_code = cyylex();
+    printf ("token_code = %d,  token = %s \n", token_code, yytext);
+    return 0;
+}
+#endif

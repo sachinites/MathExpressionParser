@@ -3,6 +3,7 @@
 
 /* Change the path to this file as per the Parser.l file 
      you are using */
-#include "ParserExport.h"
+//#include "ParserExport.h"
+#include "../RDBMSImplementation/SqlParser/ParserExport.h"
 
 #endif 

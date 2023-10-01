@@ -17,17 +17,17 @@ compute_opd_value_fn (void *data_src) {
 
     if ((char)data_src == 'a') {
         res.dtype = MEXPR_DTYPE_INT;
-        res.u.int_val = 2;
+        res.u.int_val = 1;
     }
 
     else if ((char)data_src == 'b') {
         res.dtype = MEXPR_DTYPE_DOUBLE;
-        res.u.d_val = (double)3;
+        res.u.d_val = (double)4;
     }
 
     else if ((char)data_src == 'c') {
-        res.dtype = MEXPR_DTYPE_STRING;
-        res.u.str_val = "Abhishek";
+        res.dtype = MEXPR_DTYPE_DOUBLE;
+        res.u.d_val = 4;
     }
 
     else if ((char)data_src == 'd') {
@@ -254,20 +254,20 @@ main (int argc, char **argv) {
             mexpt_iterate_operands_begin(tree, node) {
 
                 if (strcmp (node->u.opd_node.opd_value.variable_name, "a") == 0) {
-                                   mexpt_tree_install_operand_properties (node, true, 
+                                   mexpt_tree_install_operand_properties (node,
                                              (void *)'a', compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "b") == 0) {
-                                mexpt_tree_install_operand_properties (node, true, 
+                                mexpt_tree_install_operand_properties (node, 
                                     (void *)'b', compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "c") == 0) {
 
-                                mexpt_tree_install_operand_properties (node, false, 
+                                mexpt_tree_install_operand_properties (node, 
                                     (void *)'c', compute_opd_value_fn); 
                 }
                 else if (strcmp (node->u.opd_node.opd_value.variable_name, "d") == 0) {
-                                mexpt_tree_install_operand_properties (node, false, 
+                                mexpt_tree_install_operand_properties (node, 
                                     (void *)'d', compute_opd_value_fn); 
                 }                
             }mexpt_iterate_operands_end(tree, node);

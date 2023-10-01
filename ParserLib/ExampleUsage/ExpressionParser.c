@@ -5,7 +5,7 @@ A Grammar to parse mathematical expression !
 
 1. E -> E + T | E - T | T
 2. T -> T * F | T / F | F
-3. F -> ( E ) | INTEGER | DECIMAL | VAR
+3. F -> ( E ) | INTEGER | DECIMAL | VAR | 'SENTENCE'
 
 Grammar for Inequalities : 
 
@@ -16,7 +16,7 @@ Overall Grammar is :
 1. Q -> E Ineq E | (Q)  
 2. E -> E + T | E - T | T
 3. T -> T * F | T / F | F
-4. F -> ( E ) | INTEGER | DECIMAL | VAR
+4. F -> ( E ) | INTEGER | DECIMAL | VAR | 'SENTENCE'
 
 Now remove left recursion from it :
 
@@ -38,7 +38,7 @@ Combining everything, final grammar is for computing one Inequality
 3. E'  ->  + T E' | - T E' |  $
 4. T  ->   F T'
 5. T' ->   * F T' |   / F T'  |  $
-6. F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | G ( E, E)
+6. F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | G ( E, E) | 'SENTENCE'
 7. P -> sqrt | sqr | sin        // urinary fns
 8. G -> max | min | pow   // binary functions 
 
@@ -147,7 +147,7 @@ Ineq () {
 
     switch(token_code) {
         case MATH_LESS_THAN:
-	case MATH_LESS_THAN_EQ:
+	    case MATH_LESS_THAN_EQ:
         case MATH_GREATER_THAN:
         case MATH_EQ:
         case MATH_NOT_EQ:
@@ -229,16 +229,18 @@ F () {
 
     RESTORE_CHKP(initial_chkp);
 
-    // INTEGER | DECIMAL | VAR
+    // INTEGER | DECIMAL | VAR | 'SENTENCE'
     do {
 
         token_code = cyylex();
 
         switch (token_code) {
+            
             case MATH_INTEGER_VALUE:
             case MATH_DOUBLE_VALUE:
             case MATH_IDENTIFIER:
             case MATH_IDENTIFIER_IDENTIFIER:
+            case MATH_STRING_VALUE:
                 RETURN_PARSE_SUCCESS;
             default:
                 break;
@@ -673,74 +675,4 @@ S () {
    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
     RETURN_PARSE_SUCCESS;
-}
-
-/* main fn to demonstrate the Expression Parser */
-#include <stdio.h>
-int 
-main (int argc, char **argv) {
-
-    parse_init();
-
-    while (1) {
-        
-        printf ("Type Expr: ");
-        
-        fgets (lex_buffer, sizeof (lex_buffer), stdin);
-
-        if (lex_buffer[0] == '\n') {
-            lex_buffer[0] = 0;
-            continue;
-        }
-
-        lex_set_scan_buffer (lex_buffer);
-
-        do {
-
-            err = PARSER_CALL(S);
-
-            if (err == PARSE_SUCCESS) {
-
-                printf ("Logical Expression Parsed Successfully\n");
-                break;
-            }
-
-            err = PARSER_CALL(Q);
-
-            if (err == PARSE_SUCCESS) {
-
-                printf ("Inequality Expression Parsed Successfully\n");
-                break;
-            }
-
-            err = PARSER_CALL(E);
-
-            if (err == PARSE_SUCCESS) {
-
-                printf ("Math Expression Parsed Successfully\n");
-                break;
-            }
-
-        } while(0);
-
-        if (err == PARSE_ERR) {
-
-            printf ("Failed to parse Expression\n");
-            assert (curr_ptr == lex_buffer);
-            continue;
-        }        
-
-#if 0
-        /* Let us print the tokens*/
-        int len; void *value;
-        ITERATE_LEX_STACK_BEGIN(0 , INT32_MAX , token_code, len, value) {
-
-            printf ("token_code = %d,  len = %d,  value = %s\n", token_code, len, (char *)value);
-
-        } ITERATE_LEX_STACK_END;
-#endif 
-        Parser_stack_reset();
-    }
-
-    return 0;
 }
