@@ -495,7 +495,7 @@ mexpr_debug_print_expression_tree (mexpt_node_t *root) {
     mexpr_debug_print_expression_tree (root->right);
 }
 
-static void 
+void 
 mexpt_node_remove_list (mexpt_node_t *node) {
 
     if(!node->lst_left){
@@ -558,7 +558,7 @@ mexpt_tree_install_operand_properties (
     node->u.opd_node.compute_fn_ptr = compute_fn_ptr;
 }
 
-static mexpt_node_t *
+mexpt_node_t *
 mexpt_get_unresolved_operand_node (mexpt_tree_t *tree) {
 
     mexpt_node_t *opd_node;
@@ -1232,9 +1232,13 @@ mexpt_optimize (mexpt_node_t *root) {
         default:
             assert(0);
     }
+    assert(0);
+    return true;
 }
 
-void 
+/* Caution : If the function fails, the caller must assume that child_tree and leaf_node
+    are already freed memory and should not attempt to manipulate or free them again !*/
+bool
 mexpt_concatenate_mexpt_trees (mexpt_tree_t *parent_tree, 
                                                        mexpt_node_t *leaf_node,
                                                        mexpt_tree_t *child_tree) {
@@ -1255,7 +1259,7 @@ mexpt_concatenate_mexpt_trees (mexpt_tree_t *parent_tree,
         parent_tree->opd_list_head.lst_right = child_tree->opd_list_head.lst_right;
         parent_tree->opd_list_head.lst_right->lst_left = &parent_tree->opd_list_head;
         free(child_tree);
-        return;
+        return true;
     }
 
     mexpt_node_t *parent_node = leaf_node->parent;
@@ -1283,4 +1287,8 @@ mexpt_concatenate_mexpt_trees (mexpt_tree_t *parent_tree,
      curr_node->lst_right = child_tree->opd_list_head.lst_right;
      curr_node->lst_right->lst_left = curr_node;
      free(child_tree);
+
+     if (!mexpr_validate_expression_tree (parent_tree)) return false;
+     mexpt_optimize (parent_tree->root);
+     return true;
 }

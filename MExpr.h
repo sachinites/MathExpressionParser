@@ -136,6 +136,9 @@ mexpt_tree_install_operand_properties (
 bool
 mexpt_optimize (mexpt_node_t *root);
 
+mexpt_node_t *
+mexpt_get_unresolved_operand_node (mexpt_tree_t *tree);
+
 uint8_t 
 mexpt_remove_unresolved_operands (mexpt_tree_t *tree, bool free_data_src) ;
 
@@ -150,6 +153,9 @@ mexpt_node_is_operand (mexpt_node_t *node) {
 }
 
 void 
+mexpt_node_remove_list (mexpt_node_t *node) ;
+
+bool
 mexpt_concatenate_mexpt_trees (mexpt_tree_t *parent_tree, 
                                                        mexpt_node_t *leaf_node,
                                                        mexpt_tree_t *child_tree);
