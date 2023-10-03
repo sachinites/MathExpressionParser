@@ -38,7 +38,7 @@ typedef enum mexpr_opr_enums_ {
         MexprDb.c also*/
     MATH_BRACKET_START,
     MATH_BRACKET_END,
-    MATH_OPR_MAX
+    MATH_OPR_MAX,
 
 } mexpr_opr_enums_t;
 
