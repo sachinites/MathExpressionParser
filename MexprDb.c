@@ -961,16 +961,15 @@ math_opr_fn_not_supported (mexpr_var_t a, mexpr_var_t b) {
 // MATH_MOD
 
 static mexpr_var_t
-math_mod_opr_fn_int_int_double (mexpr_var_t a, mexpr_var_t b) {
+math_mod_opr_fn_int_int_double (mexpr_var_t lrc, mexpr_var_t rrc) {
 
     mexpr_var_t ret;
     assert (lrc.dtype == MEXPR_DTYPE_INT);
     assert (rrc.dtype == MEXPR_DTYPE_INT);
 
-
     ret.dtype = MEXPR_DTYPE_INT;
 
-    ret.u.int_val = a.u.int_val % b.u.int_val;
+    ret.u.int_val = lrc.u.int_val % rrc.u.int_val;
     return ret;
 }
 
