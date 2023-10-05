@@ -31,6 +31,7 @@ typedef enum mexpr_opr_enums_ {
     MATH_SIN,
     MATH_COS,
     MATH_POW,
+    MATH_MOD,
     /* Insert new Operators in the end*/
     
     /* If you have good reason to change the sequence

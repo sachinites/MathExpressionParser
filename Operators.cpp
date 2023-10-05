@@ -4,27 +4,42 @@
 #include "Operators.h"
 #include "Dtype.h"
 
+Operator::Operator() { }
+
+Operator::~Operator() { }
+
+Operator* 
+Operator::factory (mexprcpp_operators_t opr_code) {
+
+    switch (opr_code) {
+
+        case MATH_CPP_MOD:
+            return new OperatorMod();
+        case MATH_CPP_PLUS:
+            return new OperatorPlus();
+        case MATH_CPP_MINUS:
+            return new OperatorMinus();
+        case MATH_CPP_OPR_MAX:
+            return NULL;
+        default:
+            return NULL;
+    }
+    return NULL;
+}
+
+
+
+
 /* MOD operator */
 
-OperatorMod::OperatorMod() {
+OperatorMod::OperatorMod() { 
 
+     opid =  MATH_CPP_MOD;
+     name = "Mod";
+     is_unary = false;
 }
 
-OperatorMod::~OperatorMod() {
-
-    assert(0);
-}
-
-Operator *
-OperatorMod::GetInstance () {
-
-    if (OperatorMod::instance == NULL) {
-        OperatorMod::instance = new OperatorMod();
-        OperatorMod::opid = MATH_CPP_MOD;
-        name = "MOD";
-    }
-    return OperatorMod::instance;
-}
+OperatorMod::~OperatorMod() {  }
 
 mexprcpp_dtypes_t
 OperatorMod::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
@@ -59,7 +74,7 @@ OperatorMod::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     }
 }
 
-Dtype*
+Dtype *
 OperatorMod::compute(Dtype *dtype1, Dtype *dtype2) {
 
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
@@ -76,28 +91,30 @@ OperatorMod::compute(Dtype *dtype1, Dtype *dtype2) {
     return res;
 }
 
+MexprNode * 
+OperatorMod::clone() {
+
+    OperatorMod *obj = new OperatorMod();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
 
 /* PLUS operator */
 
-OperatorMinus::OperatorPlus() {
+OperatorPlus::OperatorPlus() { 
 
+     opid =  MATH_CPP_PLUS;
+     name = "Plus";
+     is_unary = false;
 }
 
-OperatorPlus::~OperatorPlus() {
-
-    assert(0);
-}
-
-Operator *
-OperatorPlus::GetInstance () {
-
-    if (OperatorPlus::instance == NULL) {
-        OperatorPlus::instance = new OperatorPlus();
-        OperatorPlus::opid = MATH_CPP_PLUS;
-        name = "ADD";
-    }
-    return OperatorPlus::instance;
-}
+OperatorPlus::~OperatorPlus() {  }
 
 mexprcpp_dtypes_t
 OperatorPlus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
@@ -194,7 +211,7 @@ OperatorPlus::compute(Dtype *dtype1, Dtype *dtype2) {
                 {
                     res = Dtype::factory (MATH_CPP_DOUBLE);
                     Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
-                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val +
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val +
                                                         dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
                     return res;
                 }
@@ -256,29 +273,30 @@ OperatorPlus::compute(Dtype *dtype1, Dtype *dtype2) {
     return NULL;
 }
 
+MexprNode * 
+OperatorPlus::clone() {
+
+    OperatorPlus *obj = new OperatorPlus();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 /* MINUS operator */
 
 OperatorMinus::OperatorMinus() {
 
+    opid = MATH_CPP_MINUS;
+    name = "Minus";
+    is_unary = false;
 }
 
-OperatorMinus::~OperatorMinus() {
-
-    assert(0);
-}
-
-Operator *
-OperatorMinus::GetInstance () {
-
-    if (OperatorMinus::instance == NULL) {
-        OperatorMinus::instance = new OperatorMinus();
-        OperatorMinus::opid = MATH_CPP_MINUS;
-        name = "SUB";
-    }
-    return OperatorMinus::instance;
-}
+OperatorMinus::~OperatorMinus() { }
 
 mexprcpp_dtypes_t
 OperatorMinus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
@@ -410,4 +428,15 @@ OperatorMinus::compute(Dtype *dtype1, Dtype *dtype2) {
     return NULL;
 }
 
+MexprNode * 
+OperatorMinus::clone() {
 
+    OperatorMinus *obj = new OperatorMinus();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}

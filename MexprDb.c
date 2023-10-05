@@ -958,6 +958,22 @@ math_opr_fn_not_supported (mexpr_var_t a, mexpr_var_t b) {
     return var;
 }
 
+// MATH_MOD
+
+static mexpr_var_t
+math_mod_opr_fn_int_int_double (mexpr_var_t a, mexpr_var_t b) {
+
+    mexpr_var_t ret;
+    assert (lrc.dtype == MEXPR_DTYPE_INT);
+    assert (rrc.dtype == MEXPR_DTYPE_INT);
+
+
+    ret.dtype = MEXPR_DTYPE_INT;
+
+    ret.u.int_val = a.u.int_val % b.u.int_val;
+    return ret;
+}
+
 static operator_fn_ptr_t MexprDb[MATH_OPR_MAX][MEXPR_DTYPE_MAX][MEXPR_DTYPE_MAX] =
     {
 
@@ -1372,6 +1388,28 @@ static operator_fn_ptr_t MexprDb[MATH_OPR_MAX][MEXPR_DTYPE_MAX][MEXPR_DTYPE_MAX]
         math_opr_fn_not_supported,    /* bool , string*/
         math_opr_fn_not_supported,    /* bool , bool*/
 
+
+      // ---------------  MATH_MOD
+
+        math_mod_opr_fn_int_int_double, /* int , int */
+        math_opr_fn_not_supported, /* int , double */
+        math_opr_fn_not_supported, /* int , string*/
+        math_opr_fn_not_supported,  /* int , bool*/
+
+        math_opr_fn_not_supported, /* double , int */
+        math_opr_fn_not_supported, /* double , double */
+        math_opr_fn_not_supported, /* double , string*/
+       math_opr_fn_not_supported, /* double , bool*/
+
+        math_opr_fn_not_supported, /* string , int */
+        math_opr_fn_not_supported, /* string , double */
+        math_opr_fn_not_supported, /* string , string*/
+        math_opr_fn_not_supported, /* string , bool*/
+
+        math_opr_fn_not_supported,    /* bool , int */
+        math_opr_fn_not_supported,    /* bool , double */
+        math_opr_fn_not_supported,    /* bool , string*/
+        math_opr_fn_not_supported,    /* bool , bool*/
 
 };
 
@@ -1956,6 +1994,26 @@ math_pow_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
     return MEXPR_DTYPE_INVALID;
 }
 
+
+static mexpr_dtypes_t 
+math_mod_dtypes_supported (mexpr_dtypes_t ld, mexpr_dtypes_t rd) {
+
+    if ( ld == MEXPR_DTYPE_INT  && rd == MEXPR_DTYPE_INT )
+        return MEXPR_DTYPE_INT;
+
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_INT)
+        return MEXPR_DTYPE_INT;
+
+    if (rd == MEXPR_DTYPE_UNKNOWN && ld == MEXPR_DTYPE_INT )
+        return MEXPR_DTYPE_INT;
+
+    if (ld == MEXPR_DTYPE_UNKNOWN && rd == MEXPR_DTYPE_UNKNOWN) 
+        return MEXPR_DTYPE_UNKNOWN;
+
+    return MEXPR_DTYPE_INVALID;
+}
+
+
 static operator_fn_dtypes_supported_ptr_t MexprDb_dtypes_supported[MATH_OPR_MAX] =
     {
         math_less_than_eq_dtypes_supported,
@@ -1976,6 +2034,7 @@ static operator_fn_dtypes_supported_ptr_t MexprDb_dtypes_supported[MATH_OPR_MAX]
         math_trignometry_dtypes_supported,
         math_trignometry_dtypes_supported,
         math_pow_dtypes_supported,
+        math_mod_dtypes_supported,
         0,
         0
     };

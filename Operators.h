@@ -2,38 +2,39 @@
 #define __OPERATORS__
 
 #include <stdbool.h>
+#include "MexprTree.h"
 #include "MExprcppEnums.h"
 
-class Dtype;
-
-class Operator {
+class Operator : public MexprNode {
 
 private:
-
+    
+protected:
+    Operator();
+    virtual ~Operator();
 public:
     int opid;
     std::string name;
     bool is_unary;
-   virtual Dtype *compute(Dtype *dtype1, Dtype *dtype2) = 0;
-   virtual Operator *GetInstance () = 0;
+   virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) = 0;
    virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) = 0;
-   virtual ~Operator() {};
+   virtual MexprNode * clone() = 0;
+   static Operator* factory (mexprcpp_operators_t opr_code);
 };
+
 
 /* MOD operator */
 
 class OperatorMod : public Operator {
 
 private:
-    static OperatorMod *instance;
-     OperatorMod();
-     
 
 public:
-    ~OperatorMod();
-    Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
-    Operator *GetInstance () override;
+     OperatorMod();
+     ~OperatorMod();
+    Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    MexprNode * clone() override;
 };
 
 
@@ -42,15 +43,13 @@ public:
 class OperatorPlus : public Operator {
 
 private:
-    static OperatorPlus *instance;
-     OperatorPlus();
-     
 
 public:
-    ~OperatorPlus();
-    Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
-    Operator *GetInstance () override;
+    OperatorPlus();
+     ~OperatorPlus();
+    Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    MexprNode * clone() override;
 };
 
 
@@ -60,15 +59,14 @@ public:
 class OperatorMinus : public Operator {
 
 private:
-    static OperatorMinus *instance;
-     OperatorMinus();
-     
 
 public:
-    ~OperatorMinus();
-    Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
-    Operator *GetInstance () override;
+    OperatorMinus();
+      ~OperatorMinus();
+   static OperatorMinus *GetOperMinusInstance ();
+    Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    MexprNode * clone() override;
 };
 
 
