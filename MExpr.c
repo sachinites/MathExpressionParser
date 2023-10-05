@@ -536,14 +536,6 @@ mexpt_destroy(mexpt_node_t *root, bool free_data_src) {
     }
 }
 
-bool 
-mexpr_double_is_integer (double d) {
-
-    double int_part = floor (d);
-    return int_part == d;
-}
-
-
 void 
 mexpt_tree_install_operand_properties (
                 mexpt_node_t *node,

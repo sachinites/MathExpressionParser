@@ -121,9 +121,6 @@ mexpt_destroy (mexpt_node_t *root, bool free_data_src);
 mexpr_var_t
 mexpt_evaluate (mexpt_node_t *root);
 
-bool 
-mexpr_double_is_integer (double d);
-
 bool
 mexpr_validate_expression_tree (mexpt_tree_t *);
 

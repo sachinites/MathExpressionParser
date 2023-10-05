@@ -26,12 +26,7 @@ class MexprNode {
         MexprNode *lst_right;
 };
 
-typedef struct lex_data_ {
-
-    int token_code;
-    int token_len;
-    uint8_t *token_val;
-} lex_data_t;
+typedef struct lex_data_ lex_data_t;
 
 class MexprTree {
 
@@ -61,6 +56,7 @@ class MexprTree {
         bool optimize(MexprNode *root);
         MexprNode *GetUnResolvedOperandNode();
         uint8_t  RemoveUnresolveOperands();
+        bool IsLoneVariableOperandNode();
 };
 
 #define MexprTree_Iterator_Operands_Begin(tree_ptr, node_ptr)  \

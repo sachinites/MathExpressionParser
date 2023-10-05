@@ -7,6 +7,14 @@
 
 #include "MiniStack.cpp"
 
+typedef struct lex_data_ {
+
+    int token_code;
+    int token_len;
+    uint8_t *token_val;
+} lex_data_t;
+
+
 MexprNode::MexprNode() {
 
     this->parent = NULL;
@@ -472,4 +480,20 @@ MexprTree::RemoveUnresolveOperands() {
     }
     this->optimize(this->root);
     return count;    
+}
+
+bool 
+MexprTree::IsLoneVariableOperandNode() {
+
+    MexprNode *opnd_node;
+
+    if (!this->root) return false;
+    if (this->root->left || this->root->right) return false;
+
+    opnd_node = this->lst_head;
+    if (!opnd_node) return false;
+
+    Dtype_VARIABLE *d_var = dynamic_cast <Dtype_VARIABLE *>(opnd_node);
+    assert (d_var);
+    return true;
 }

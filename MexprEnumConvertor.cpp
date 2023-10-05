@@ -3,6 +3,7 @@
 #include "../RDBMSImplementation/SqlParser/ParserExport.h"
 #include "MExprcppEnums.h"
 #include "../RDBMSImplementation/SqlParser/SqlParserStruct.h"
+#include "../RDBMSImplementation/core/rdbms_struct.h"
 
 #include "MiniStack.cpp"
 
@@ -238,3 +239,4 @@ Mexpr_Enum_Convertor (int external_code,
     assert(0);
     return 0;
 }
+
