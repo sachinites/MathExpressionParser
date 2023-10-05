@@ -108,6 +108,24 @@ class Dtype_WILDCARD : public Dtype {
 
 
 
+/* Dtype : Dtype_BOOL*/
+
+class Dtype_BOOL : public Dtype {
+
+    public:
+
+        struct {
+            bool b_val;
+        } dtype;
+        
+        Dtype_BOOL();
+        ~Dtype_BOOL();
+        Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
+        MexprNode * clone() override;
+};
+
+
+
 
 /* Dtype : Dtype_INVALID*/
 
@@ -135,6 +153,9 @@ class Dtype_VARIABLE : public Dtype {
         ~Dtype_VARIABLE();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
+        void  InstallOperandProperties (
+                void *data_src,
+                Dtype *(*compute_fn_ptr)(void *)) ;
 };
 
 

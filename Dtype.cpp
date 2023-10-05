@@ -172,6 +172,43 @@ Dtype_IPv4_addr::clone() {
 }
 
 
+/* Dtype : Dtype_BOOL */
+
+Dtype_BOOL::Dtype_BOOL () {
+
+    did = MATH_CPP_BOOL;
+}
+
+Dtype_BOOL::~Dtype_BOOL() {
+
+}
+
+Dtype *
+Dtype_BOOL::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *cpy = new Dtype_BOOL();
+    Dtype_BOOL *cpy_bool = dynamic_cast<Dtype_BOOL *>(cpy);
+    *cpy_bool = *this;
+    return cpy;
+}
+
+MexprNode * 
+Dtype_BOOL::clone() {
+
+    Dtype_BOOL *obj = new Dtype_BOOL();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
+
+
+
 
 /* Dtype : Dtype_WILDCARD */
 
@@ -280,6 +317,16 @@ Dtype_VARIABLE::clone() {
     return obj;
 }
 
+void  
+Dtype_VARIABLE::InstallOperandProperties (
+                void *data_src,
+                Dtype *(*compute_fn_ptr)(void *))  {
+
+    assert (!this->is_resolved);
+    this->data_src = data_src;
+    this->compute_fn_ptr = compute_fn_ptr;
+    this->is_resolved = true;
+}
 
 
 Dtype * 

@@ -9,6 +9,9 @@ typedef enum {
     MATH_CPP_MOD,
     MATH_CPP_PLUS,
     MATH_CPP_MINUS,
+    MATH_CPP_EQ,
+    MATH_CPP_NEQ,
+    MATH_CPP_LESS_THAN,
     MATH_CPP_OPR_MAX
 
 } mexprcpp_operators_t;
@@ -19,6 +22,7 @@ typedef enum {
     MATH_CPP_DOUBLE,
     MATH_CPP_STRING,
     MATH_CPP_IPV4,
+    MATH_CPP_BOOL,
     MATH_CPP_VARIABLE,
     MATH_CPP_DTYPE_INVALID,
     MATH_CPP_DTYPE_WILDCRAD,

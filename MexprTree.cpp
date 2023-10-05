@@ -402,3 +402,74 @@ MexprTree::optimize(MexprNode *root) {
     return true;
 }
 
+
+MexprNode *
+MexprTree::GetUnResolvedOperandNode() {
+
+    MexprNode *opnd_node;
+    Dtype_VARIABLE *dvar_node;
+
+    MexprTree_Iterator_Operands_Begin (this, opnd_node) {
+
+        dvar_node = dynamic_cast<Dtype_VARIABLE *> (opnd_node);
+        assert (dvar_node) ;
+        if (dvar_node->is_resolved ) continue;
+        return dvar_node;
+
+    } MexprTree_Iterator_Operands_End;
+
+    return NULL;
+}
+
+bool 
+MexprNode::IsInequalityOperator () {
+
+    Operator *opr = dynamic_cast<Operator *> (this);
+    
+    if (!opr) return false;
+
+    switch (opr->opid) {
+
+        case MATH_CPP_EQ:
+        case MATH_CPP_NEQ:
+        case MATH_CPP_LESS_THAN:
+            return true;
+        default:
+            return false;
+    }
+    return false;
+}
+
+
+uint8_t 
+MexprTree::RemoveUnresolveOperands() {
+
+    Operator *opr;
+    uint8_t count = 0;
+    Dtype_BOOL *dtype_b;
+    MexprNode *opnd_node;
+    
+    while ((opnd_node = this->GetUnResolvedOperandNode())) {
+
+        while (opnd_node && !opnd_node->IsInequalityOperator()) {
+            opnd_node = opnd_node->parent;
+        }
+
+        if (!opnd_node) return count;
+
+        opr = dynamic_cast <Operator *> (opnd_node);
+        assert (opr);
+
+        this->destroy_internal (opnd_node->left);
+        this->destroy_internal (opnd_node->right);
+        opnd_node->left = NULL;
+        opnd_node->right = NULL;
+        opr->is_optimized = true;
+        dtype_b = new Dtype_BOOL();
+        dtype_b->dtype.b_val = true;
+        opr->optimized_result = dtype_b;
+        count++;
+    }
+    this->optimize(this->root);
+    return count;    
+}

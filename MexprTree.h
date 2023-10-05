@@ -18,7 +18,7 @@ class MexprNode {
         virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) = 0;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) = 0;
         virtual MexprNode * clone() = 0;
-
+        bool IsInequalityOperator();
         MexprNode *parent;
         MexprNode *left;
         MexprNode *right;
@@ -44,7 +44,7 @@ class MexprTree {
     void CreateOperandList (MexprNode *node);
     void CreateOperandList ();
     void destroy_internal(MexprNode *root);
-    void  NodeRemoveFromList (MexprNode *node);
+    void NodeRemoveFromList (MexprNode *node);
 
     public:
         MexprNode *root;
@@ -59,6 +59,8 @@ class MexprTree {
         bool concatenate (MexprNode *leaf_node, MexprTree *child_tree);
         void destroy(MexprNode *root);
         bool optimize(MexprNode *root);
+        MexprNode *GetUnResolvedOperandNode();
+        uint8_t  RemoveUnresolveOperands();
 };
 
 #define MexprTree_Iterator_Operands_Begin(tree_ptr, node_ptr)  \

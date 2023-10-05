@@ -16,6 +16,8 @@ public:
     int opid;
     std::string name;
     bool is_unary;
+    bool is_optimized;
+    Dtype *optimized_result;
    virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) = 0;
    virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) = 0;
    virtual MexprNode * clone() = 0;
@@ -62,11 +64,25 @@ private:
 
 public:
     OperatorMinus();
-      ~OperatorMinus();
-   static OperatorMinus *GetOperMinusInstance ();
+    ~OperatorMinus();
     Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     MexprNode * clone() override;
+};
+
+
+/* EQ operator */
+
+class OperatorEq : public Operator {
+
+    private:
+
+    public:
+        OperatorEq();
+        ~OperatorEq();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
 };
 
 
