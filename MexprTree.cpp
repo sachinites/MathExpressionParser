@@ -44,6 +44,8 @@ Mexpr_Enum_Convertor (int external_code,
 MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
 
     int i, rc;
+    this->root = NULL;
+    this->lst_head = NULL;
     mexprcpp_dtypes_t dtype_code;
     mexprcpp_operators_t opr_code;
 
@@ -54,25 +56,28 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
         rc = Mexpr_Enum_Convertor (postfix_lex_data_array[i]->token_code, 
                                                          &opr_code, &dtype_code);
 
-        if (rc == MEXPR_OPND){
-        
-            MexprNode *node = Dtype::factory (dtype_code);
-            
-            if (dtype_code == MATH_CPP_VARIABLE) {
+        do {
 
-                Dtype_VARIABLE *dvar = dynamic_cast<Dtype_VARIABLE *> (node); 
-                assert (dvar);
-                dvar->variable_name = std::string ((char *)postfix_lex_data_array[i]->token_val); 
+            if (rc == MEXPR_OPR) break;
+
+            MexprNode *node = Dtype::factory (dtype_code);
+            Dtype *dtype = dynamic_cast<Dtype *> (node);
+            Dtype_VARIABLE *dvar = dynamic_cast<Dtype_VARIABLE *> (node); 
+
+            if (dvar) {
+                dvar->variable_name.assign(std::string((char *)postfix_lex_data_array[i]->token_val));
                 node->lst_right = this->lst_head;
-                this->lst_head->lst_left = node;
+                if ( this->lst_head) this->lst_head->lst_left = node;
                 this->lst_head = node;
+            }
+            else {
+                 dtype->SetValue (postfix_lex_data_array[i]->token_val);
             }
 
             push(stack, (void *)node);
-            continue;
-        }
+        } while (0);
 
-        assert (rc == MEXPR_OPR);
+        if (rc == MEXPR_OPND) continue;
 
         Operator *opr = Operator::factory (opr_code);
 
@@ -334,8 +339,6 @@ MexprTree::concatenate (MexprNode *leaf_node,
 
 void 
 MexprTree::NodeRemoveFromList (MexprNode *node) {
-
-    assert(node->lst_left || node->lst_right);
 
     if (node->lst_left == NULL) {
 

@@ -20,6 +20,7 @@ public:
     virtual Dtype *compute(Dtype *dtype1, Dtype *dtype2) = 0;
     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) ;
     virtual MexprNode * clone() = 0;
+    virtual void SetValue(unsigned char *value) = 0;
 };
 
 
@@ -30,7 +31,7 @@ class Dtype_IPv4_addr : public Dtype {
 public:
     
     struct {
-        unsigned char ip_addr_str[16];
+        std::string ip_addr_str;
         uint32_t ipaddr_int;
     } dtype;
 
@@ -38,6 +39,7 @@ public:
     ~Dtype_IPv4_addr();
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
+    void SetValue(unsigned char *value) override;
 };
 
 
@@ -56,6 +58,7 @@ public:
     ~Dtype_INT();
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
+    void SetValue(unsigned char *value) override;
 };
 
 
@@ -75,6 +78,7 @@ public:
     Dtype_DOUBLE(double val);
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
+    void SetValue(unsigned char *value) override;
 };
 
 
@@ -92,6 +96,7 @@ public:
     ~Dtype_STRING();
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
+    void SetValue(unsigned char *value) override;
 };
 
 
@@ -104,6 +109,7 @@ class Dtype_WILDCARD : public Dtype {
         ~Dtype_WILDCARD();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
+        void SetValue(unsigned char *value) override;
 };
 
 
@@ -117,11 +123,12 @@ class Dtype_BOOL : public Dtype {
         struct {
             bool b_val;
         } dtype;
-        
+
         Dtype_BOOL();
         ~Dtype_BOOL();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
+        void SetValue(unsigned char *value) override;
 };
 
 
@@ -136,6 +143,7 @@ class Dtype_INVALID : public Dtype {
         ~Dtype_INVALID();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
+        void SetValue(unsigned char *value) override;
 };
 
 
@@ -156,6 +164,8 @@ class Dtype_VARIABLE : public Dtype {
         void  InstallOperandProperties (
                 void *data_src,
                 Dtype *(*compute_fn_ptr)(void *)) ;
+
+        void SetValue(unsigned char *value) override;
 };
 
 

@@ -232,6 +232,11 @@ Mexpr_Enum_Convertor (int external_code,
             *dtype_code = MATH_CPP_IPV4;
             return MEXPR_OPND;
 
+        case SQL_IDENTIFIER:
+        case SQL_IDENTIFIER_IDENTIFIER:
+            *dtype_code =  MATH_CPP_VARIABLE;
+            return MEXPR_OPND;
+
         default:
             assert(0);
             return 0;

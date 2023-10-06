@@ -1,5 +1,7 @@
 #include <cstddef>
 #include <assert.h>
+#include <arpa/inet.h>
+#include <algorithm>
 #include "Dtype.h"
 
 class MexprNode;
@@ -36,10 +38,7 @@ Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 Dtype *
 Dtype_INT::compute(Dtype *dtype1, Dtype *dtype2) {
 
-        Dtype *cpy = new Dtype_INT();
-        Dtype_INT *cpy_int = dynamic_cast <Dtype_INT *>(cpy);
-        *cpy_int = *this;
-        return cpy;
+        return new Dtype_INT(this->dtype.int_val);
 }
 
 MexprNode * 
@@ -55,6 +54,13 @@ Dtype_INT::clone() {
     return obj;
 }
 
+void 
+Dtype_INT::SetValue(unsigned char *value) {
+
+    int val = atoi ( (const char *) value);
+    this->dtype.int_val = val;
+    this->is_resolved = true;
+}
 
 
 
@@ -99,6 +105,14 @@ Dtype_DOUBLE::clone() {
     return obj;
 }
 
+void 
+Dtype_DOUBLE::SetValue(unsigned char *value) {
+
+    double val = (double)atof ( (const char *) value);
+    this->dtype.d_val = val;
+    this->is_resolved = true;
+}
+
 
 
 
@@ -134,6 +148,21 @@ Dtype_STRING::clone() {
     obj->lst_right = NULL;
     return obj;
 }
+
+void 
+Dtype_STRING::SetValue(unsigned char *value) {
+
+    this->dtype.str_val.assign(std::string ((char *)value));
+    
+    this->dtype.str_val.erase(
+            std::remove(this->dtype.str_val.begin(), this->dtype.str_val.end(), '\"'), 
+            this->dtype.str_val.end());
+    this->dtype.str_val.erase(
+            std::remove(this->dtype.str_val.begin(), this->dtype.str_val.end(), '\''), 
+            this->dtype.str_val.end());
+    this->is_resolved = true;
+}
+
 
 
 
@@ -171,6 +200,17 @@ Dtype_IPv4_addr::clone() {
     return obj;
 }
 
+void 
+Dtype_IPv4_addr::SetValue(unsigned char *value) {
+
+    this->dtype.ip_addr_str.assign (std::string ((char *)value));
+    inet_pton (AF_INET, (const char *)value, &this->dtype.ipaddr_int);
+    this->is_resolved = true;
+}
+
+
+
+
 
 /* Dtype : Dtype_BOOL */
 
@@ -205,6 +245,16 @@ Dtype_BOOL::clone() {
     return obj;
 }
 
+void 
+Dtype_BOOL::SetValue (unsigned char *value) {
+
+    if (value[0] == 't' || value[0] == 'T' ) {
+        this->dtype.b_val = true;
+    }
+    else {
+        this->dtype.b_val = false;
+    }
+}
 
 
 
@@ -243,7 +293,10 @@ Dtype_WILDCARD::clone() {
     return obj;
 }
 
+void 
+Dtype_WILDCARD::SetValue (unsigned char *value) {
 
+}
 
 
 
@@ -277,6 +330,12 @@ Dtype_INVALID::clone() {
     return obj;
 }
 
+void 
+Dtype_INVALID::SetValue (unsigned char *value) {
+
+}
+
+
 
 
 /* Dtype : Dtype_VARIABLE*/
@@ -307,7 +366,7 @@ Dtype_VARIABLE::compute(Dtype *dtype1, Dtype *dtype2) {
 MexprNode * 
 Dtype_VARIABLE::clone() {
 
-    Dtype_VARIABLE *obj = new Dtype_VARIABLE(obj->variable_name);
+    Dtype_VARIABLE *obj = new Dtype_VARIABLE(this->variable_name);
     *obj = *this;
     obj->parent = NULL;
     obj->left = NULL;
@@ -327,6 +386,14 @@ Dtype_VARIABLE::InstallOperandProperties (
     this->compute_fn_ptr = compute_fn_ptr;
     this->is_resolved = true;
 }
+
+void 
+Dtype_VARIABLE::SetValue (unsigned char *value) {
+
+}
+
+
+
 
 
 Dtype * 
