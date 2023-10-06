@@ -4,7 +4,13 @@
 #include "Operators.h"
 #include "Dtype.h"
 
-Operator::Operator() { }
+Operator::Operator() { 
+
+    opid = MATH_CPP_OPR_MAX;
+    is_unary = false;
+    is_optimized = false;
+    optimized_result = NULL;
+}
 
 Operator::~Operator() { }
 

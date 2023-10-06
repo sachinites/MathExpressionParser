@@ -40,6 +40,7 @@ public:
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
     void SetValue(unsigned char *value) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 
@@ -59,6 +60,7 @@ public:
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
     void SetValue(unsigned char *value) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 
@@ -79,6 +81,7 @@ public:
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
     void SetValue(unsigned char *value) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 
@@ -97,6 +100,7 @@ public:
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
     void SetValue(unsigned char *value) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 
@@ -110,6 +114,7 @@ class Dtype_WILDCARD : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(unsigned char *value) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 
@@ -129,6 +134,7 @@ class Dtype_BOOL : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(unsigned char *value) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 
@@ -144,6 +150,7 @@ class Dtype_INVALID : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(unsigned char *value) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 
@@ -166,6 +173,7 @@ class Dtype_VARIABLE : public Dtype {
                 Dtype *(*compute_fn_ptr)(void *)) ;
 
         void SetValue(unsigned char *value) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
 

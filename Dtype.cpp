@@ -6,7 +6,11 @@
 
 class MexprNode;
 
-Dtype::Dtype() {} 
+Dtype::Dtype() {
+
+    this->did = MATH_CPP_DTYPE_INVALID;
+    this->is_resolved = false;
+} 
 
 Dtype::~Dtype() {}
 
@@ -62,6 +66,14 @@ Dtype_INT::SetValue(unsigned char *value) {
     this->is_resolved = true;
 }
 
+mexprcpp_dtypes_t 
+Dtype_INT::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_INT;
+}
+
+
+
 
 
 /* Dtype_DOUBLE */
@@ -113,6 +125,13 @@ Dtype_DOUBLE::SetValue(unsigned char *value) {
     this->is_resolved = true;
 }
 
+mexprcpp_dtypes_t 
+Dtype_DOUBLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_DOUBLE;
+}
+
+
 
 
 
@@ -163,6 +182,12 @@ Dtype_STRING::SetValue(unsigned char *value) {
     this->is_resolved = true;
 }
 
+mexprcpp_dtypes_t 
+Dtype_STRING::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_STRING;
+}
+
 
 
 
@@ -206,6 +231,12 @@ Dtype_IPv4_addr::SetValue(unsigned char *value) {
     this->dtype.ip_addr_str.assign (std::string ((char *)value));
     inet_pton (AF_INET, (const char *)value, &this->dtype.ipaddr_int);
     this->is_resolved = true;
+}
+
+mexprcpp_dtypes_t 
+Dtype_IPv4_addr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_IPV4;
 }
 
 
@@ -256,6 +287,11 @@ Dtype_BOOL::SetValue (unsigned char *value) {
     }
 }
 
+mexprcpp_dtypes_t 
+Dtype_BOOL::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_BOOL;
+}
 
 
 
@@ -298,6 +334,13 @@ Dtype_WILDCARD::SetValue (unsigned char *value) {
 
 }
 
+mexprcpp_dtypes_t 
+Dtype_WILDCARD::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_DTYPE_WILDCRAD;
+}
+
+
 
 
 /* Dtype : Dtype_INVALID */
@@ -335,6 +378,13 @@ Dtype_INVALID::SetValue (unsigned char *value) {
 
 }
 
+mexprcpp_dtypes_t 
+Dtype_INVALID::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_DTYPE_WILDCRAD;
+}
+
+
 
 
 
@@ -343,7 +393,7 @@ Dtype_INVALID::SetValue (unsigned char *value) {
 Dtype_VARIABLE::Dtype_VARIABLE(std::string var_name) {
 
     did = MATH_CPP_VARIABLE;
-    this->variable_name = var_name;
+    this->variable_name.assign(var_name);
 }
 
 Dtype_VARIABLE::Dtype_VARIABLE() {
@@ -392,6 +442,11 @@ Dtype_VARIABLE::SetValue (unsigned char *value) {
 
 }
 
+mexprcpp_dtypes_t 
+Dtype_VARIABLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_DTYPE_WILDCRAD;
+}
 
 
 
