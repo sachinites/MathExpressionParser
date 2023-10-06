@@ -214,6 +214,14 @@ Mexpr_Enum_Convertor (int external_code,
             *opr_code = MATH_CPP_MOD;
             return MEXPR_OPR;
 
+        case SQL_MATH_MUL:
+            *opr_code = MATH_CPP_MUL;
+            return MEXPR_OPR;
+
+        case SQL_MATH_DIV:
+            *opr_code = MATH_CPP_DIV;
+            return MEXPR_OPR;
+            
 
         /* Operands*/
         case SQL_INTEGER_VALUE:

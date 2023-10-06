@@ -6,9 +6,14 @@
 
 typedef enum {
 
+    /* Mathematical Operator*/
     MATH_CPP_MOD,
     MATH_CPP_PLUS,
     MATH_CPP_MINUS,
+    MATH_CPP_MUL,
+    MATH_CPP_DIV,
+
+    /* Inequality Operator*/
     MATH_CPP_EQ,
     MATH_CPP_NEQ,
     MATH_CPP_LESS_THAN,

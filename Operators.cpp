@@ -25,6 +25,10 @@ Operator::factory (mexprcpp_operators_t opr_code) {
             return new OperatorPlus();
         case MATH_CPP_MINUS:
             return new OperatorMinus();
+        case MATH_CPP_MUL:
+            return new OperatorMul();
+        case MATH_CPP_DIV:
+            return new OperatorDiv();
         case MATH_CPP_OPR_MAX:
             return NULL;
         default:
@@ -447,6 +451,322 @@ OperatorMinus::clone() {
     return obj;
 }
 
+
+/* MUL operator */
+
+OperatorMul::OperatorMul() {
+
+    opid = MATH_CPP_MUL;
+    name = "Mul";
+    is_unary = false;
+}
+
+OperatorMul::~OperatorMul() {
+
+}
+
+Dtype *
+OperatorMul::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+    mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
+    
+    if (res_did == MATH_CPP_DTYPE_INVALID || 
+         res_did == MATH_CPP_DTYPE_WILDCRAD) return NULL;    
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_INT);
+                    Dtype_INT *res_int = dynamic_cast<Dtype_INT *> (res);
+                    res_int->dtype.int_val = dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val *
+                                                            dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val *
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val *
+                                                        (double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val *
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        default:
+            return NULL;
+
+    }    
+
+
+
+}
+
+mexprcpp_dtypes_t
+OperatorMul::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    /* Allowed Combinations 
+
+        int , int  => int  
+        int, double => double
+        double, int => double
+        double, double => double
+    */
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_INT;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_INT;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DOUBLE;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }            
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return did2;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+MexprNode *
+OperatorMul::clone() {
+
+    OperatorMul *obj = new OperatorMul();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
+/* DIV operator */
+
+OperatorDiv::OperatorDiv() {
+
+    opid = MATH_CPP_DIV;
+    name = "Div";
+    is_unary = false;
+}
+
+OperatorDiv::~OperatorDiv() {
+
+}
+
+Dtype *
+OperatorDiv::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+    mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
+    
+    if (res_did == MATH_CPP_DTYPE_INVALID || 
+         res_did == MATH_CPP_DTYPE_WILDCRAD) return NULL;    
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val /
+                                                            (double)((dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val == 0) ? 1 : \
+                                                            dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val );
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val /
+                                                        (dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val == 0 ? 1 : \
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val );
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val /
+                                                        (double)((double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val == 0 ? 1 : \ 
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val) ;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val /
+                                                        (dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val == 0 ? 1 : \
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val);
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        default:
+            return NULL;
+
+    }    
+}
+
+mexprcpp_dtypes_t
+OperatorDiv::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    /* Allowed Combinations 
+
+        int , int  => int  
+        int, double => double
+        double, int => double
+        double, double => double
+    */
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_INT;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DOUBLE;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }            
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+MexprNode *
+OperatorDiv::clone() {
+
+    OperatorDiv *obj = new OperatorDiv();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 

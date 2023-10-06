@@ -71,6 +71,36 @@ public:
 };
 
 
+/* MUL operator */
+
+class OperatorMul : public Operator {
+
+private:
+
+public:
+    OperatorMul();
+    ~OperatorMul();
+    Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    MexprNode * clone() override;
+};
+
+
+/* DIV operator */
+
+class OperatorDiv : public Operator {
+
+private:
+
+public:
+    OperatorDiv();
+    ~OperatorDiv();
+    Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    MexprNode * clone() override;
+};
+
+
 /* EQ operator */
 
 class OperatorEq : public Operator {
