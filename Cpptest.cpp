@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <assert.h>
 #include <string>
 #include "MExprcppEnums.h"
@@ -97,32 +98,34 @@ main (int argc, char **argv) {
 
 #if 1
         {
-            Dtype_VARIABLE *opnd_node;
-            SqlExprTree_Iterator_Operands_Begin(tree, opnd_node) {
+            MexprNode *opnd_node;
+            SqlExprTree_Iterator_Operands_Begin(tree, opnd_node)
+            {
 
-                if (opnd_node->variable_name == std::string("a")) {
-                                    opnd_node->InstallOperandProperties (
-                                            (void *)'a', compute_opd_value_fn); 
+                if (sql_get_opnd_variable_name(opnd_node) == std::string("a"))
+                {
+                    InstallDtypeOperandProperties(opnd_node, (void *)'a', compute_opd_value_fn);
                 }
 
-                else if (opnd_node->variable_name == std::string("b")) {
-                                    opnd_node->InstallOperandProperties (
-                                              (void *)'b', compute_opd_value_fn); 
+                if (sql_get_opnd_variable_name(opnd_node) == std::string("b"))
+                {
+                    InstallDtypeOperandProperties(opnd_node, (void *)'b', compute_opd_value_fn);
                 }
 
-                else if (opnd_node->variable_name == std::string("c")) {
-                                    opnd_node->InstallOperandProperties (
-                                              (void *)'c', compute_opd_value_fn); 
+                if (sql_get_opnd_variable_name(opnd_node) == std::string("c"))
+                {
+                    InstallDtypeOperandProperties(opnd_node, (void *)'c', compute_opd_value_fn);
                 }
+            }
 
-                else if (opnd_node->variable_name == std::string("d")) {
-                                    opnd_node->InstallOperandProperties (
-                                              (void *)'d', compute_opd_value_fn); 
-                }                
-            }SqlExprTree_Iterator_Operands_End;
+            if (sql_get_opnd_variable_name(opnd_node) == std::string("d"))
+            {
+                InstallDtypeOperandProperties(opnd_node, (void *)'d', compute_opd_value_fn);
+            }
         }
-#endif 
+#endif
 
+#if 0
         if (!tree->tree->validate(tree->tree->root)) {
             
             printf ("Error : Exp Tree Validation Failed\n");
@@ -132,18 +135,18 @@ main (int argc, char **argv) {
             continue;
         }
         printf ("Exp Tree Successfully Validated after resolution\n");
-
+#endif 
 #if 1
-        uint8_t cnt = tree->tree->RemoveUnresolveOperands();
+        uint8_t cnt = sql_tree_remove_unresolve_operands (tree);
         printf ("No of unresolved operands removed = %d\n", cnt);
 
         if (cnt) {
-            tree->tree->optimize (tree->tree->root);
-            printf ("Print Exp Tree After Optimization\n");
+            //tree->tree->optimize (tree->tree->root);
+            //printf ("Print Exp Tree After Optimization\n");
             //mexpr_debug_print_expression_tree (tree->root);
         }
 #endif 
-        res = tree->tree->evaluate();
+        res = sql_evaluate_exp_tree(tree);
         
         if (!res || res->did == MATH_CPP_DTYPE_INVALID) {
 

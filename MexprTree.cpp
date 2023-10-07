@@ -500,5 +500,6 @@ MexprTree::IsLoneVariableOperandNode() {
 
     Dtype_VARIABLE *d_var = dynamic_cast <Dtype_VARIABLE *>(opnd_node);
     assert (d_var);
+    assert (this->root == opnd_node);
     return true;
 }

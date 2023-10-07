@@ -116,7 +116,7 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     Stack_t *stack = get_new_stack();
 
     lex_data_t **lex_data_arr_out = 
-        (lex_data_t**)calloc(MAX_EXPR_LEN, sizeof(lex_data_t *));
+        (lex_data_t**)calloc(sizein, sizeof(lex_data_t *));
 
     for (i = 0; i < sizein; i++) {
 

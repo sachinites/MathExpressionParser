@@ -173,6 +173,7 @@ Dtype_STRING::SetValue(unsigned char *value) {
 
     this->dtype.str_val.assign(std::string ((char *)value));
     
+    
     this->dtype.str_val.erase(
             std::remove(this->dtype.str_val.begin(), this->dtype.str_val.end(), '\"'), 
             this->dtype.str_val.end());

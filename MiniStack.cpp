@@ -2,6 +2,8 @@
 /* ====================x================x=================== */
 /* Internal Stack Implementation */
 
+#include <assert.h>
+
 #define MAX_STACK_SIZE 256
 
 typedef struct stack{
