@@ -29,8 +29,6 @@ Operator::factory (mexprcpp_operators_t opr_code) {
             return new OperatorMul();
         case MATH_CPP_DIV:
             return new OperatorDiv();
-        case MATH_CPP_OPR_MAX:
-            return NULL;
         default:
             return NULL;
     }
@@ -673,7 +671,7 @@ OperatorDiv::compute(Dtype *dtype1, Dtype *dtype2) {
                     res = Dtype::factory (MATH_CPP_DOUBLE);
                     Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
                     res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val /
-                                                        (double)((double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val == 0 ? 1 : \ 
+                                                        (double)((double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val == 0 ? 1 : \
                                                         dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val) ;
                     return res;                
                 }

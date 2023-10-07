@@ -3,108 +3,40 @@
 #include "../RDBMSImplementation/SqlParser/ParserExport.h"
 #include "MExprcppEnums.h"
 #include "../RDBMSImplementation/SqlParser/SqlParserStruct.h"
-#include "../RDBMSImplementation/core/rdbms_struct.h"
 
 #include "MiniStack.cpp"
 
-static bool 
-mexpr_is_white_space (int token_code) {
-
-    return (token_code == PARSER_EOL || token_code == PARSER_WHITE_SPACE);
-}
-
-static inline bool 
-Math_is_operator (int token_code) {
-
-    /* Supported Operators In MatheMatical Expression */
-
-    switch (token_code) {
-
-        case SQL_MATH_PLUS:
-        case SQL_MATH_MINUS:
-        case SQL_MATH_MUL:
-        case SQL_MATH_DIV:
-        case SQL_MATH_MAX:
-        case SQL_MATH_MIN:
-        case SQL_MATH_POW:
-        case SQL_MATH_SIN:
-        case SQL_MATH_COS:
-        case SQL_MATH_SQR:
-        case SQL_MATH_SQRT:
-        case SQL_BRACKET_START:
-        case SQL_BRACKET_END:
-        case SQL_OR:
-        case SQL_AND:
-        case SQL_LESS_THAN:
-	    case SQL_LESS_THAN_EQ: 
-        case SQL_GREATER_THAN:
-        case SQL_GREATER_THAN_EQ:
-        case SQL_EQ:
-        case SQL_NOT_EQ:
-        return true;
-    }
-
-    return false;
-}
-
-static inline bool 
-Math_is_unary_operator (int token_code) {
-
-    /* Supported Operators In MatheMatical Expression */
-
-    switch (token_code) {
-
-        case SQL_MATH_SIN:
-        case SQL_MATH_COS:
-        case SQL_MATH_SQR:
-        case SQL_MATH_SQRT:
-        return true;
-    }
-
-    return false;
-}
-
-/* Higher the returned value, higher the precedence. 
-    Return Minimum value for '(*/
 static int 
-Math_operator_precedence (int token_code) {
+RDBMS_to_Mexpr_Enum_Convertor (int external_code, 
+                                          mexprcpp_operators_t *opr_code, 
+                                          mexprcpp_dtypes_t *dtype_code) ;
+                                        
+static void 
+Converter_convert_app_to_expression_library_codes (lex_data_t *infix,  int sizein) {
 
-    assert ( Math_is_operator (token_code));
+    int i, rc;
+    mexprcpp_dtypes_t dtype_code;
+    mexprcpp_operators_t opr_code;
 
-    switch (token_code) {
+    for (i = 0; i < sizein; i++) {
 
-        case SQL_MATH_MAX:
-        case SQL_MATH_MIN:
-        case SQL_MATH_POW:
-            return 7;
-        case SQL_MATH_MUL:
-        case SQL_MATH_DIV:
-            return 6;            
-        case SQL_MATH_PLUS:
-        case SQL_MATH_MINUS:
-            return 5;
-        case SQL_MATH_SIN:
-	    case SQL_MATH_COS:
-        case SQL_MATH_SQR:
-        case SQL_MATH_SQRT:
-            return 4;
-        case SQL_LESS_THAN:
-	    case SQL_LESS_THAN_EQ:
-        case SQL_GREATER_THAN:
-        case SQL_NOT_EQ:
-        case SQL_EQ:
-            return 3;
-        case SQL_AND:
-            return 2;
-        case SQL_OR:
-            return 1;
-        case SQL_BRACKET_START:
-        case SQL_BRACKET_END:
-            return 0;
+        if (infix[i].token_code == PARSER_EOL  || 
+             infix[i].token_code == PARSER_WHITE_SPACE) {
+            
+            infix[i].token_code = (int)MATH_CPP_OPR_INVALID;
+            continue;
+        }
+
+        rc = RDBMS_to_Mexpr_Enum_Convertor (infix[i].token_code,
+                                                &opr_code, &dtype_code);
+
+        if (rc == 0 ) 
+            infix[i].token_code =  (int)MATH_CPP_OPR_INVALID;
+        else 
+            infix[i].token_code = (rc == MEXPR_OPR)  ? (int) opr_code : (int)dtype_code;
+
     }
-    assert(0);
-    return 0;
-} 
+}
 
 lex_data_t **
 mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
@@ -112,6 +44,9 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     int i;
     int out_index = 0;
     lex_data_t *lex_data;
+
+    /* Convert codes from Application to Mexpr Library*/
+    Converter_convert_app_to_expression_library_codes (infix, sizein);
 
     Stack_t *stack = get_new_stack();
 
@@ -122,16 +57,18 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
             lex_data = &infix[i];
 
-            if (mexpr_is_white_space (lex_data->token_code)) continue;
+            if (lex_data->token_code == (int) MATH_CPP_OPR_INVALID) continue;
+            if (!Math_cpp_is_operator (lex_data->token_code)  &&
+                    !Math_cpp_is_operand (lex_data->token_code)) assert(0);
 
-            if (lex_data->token_code == SQL_BRACKET_START)
+            if (lex_data->token_code == (int)MATH_CPP_BRACKET_START)
             {
                     push(stack, (void *)lex_data);
             }
-            else if (lex_data->token_code == SQL_BRACKET_END)
+            else if (lex_data->token_code == (int)MATH_CPP_BRACKET_END)
             {
                     while (!isStackEmpty(stack) && 
-                        (((lex_data_t *)stack->slot[stack->top])->token_code != SQL_BRACKET_START)) {
+                        (((lex_data_t *)stack->slot[stack->top])->token_code != (int)MATH_CPP_BRACKET_START)) {
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                     }
                     pop(stack);
@@ -140,7 +77,7 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
                         lex_data = (lex_data_t *)StackGetTopElem(stack);
 
-                        if (Math_is_unary_operator (lex_data->token_code)) {
+                        if (Math_cpp_is_unary_operator (lex_data->token_code)) {
 
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                             continue;
@@ -149,31 +86,31 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
                     }
             }
 
-            else if (lex_data->token_code == SQL_COMMA) {
+            else if (lex_data->token_code == (int) MATH_CPP_COMMA) {
 
                 while (!isStackEmpty(stack) && 
-                    (((lex_data_t *)stack->slot[stack->top])->token_code != SQL_BRACKET_START)) {
+                    (((lex_data_t *)stack->slot[stack->top])->token_code != (int)MATH_CPP_BRACKET_START)) {
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                 }
             }
 
-            else if (!Math_is_operator(lex_data->token_code))
-            {
-                    lex_data_arr_out[out_index++] = lex_data;
+            else if (!Math_cpp_is_operator(lex_data->token_code)) {
+                
+                lex_data_arr_out[out_index++] = lex_data;
             }
             else if (isStackEmpty (stack)) {
+                
                 push(stack, (void *)lex_data);
             }
-            else
-            {
-                    while (!isStackEmpty(stack) &&
-                        !Math_is_unary_operator(lex_data->token_code) &&
-                        (Math_operator_precedence(lex_data->token_code) <= 
-                          Math_operator_precedence(((lex_data_t *)stack->slot[stack->top])->token_code))) {
-                        
-                        lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
-                    }
-                    push(stack, (void *)lex_data);
+            else {
+                while (!isStackEmpty(stack) &&
+                       !Math_cpp_is_unary_operator(lex_data->token_code) &&
+                       (Math_cpp_operator_precedence(lex_data->token_code) <=
+                        Math_cpp_operator_precedence(((lex_data_t *)stack->slot[stack->top])->token_code))) {
+
+                    lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                }
+                push(stack, (void *)lex_data);
             }
     }
 
@@ -192,7 +129,7 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     Returns 0 for None
 */
 int 
-Mexpr_Enum_Convertor (int external_code, 
+RDBMS_to_Mexpr_Enum_Convertor (int external_code, 
                                           mexprcpp_operators_t *opr_code, 
                                           mexprcpp_dtypes_t *dtype_code) {
 
@@ -246,10 +183,13 @@ Mexpr_Enum_Convertor (int external_code,
             return MEXPR_OPND;
 
         default:
-            assert(0);
             return 0;
     }
     assert(0);
     return 0;
 }
 
+/* Register the library the converter fn */
+int (*Mexpr_Enum_Convertor_fn_ptr) ( int external_code, 
+                                          mexprcpp_operators_t *opr_code, 
+                                          mexprcpp_dtypes_t *dtype_code)  = RDBMS_to_Mexpr_Enum_Convertor;

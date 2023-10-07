@@ -116,8 +116,26 @@ Rules for Grammar Parsing :
 
 // must include application specific hdr file which contains token IDs.
 // This file need tobe included in Parser.l file as well.
+#include "MExprcppEnums.h"
 
-#include "MexprEnums.h"
+extern int (*Mexpr_Enum_Convertor_fn_ptr) (int external_code,
+                                          mexprcpp_operators_t *opr_code, 
+                                          mexprcpp_dtypes_t *dtype_code) ;
+
+static mexprcpp_operators_t opr_code;
+static mexprcpp_dtypes_t dtype_code;
+
+/* Wrapper for Ease */
+static int 
+cnvrt (int external_code) {
+
+    int rc = Mexpr_Enum_Convertor_fn_ptr (external_code,
+                        &opr_code, &dtype_code);
+
+    if (rc == MEXPR_OPR) return (int) opr_code;
+    if (rc == MEXPR_OPND)  return (int)dtype_code;
+    return PARSER_INVALID_CODE;
+}
 
 parse_rc_t Ineq () ;
 parse_rc_t G ();
@@ -143,14 +161,14 @@ Ineq () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
     switch(token_code) {
-        case MATH_LESS_THAN:
-	    case MATH_LESS_THAN_EQ:
-        case MATH_GREATER_THAN:
-        case MATH_EQ:
-        case MATH_NOT_EQ:
+        case MATH_CPP_LESS_THAN:
+	    case MATH_CPP_LESS_THAN_EQ:
+        case MATH_CPP_GREATER_THAN:
+        case MATH_CPP_EQ:
+        case MATH_CPP_NEQ:
             break;
         default:
             RETURN_PARSE_ERROR;
@@ -165,13 +183,13 @@ G () {
 
      parse_init();
 
-     token_code = cyylex();
+     token_code = cnvrt (cyylex() );
 
      switch (token_code) {
 
-        case MATH_MAX:
-        case MATH_MIN:
-        case MATH_POW:
+        case MATH_CPP_MAX:
+        case MATH_CPP_MIN:
+        case MATH_CPP_POW:
             RETURN_PARSE_SUCCESS;
         default:
             RETURN_PARSE_ERROR;
@@ -185,14 +203,14 @@ P () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
     switch (token_code) {
 
-        case MATH_SQRT:
-        case MATH_SQR:
-        case MATH_SIN:
-	case MATH_COS:
+        case MATH_CPP_SQRT:
+        case MATH_CPP_SQR:
+        case MATH_CPP_SIN:
+	    case MATH_CPP_COS:
             RETURN_PARSE_SUCCESS;
         default:
             RETURN_PARSE_ERROR;
@@ -208,20 +226,20 @@ F () {
     int initial_chkp;
     CHECKPOINT(initial_chkp);
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
     // ( E )
     do {
         
-        if (token_code != MATH_BRACKET_START) break;
+        if (token_code != MATH_CPP_BRACKET_START) break;
 
         err = PARSER_CALL(E);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_END) break;
+        if (token_code != MATH_CPP_BRACKET_END) break;
 
         RETURN_PARSE_SUCCESS;
 
@@ -232,15 +250,14 @@ F () {
     // INTEGER | DECIMAL | VAR | 'SENTENCE'
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
         switch (token_code) {
             
-            case MATH_INTEGER_VALUE:
-            case MATH_DOUBLE_VALUE:
-            case MATH_IDENTIFIER:
-            case MATH_IDENTIFIER_IDENTIFIER:
-            case MATH_STRING_VALUE:
+            case MATH_CPP_INT:
+            case MATH_CPP_DOUBLE:
+            case MATH_CPP_VARIABLE:
+            case MATH_CPP_STRING:
                 RETURN_PARSE_SUCCESS;
             default:
                 break;
@@ -256,17 +273,17 @@ F () {
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_START) break;
+        if (token_code != MATH_CPP_BRACKET_START) break;
 
         err = PARSER_CALL(E);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_END) break;
+        if (token_code != MATH_CPP_BRACKET_END) break;
 
         RETURN_PARSE_SUCCESS;
 
@@ -282,25 +299,25 @@ F () {
 
         if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_START) RETURN_PARSE_ERROR;
-
-        err = PARSER_CALL(E);
-
-        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
-
-        token_code = cyylex();
-
-        if (token_code != MATH_COMMA) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_BRACKET_START) RETURN_PARSE_ERROR;
 
         err = PARSER_CALL(E);
 
         if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_END) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_COMMA) RETURN_PARSE_ERROR;
+
+        err = PARSER_CALL(E);
+
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+        token_code = cnvrt (cyylex() );
+
+        if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR;
 
         RETURN_PARSE_SUCCESS;
 
@@ -316,10 +333,10 @@ T_dash () {
     int initial_chkp;
     CHECKPOINT(initial_chkp);
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
-    if (token_code != MATH_MUL &&
-            token_code != MATH_DIV) {
+    if (token_code != MATH_CPP_MUL &&
+            token_code != MATH_CPP_DIV) {
         
         RESTORE_CHKP(initial_chkp);
         RETURN_PARSE_SUCCESS;
@@ -370,10 +387,10 @@ E_dash () {
     int initial_chkp;
     CHECKPOINT(initial_chkp);
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
-    if (token_code != MATH_PLUS &&
-            token_code !=  MATH_MINUS) {
+    if (token_code != MATH_CPP_PLUS &&
+            token_code !=  MATH_CPP_MINUS) {
         
         RESTORE_CHKP(initial_chkp);
         RETURN_PARSE_SUCCESS;
@@ -428,17 +445,17 @@ Q () {
      // Q -> (Q)
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_START) break;
+        if (token_code != MATH_CPP_BRACKET_START) break;
 
         err = PARSER_CALL(Q);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_END) break;
+        if (token_code != MATH_CPP_BRACKET_END) break;
 
         RETURN_PARSE_SUCCESS;
 
@@ -473,10 +490,10 @@ D () {
 
     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
-    if (token_code != MATH_OR &&
-            token_code != MATH_AND) {
+    if (token_code != MATH_CPP_OR &&
+            token_code != MATH_CPP_AND) {
 
         RETURN_PARSE_ERROR;
     }
@@ -494,10 +511,10 @@ K_dash () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
-    if (token_code != MATH_AND &&
-        token_code != MATH_OR) {
+    if (token_code != MATH_CPP_AND &&
+        token_code != MATH_CPP_OR) {
 
         yyrewind(1);
         RETURN_PARSE_SUCCESS;
@@ -532,17 +549,17 @@ K () {
     //  (S) K'
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_START) break;
+        if (token_code != MATH_CPP_BRACKET_START) break;
 
         err = PARSER_CALL(S);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt (cyylex() );
 
-        if (token_code != MATH_BRACKET_END) break;
+        if (token_code != MATH_CPP_BRACKET_END) break;
 
         err = PARSER_CALL(K_dash);
 
@@ -575,10 +592,10 @@ K () {
 
     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
-    if (token_code != MATH_OR &&
-        token_code != MATH_AND) {
+    if (token_code != MATH_CPP_OR &&
+        token_code != MATH_CPP_AND) {
 
         RETURN_PARSE_ERROR;
     }
@@ -600,9 +617,9 @@ J_dash () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
-    if (token_code != MATH_AND) {
+    if (token_code != MATH_CPP_AND) {
         yyrewind(1);
         RETURN_PARSE_SUCCESS;
     }
@@ -642,9 +659,9 @@ S_dash () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt (cyylex() );
 
-    if (token_code != MATH_OR) {
+    if (token_code != MATH_CPP_OR) {
         yyrewind(1);
         RETURN_PARSE_SUCCESS;
     }

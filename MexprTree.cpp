@@ -36,31 +36,24 @@ MexprTree:: MexprTree() {
     this->root = NULL;
  }
 
-extern int 
-Mexpr_Enum_Convertor (int external_code, 
-                                          mexprcpp_operators_t *opr_code, 
-                                          mexprcpp_dtypes_t *dtype_code) ;
-
 MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
 
-    int i, rc;
+    int i;
+    bool is_operator;
     this->root = NULL;
     this->lst_head = NULL;
-    mexprcpp_dtypes_t dtype_code;
-    mexprcpp_operators_t opr_code;
 
     Stack_t *stack = get_new_stack();
 
     for (i = 0; i < size; i++) {
 
-        rc = Mexpr_Enum_Convertor (postfix_lex_data_array[i]->token_code, 
-                                                         &opr_code, &dtype_code);
-
+        is_operator = Math_cpp_is_operator (postfix_lex_data_array[i]->token_code);
+                                
         do {
 
-            if (rc == MEXPR_OPR) break;
+            if (is_operator) break;
 
-            MexprNode *node = Dtype::factory (dtype_code);
+            MexprNode *node = Dtype::factory ((mexprcpp_dtypes_t)(postfix_lex_data_array[i]->token_code));
             Dtype *dtype = dynamic_cast<Dtype *> (node);
             Dtype_VARIABLE *dvar = dynamic_cast<Dtype_VARIABLE *> (node); 
 
@@ -77,11 +70,12 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
             }
 
             push(stack, (void *)node);
+
         } while (0);
 
-        if (rc == MEXPR_OPND) continue;
+        if (!is_operator) continue;
 
-        Operator *opr = Operator::factory (opr_code);
+        Operator *opr = Operator::factory (( mexprcpp_operators_t)postfix_lex_data_array[i]->token_code);
 
         if (opr->is_unary == false){
 
