@@ -29,6 +29,8 @@ Operator::factory (mexprcpp_operators_t opr_code) {
             return new OperatorMul();
         case MATH_CPP_DIV:
             return new OperatorDiv();
+        case MATH_CPP_EQ:
+            return new OperatorEq();
         default:
             return NULL;
     }
@@ -855,7 +857,11 @@ OperatorEq::compute(Dtype *dtype1, Dtype *dtype2) {
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
     if (res_did == MATH_CPP_DTYPE_INVALID || 
-         res_did == MATH_CPP_DTYPE_WILDCRAD) return NULL;
+         res_did == MATH_CPP_DTYPE_WILDCRAD) {
+    
+        delete res;
+        return NULL;
+    }
 
     switch (dtype1->did) {
 
@@ -917,6 +923,7 @@ OperatorEq::compute(Dtype *dtype1, Dtype *dtype2) {
                      Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
                      res_b->dtype.b_val = dynamic_cast<Dtype_STRING *> (dtype1)->dtype.str_val ==
                                                         dynamic_cast<Dtype_STRING *> (dtype2)->dtype.str_val;
+                    return res_b;
                 }
             }
             break;

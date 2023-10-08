@@ -20,6 +20,7 @@ Dtype::~Dtype() {}
 Dtype_INT::Dtype_INT() {
 
     did = MATH_CPP_INT;
+    this->is_resolved = true;
 }
 
 Dtype_INT::~Dtype_INT() {
@@ -81,6 +82,7 @@ Dtype_INT::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 Dtype_DOUBLE::Dtype_DOUBLE() {
 
     did = MATH_CPP_DOUBLE;
+    this->is_resolved = true;
 }
 
  Dtype_DOUBLE::Dtype_DOUBLE(double val) {
@@ -140,6 +142,7 @@ Dtype_DOUBLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
 Dtype_STRING::Dtype_STRING() {
 
     did = MATH_CPP_STRING;
+    this->is_resolved = true;
 }
 
 Dtype_STRING::~Dtype_STRING() {
@@ -198,6 +201,7 @@ Dtype_STRING::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
 Dtype_IPv4_addr::Dtype_IPv4_addr() {
 
     did = MATH_CPP_IPV4;
+    this->is_resolved = true;
 }
 
 Dtype_IPv4_addr::~Dtype_IPv4_addr() {
@@ -249,6 +253,8 @@ Dtype_IPv4_addr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did
 Dtype_BOOL::Dtype_BOOL () {
 
     did = MATH_CPP_BOOL;
+    this->dtype.b_val = false;
+    this->is_resolved = true;
 }
 
 Dtype_BOOL::~Dtype_BOOL() {
@@ -286,6 +292,7 @@ Dtype_BOOL::SetValue (unsigned char *value) {
     else {
         this->dtype.b_val = false;
     }
+    this->is_resolved = true;
 }
 
 mexprcpp_dtypes_t 
@@ -395,11 +402,13 @@ Dtype_VARIABLE::Dtype_VARIABLE(std::string var_name) {
 
     did = MATH_CPP_VARIABLE;
     this->variable_name.assign(var_name);
+    this->is_resolved = false;
 }
 
 Dtype_VARIABLE::Dtype_VARIABLE() {
 
     did = MATH_CPP_VARIABLE;
+    this->is_resolved = false;
 }
 
 Dtype_VARIABLE::~Dtype_VARIABLE() {
@@ -463,6 +472,8 @@ Dtype::factory(mexprcpp_dtypes_t did) {
             return new Dtype_DOUBLE();
         case MATH_CPP_STRING:
             return new Dtype_STRING();
+        case MATH_CPP_BOOL:
+            return new Dtype_BOOL();
         case MATH_CPP_IPV4:
             return new Dtype_IPv4_addr();
         case MATH_CPP_VARIABLE:
@@ -473,6 +484,8 @@ Dtype::factory(mexprcpp_dtypes_t did) {
             return new Dtype_INVALID();
         case MATH_CPP_DTYPE_MAX:
             return NULL;
+        default:
+            assert(0);
     }
     return NULL;
 }

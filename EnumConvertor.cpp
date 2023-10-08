@@ -159,6 +159,10 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
             *opr_code = MATH_CPP_DIV;
             return MEXPR_OPR;
             
+        case SQL_EQ:
+            *opr_code = MATH_CPP_EQ;
+            return MEXPR_OPR;
+
 
         /* Operands*/
         case SQL_INTEGER_VALUE:
