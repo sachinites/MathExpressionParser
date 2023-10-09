@@ -31,6 +31,8 @@ Operator::factory (mexprcpp_operators_t opr_code) {
             return new OperatorDiv();
         case MATH_CPP_EQ:
             return new OperatorEq();
+        case MATH_CPP_IN:
+            return new OperatorIn();
         default:
             return NULL;
     }
@@ -469,6 +471,7 @@ Dtype *
 OperatorMul::compute(Dtype *dtype1, Dtype *dtype2) {
 
     Dtype *res;
+
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
     if (res_did == MATH_CPP_DTYPE_INVALID || 
@@ -627,6 +630,7 @@ Dtype *
 OperatorDiv::compute(Dtype *dtype1, Dtype *dtype2) {
 
     Dtype *res;
+
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
     if (res_did == MATH_CPP_DTYPE_INVALID || 
@@ -853,6 +857,10 @@ OperatorEq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 Dtype*
 OperatorEq::compute(Dtype *dtype1, Dtype *dtype2) {
 
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
     Dtype *res = Dtype::factory (MATH_CPP_BOOL);
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
@@ -949,3 +957,92 @@ OperatorEq::clone() {
     return obj;
 }
 
+
+/* IN Operator*/
+
+OperatorIn::OperatorIn() {
+
+    opid = MATH_CPP_IN;
+    name = "in";
+    is_unary = false;
+}
+
+OperatorIn::~OperatorIn() { }
+
+Dtype* 
+OperatorIn::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
+    assert (dtype1->did == MATH_CPP_STRING &&
+        dtype2->did == MATH_CPP_STRING_LST);
+
+    Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
+    res->dtype.b_val = false;
+
+    Dtype_STRING_LST *str_lst = dynamic_cast <Dtype_STRING_LST *> (dtype2);
+    Dtype_STRING *str = dynamic_cast <Dtype_STRING *> (dtype1);
+    Dtype_STRING *elem;
+
+    for (std::list<Dtype_STRING *>::iterator it = str_lst->dtype.str_lst.begin(); 
+            it != str_lst->dtype.str_lst.end(); ++it) {
+
+        elem = *it;
+
+        if (elem->dtype.str_val == str->dtype.str_val) {
+            res->dtype.b_val = true;
+            return res;
+        }
+    }
+
+    return res;
+}
+
+mexprcpp_dtypes_t 
+OperatorIn::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_VARIABLE:
+
+            switch (did2) {
+
+                case MATH_CPP_STRING_LST:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+            break;
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_STRING_LST:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+MexprNode * 
+OperatorIn::clone() {
+
+    OperatorIn *obj = new OperatorIn();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}

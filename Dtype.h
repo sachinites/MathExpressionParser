@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <list>
 #include "MexprTree.h"
 #include "MExprcppEnums.h"
 
@@ -20,7 +21,7 @@ public:
     virtual Dtype *compute(Dtype *dtype1, Dtype *dtype2) = 0;
     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) ;
     virtual MexprNode * clone() = 0;
-    virtual void SetValue(unsigned char *value) = 0;
+    virtual void SetValue(void *value) = 0;
 };
 
 
@@ -39,7 +40,7 @@ public:
     ~Dtype_IPv4_addr();
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
-    void SetValue(unsigned char *value) override;
+    void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
@@ -59,7 +60,7 @@ public:
     ~Dtype_INT();
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
-    void SetValue(unsigned char *value) override;
+    void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
@@ -80,7 +81,7 @@ public:
     Dtype_DOUBLE(double val);
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
-    void SetValue(unsigned char *value) override;
+    void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
@@ -99,7 +100,8 @@ public:
     ~Dtype_STRING();
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
-    void SetValue(unsigned char *value) override;
+    void SetValue(void *value) override;
+    void SetValue(std::string *string_ptr);
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
@@ -113,7 +115,7 @@ class Dtype_WILDCARD : public Dtype {
         ~Dtype_WILDCARD();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
-        void SetValue(unsigned char *value) override;
+        void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
@@ -133,7 +135,7 @@ class Dtype_BOOL : public Dtype {
         ~Dtype_BOOL();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
-        void SetValue(unsigned char *value) override;
+        void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
@@ -149,7 +151,7 @@ class Dtype_INVALID : public Dtype {
         ~Dtype_INVALID();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
-        void SetValue(unsigned char *value) override;
+        void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
@@ -172,9 +174,27 @@ class Dtype_VARIABLE : public Dtype {
                 void *data_src,
                 Dtype *(*compute_fn_ptr)(void *)) ;
 
-        void SetValue(unsigned char *value) override;
+        void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
+
+/* Dtype : Dtype_STRING_LST*/
+
+class Dtype_STRING_LST : public Dtype {
+
+    public:
+
+        struct {
+            std::list<Dtype_STRING *> str_lst;
+        } dtype;
+        
+        Dtype_STRING_LST();
+        ~Dtype_STRING_LST();
+        Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
+        MexprNode * clone() override;
+        void SetValue(void *value) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+};
 
 #endif 

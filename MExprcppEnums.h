@@ -24,6 +24,9 @@ typedef enum {
     MATH_CPP_SIN,
     MATH_CPP_COS,
     MATH_CPP_POW,
+
+    /* Membership operator*/
+    MATH_CPP_IN,
     
     /* Inequality Operator*/
     MATH_CPP_EQ,
@@ -53,6 +56,7 @@ typedef enum {
     MATH_CPP_STRING,
     MATH_CPP_IPV4,
     MATH_CPP_BOOL,
+    MATH_CPP_STRING_LST,
     MATH_CPP_VARIABLE,
     MATH_CPP_DTYPE_LAST,
 
@@ -72,6 +76,7 @@ Math_cpp_operator_precedence (int token_code) {
         case MATH_CPP_MAX:
         case MATH_CPP_MIN:
         case MATH_CPP_POW:
+        case MATH_CPP_IN:
             return 7;
         case MATH_CPP_MUL:
         case MATH_CPP_DIV:

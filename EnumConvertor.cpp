@@ -1,5 +1,8 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <list>
+#include <string>
 #include "../RDBMSImplementation/SqlParser/ParserExport.h"
 #include "MExprcppEnums.h"
 #include "../RDBMSImplementation/SqlParser/SqlParserStruct.h"
@@ -11,32 +14,109 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
                                           mexprcpp_operators_t *opr_code, 
                                           mexprcpp_dtypes_t *dtype_code) ;
                                         
-static void 
-Converter_convert_app_to_expression_library_codes (lex_data_t *infix,  int sizein) {
+static lex_data_t **
+mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
 
-    int i, rc;
+    int i, j;
+    int rc;
+    bool error;
+    lex_data_t *lex_out;
+    lex_data_t *infix_lex_data;
     mexprcpp_dtypes_t dtype_code;
     mexprcpp_operators_t opr_code;
 
+    *size_out = 0;
+    error = false;
+
+    lex_data_t **lex_data_arr_out = 
+        (lex_data_t**)calloc(sizein, sizeof (lex_data_t *));
+
+    j = 0;
+
     for (i = 0; i < sizein; i++) {
 
-        if (infix[i].token_code == PARSER_EOL  || 
-             infix[i].token_code == PARSER_WHITE_SPACE) {
-            
-            infix[i].token_code = (int)MATH_CPP_OPR_INVALID;
+        infix_lex_data = &infix[i];
+
+        if (infix_lex_data->token_code == PARSER_EOL  || 
+             infix_lex_data->token_code == PARSER_WHITE_SPACE) {
+            /* Remove unwanted tokens */
             continue;
         }
 
-        rc = RDBMS_to_Mexpr_Enum_Convertor (infix[i].token_code,
+        rc = RDBMS_to_Mexpr_Enum_Convertor (
+                                                infix_lex_data->token_code,
                                                 &opr_code, &dtype_code);
 
-        if (rc == 0 ) 
-            infix[i].token_code =  (int)MATH_CPP_OPR_INVALID;
-        else 
-            infix[i].token_code = (rc == MEXPR_OPR)  ? (int) opr_code : (int)dtype_code;
+        if (rc == 0) {
+            error = true;
+            printf ("Error : %s(%d) : Non-Convertible Token Found\n", __FUNCTION__, __LINE__);
+            break;
+        }
 
+        lex_out = (lex_data_t *) calloc (1, sizeof (lex_data_t));
+        lex_out->token_code = (rc == MEXPR_OPR)  ? (int) opr_code : (int)dtype_code;
+        lex_out->token_len = infix_lex_data->token_len;
+        lex_out->token_val = infix_lex_data->token_val;
+        lex_data_arr_out[j++] = lex_out;
     }
+
+    *size_out = j;
+
+    std::list<std::string *> *str_lst_ptr = new std::list<std::string *>();
+    std::string *string_ptr; 
+
+    /* Now Fix up the Operators which operate on > 2 operands , for example 
+        ' in ' Operator */
+        for (i = 0; i < *size_out; i++) {
+            
+            if (lex_data_arr_out[i] == NULL) continue;
+
+                switch (lex_data_arr_out[i]->token_code) {
+
+                    case MATH_CPP_IN:
+                    {
+                        int k = i + 1;
+                        assert(lex_data_arr_out[k]->token_code == MATH_CPP_BRACKET_START);
+                        free(lex_data_arr_out[k]);
+                        lex_data_arr_out[k] = NULL;
+                        k++;
+                        while (lex_data_arr_out[k]->token_code != MATH_CPP_BRACKET_END)
+                        {
+                            if (lex_data_arr_out[k]->token_code == MATH_CPP_STRING)
+                            {
+                                string_ptr = new std::string((char *)(lex_data_arr_out[k]->token_val));
+                                str_lst_ptr->push_back(string_ptr);
+                            }
+                            free(lex_data_arr_out[k]);
+                            lex_data_arr_out[k] = NULL;
+                            k++;
+                        }
+                        free(lex_data_arr_out[k]);
+                        lex_data_arr_out[k] = NULL;
+                        lex_out = (lex_data_t *)calloc(1, sizeof(lex_data_t));
+                        lex_out->token_code = MATH_CPP_STRING_LST;
+                        lex_out->token_len = 0;
+                        lex_out->token_val = (char *)str_lst_ptr;
+                        lex_data_arr_out[i + 1] = lex_out;
+                        i++;
+                    }
+                    break;
+                    default:;
+                }
+        }
+
+        if (error) {
+            for (i = 0; i < *size_out; i++) {
+                if (lex_data_arr_out[i]) free(lex_data_arr_out[i]);
+            }
+            free(lex_data_arr_out);
+            lex_data_arr_out = NULL;
+            *size_out = 0;
+        }
+
+    return lex_data_arr_out;
 }
+
 
 lex_data_t **
 mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
@@ -44,20 +124,31 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     int i;
     int out_index = 0;
     lex_data_t *lex_data;
+    lex_data_t *lex_data_cpy;
+    lex_data_t **lex_data_arr_out;
+    lex_data_t **infix_preprocessed;
+    int infix_preprocessed_size;
 
     /* Convert codes from Application to Mexpr Library*/
-    Converter_convert_app_to_expression_library_codes (infix, sizein);
+    //Converter_convert_app_to_expression_library_codes (infix, sizein);
+    infix_preprocessed = mexpr_preprocess_infix_array (infix, sizein, &infix_preprocessed_size);
 
     Stack_t *stack = get_new_stack();
 
-    lex_data_t **lex_data_arr_out = 
-        (lex_data_t**)calloc(sizein, sizeof(lex_data_t *));
+    lex_data_arr_out = 
+        (lex_data_t**)calloc(infix_preprocessed_size, sizeof(lex_data_t *));
 
-    for (i = 0; i < sizein; i++) {
+    for (i = 0; i < infix_preprocessed_size; i++) {
 
-            lex_data = &infix[i];
+            lex_data = infix_preprocessed[i];
+            if (!lex_data) continue;
+            infix_preprocessed[i] = NULL;
 
-            if (lex_data->token_code == (int) MATH_CPP_OPR_INVALID) continue;
+            if (lex_data->token_code == (int) MATH_CPP_OPR_INVALID) {
+                free(lex_data);
+                continue;
+            }
+
             if (!Math_cpp_is_operator (lex_data->token_code)  &&
                     !Math_cpp_is_operand (lex_data->token_code)) assert(0);
 
@@ -71,14 +162,13 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
                         (((lex_data_t *)stack->slot[stack->top])->token_code != (int)MATH_CPP_BRACKET_START)) {
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                     }
-                    pop(stack);
+                    free(pop(stack));
 
                     while (!isStackEmpty(stack)) {
 
                         lex_data = (lex_data_t *)StackGetTopElem(stack);
 
                         if (Math_cpp_is_unary_operator (lex_data->token_code)) {
-
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                             continue;
                         }
@@ -93,23 +183,30 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
                             lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                 }
             }
-
+            /* If I am operand */
             else if (!Math_cpp_is_operator(lex_data->token_code)) {
-                
                 lex_data_arr_out[out_index++] = lex_data;
             }
+
+            /* If I am operator and and stack is empty*/
             else if (isStackEmpty (stack)) {
-                
                 push(stack, (void *)lex_data);
             }
-            else {
+
+            /* If I am non-uniary operator and stack is not empty*/
+            else if ( !Math_cpp_is_unary_operator(lex_data->token_code)) {
+
                 while (!isStackEmpty(stack) &&
-                       !Math_cpp_is_unary_operator(lex_data->token_code) &&
                        (Math_cpp_operator_precedence(lex_data->token_code) <=
                         Math_cpp_operator_precedence(((lex_data_t *)stack->slot[stack->top])->token_code))) {
 
                     lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
                 }
+                push(stack, (void *)lex_data);
+            }
+
+            /* If I a unary Operator and stack is not empty*/
+            else {
                 push(stack, (void *)lex_data);
             }
     }
@@ -120,6 +217,11 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
     *size_out = out_index;
     free_stack(stack);
+
+    for (i = 0; i < infix_preprocessed_size; i++) {
+        assert (infix_preprocessed[i] == NULL) ;
+    }   
+    free (infix_preprocessed);
     return lex_data_arr_out;
 }
 
@@ -163,6 +265,17 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
             *opr_code = MATH_CPP_EQ;
             return MEXPR_OPR;
 
+        case SQL_IN:
+            *opr_code = MATH_CPP_IN;
+            return MEXPR_OPR;
+
+        case SQL_BRACKET_START:
+            *opr_code = MATH_CPP_BRACKET_START;
+            return MEXPR_OPR;
+        case SQL_BRACKET_END:
+            *opr_code = MATH_CPP_BRACKET_END;
+                return MEXPR_OPR;
+
 
         /* Operands*/
         case SQL_INTEGER_VALUE:
@@ -185,6 +298,11 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
         case SQL_IDENTIFIER_IDENTIFIER:
             *dtype_code =  MATH_CPP_VARIABLE;
             return MEXPR_OPND;
+
+        /* Extras */
+        case SQL_COMMA:
+            *opr_code = MATH_CPP_COMMA;
+             return MEXPR_OPR;
 
         default:
             return 0;

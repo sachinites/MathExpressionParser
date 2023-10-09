@@ -115,5 +115,18 @@ class OperatorEq : public Operator {
         MexprNode * clone() override;
 };
 
+/* IN Operator*/
+
+class OperatorIn : public Operator {
+
+    private:
+
+    public:
+        OperatorIn();
+        ~OperatorIn();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
 
 #endif 

@@ -137,6 +137,9 @@ cnvrt (int external_code) {
     return PARSER_INVALID_CODE;
 }
 
+parse_rc_t INCLAUSE () ;
+parse_rc_t IDENT_LST () ;  // ("abc" , "def" , "ghi")
+
 parse_rc_t Ineq () ;
 parse_rc_t G ();
 parse_rc_t P ();
@@ -155,6 +158,62 @@ parse_rc_t J_dash () ;
 parse_rc_t J () ;
 parse_rc_t  S_dash () ;
 parse_rc_t  S () ;
+
+parse_rc_t 
+IDENT_LST () {
+
+    parse_init();
+
+    token_code = cnvrt (cyylex() );
+
+    if (token_code != MATH_CPP_STRING ) RETURN_PARSE_ERROR;
+
+    token_code = cnvrt (cyylex() );
+
+    if (token_code != MATH_CPP_COMMA) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = PARSER_CALL(IDENT_LST);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
+}
+
+/* Parse the  ' in ' operator 
+    INCALUSE ->  Identifier in (IDENT_LST)
+    IDENT_LST -> "Word(s)" | "Word(s)" , IDENT_LST
+*/
+parse_rc_t 
+INCLAUSE () {
+
+    parse_init();
+
+    token_code = cnvrt (cyylex() );
+
+    if (token_code != MATH_CPP_VARIABLE)  RETURN_PARSE_ERROR;
+
+    token_code = cnvrt (cyylex() );
+
+    if (token_code != MATH_CPP_IN) RETURN_PARSE_ERROR;
+
+    token_code = cnvrt (cyylex() );
+
+    if (token_code != MATH_CPP_BRACKET_START) RETURN_PARSE_ERROR;
+
+    err = PARSER_CALL(IDENT_LST);
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+     token_code = cnvrt (cyylex() );
+
+      if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR;
+
+      RETURN_PARSE_SUCCESS;
+}
+
 
 parse_rc_t
 Ineq () {
@@ -432,7 +491,7 @@ E () {
     RETURN_PARSE_SUCCESS;
 }
 
-/* Q  ->   E Ineq E  | ( Q ) */
+/* Q  ->   E Ineq E  | ( Q ) |  INCLAUSE */
 
 parse_rc_t
 Q () {
@@ -463,16 +522,28 @@ Q () {
 
     RESTORE_CHKP(chkp_initial);
 
-    // E Ineq E
-    err = PARSER_CALL(E);
+    do {
+        // E Ineq E
+        err = PARSER_CALL(E);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) break;
 
-    err = PARSER_CALL(Ineq);
+        err = PARSER_CALL(Ineq);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) break;
 
-    err = PARSER_CALL(E);
+        err = PARSER_CALL(E);
+
+        if (err == PARSE_ERR) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(chkp_initial);
+
+    //INCLAUSE
+    err = PARSER_CALL( INCLAUSE);
 
     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 

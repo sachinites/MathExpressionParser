@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <arpa/inet.h>
 #include <algorithm>
+#include <list>
 #include "Dtype.h"
 
 class MexprNode;
@@ -60,7 +61,7 @@ Dtype_INT::clone() {
 }
 
 void 
-Dtype_INT::SetValue(unsigned char *value) {
+Dtype_INT::SetValue(void *value) {
 
     int val = atoi ( (const char *) value);
     this->dtype.int_val = val;
@@ -120,7 +121,7 @@ Dtype_DOUBLE::clone() {
 }
 
 void 
-Dtype_DOUBLE::SetValue(unsigned char *value) {
+Dtype_DOUBLE::SetValue(void *value) {
 
     double val = (double)atof ( (const char *) value);
     this->dtype.d_val = val;
@@ -162,7 +163,7 @@ MexprNode *
 Dtype_STRING::clone() {
 
     Dtype_STRING *obj = new Dtype_STRING();
-    *obj = *this;
+    obj->dtype.str_val = this->dtype.str_val;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -172,10 +173,23 @@ Dtype_STRING::clone() {
 }
 
 void 
-Dtype_STRING::SetValue(unsigned char *value) {
+Dtype_STRING::SetValue(void *value) {
 
     this->dtype.str_val.assign(std::string ((char *)value));
     
+    this->dtype.str_val.erase(
+            std::remove(this->dtype.str_val.begin(), this->dtype.str_val.end(), '\"'), 
+            this->dtype.str_val.end());
+    this->dtype.str_val.erase(
+            std::remove(this->dtype.str_val.begin(), this->dtype.str_val.end(), '\''), 
+            this->dtype.str_val.end());
+    this->is_resolved = true;
+}
+
+void 
+Dtype_STRING::SetValue(std::string *string_ptr) {
+
+    this->dtype.str_val.assign(*string_ptr);
     
     this->dtype.str_val.erase(
             std::remove(this->dtype.str_val.begin(), this->dtype.str_val.end(), '\"'), 
@@ -231,7 +245,7 @@ Dtype_IPv4_addr::clone() {
 }
 
 void 
-Dtype_IPv4_addr::SetValue(unsigned char *value) {
+Dtype_IPv4_addr::SetValue(void *value) {
 
     this->dtype.ip_addr_str.assign (std::string ((char *)value));
     inet_pton (AF_INET, (const char *)value, &this->dtype.ipaddr_int);
@@ -284,8 +298,9 @@ Dtype_BOOL::clone() {
 }
 
 void 
-Dtype_BOOL::SetValue (unsigned char *value) {
+Dtype_BOOL::SetValue (void *_value) {
 
+    char *value = (char *)_value;
     if (value[0] == 't' || value[0] == 'T' ) {
         this->dtype.b_val = true;
     }
@@ -338,7 +353,7 @@ Dtype_WILDCARD::clone() {
 }
 
 void 
-Dtype_WILDCARD::SetValue (unsigned char *value) {
+Dtype_WILDCARD::SetValue (void *value) {
 
 }
 
@@ -382,14 +397,14 @@ Dtype_INVALID::clone() {
 }
 
 void 
-Dtype_INVALID::SetValue (unsigned char *value) {
+Dtype_INVALID::SetValue (void *value) {
 
 }
 
 mexprcpp_dtypes_t 
 Dtype_INVALID::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
-    return MATH_CPP_DTYPE_WILDCRAD;
+    return MATH_CPP_DTYPE_INVALID;
 }
 
 
@@ -448,7 +463,7 @@ Dtype_VARIABLE::InstallOperandProperties (
 }
 
 void 
-Dtype_VARIABLE::SetValue (unsigned char *value) {
+Dtype_VARIABLE::SetValue (void *value) {
 
 }
 
@@ -457,6 +472,87 @@ Dtype_VARIABLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2
 
     return MATH_CPP_DTYPE_WILDCRAD;
 }
+
+
+
+/* Dtype : Dtype_STRING_LST*/
+
+Dtype_STRING_LST::Dtype_STRING_LST() {
+
+    did = MATH_CPP_STRING_LST;
+    this->is_resolved = true;
+}
+
+Dtype_STRING_LST::~Dtype_STRING_LST() {
+
+    Dtype_STRING *elem;
+
+    while (!this->dtype.str_lst.empty()) {
+
+        elem = this->dtype.str_lst.front();
+        this->dtype.str_lst.pop_front();
+        delete elem;
+    }
+}
+
+Dtype *
+Dtype_STRING_LST::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype_STRING *elem;
+    Dtype_STRING_LST *cpy_list_dst = new Dtype_STRING_LST();
+
+    for (std::list<Dtype_STRING *>::iterator it = this->dtype.str_lst.begin(); 
+            it != this->dtype.str_lst.end(); ++it) {
+
+            elem = *it;
+            cpy_list_dst->dtype.str_lst.push_back(
+                   dynamic_cast <Dtype_STRING *> (elem->clone()));
+    }
+    return cpy_list_dst ;
+}
+
+MexprNode * 
+Dtype_STRING_LST::clone() {
+    
+    Dtype_STRING *elem;
+    Dtype_STRING_LST *cpy_list_dst = new Dtype_STRING_LST();
+
+    for (std::list<Dtype_STRING *>::iterator it = this->dtype.str_lst.begin(); 
+            it != this->dtype.str_lst.end(); ++it) {
+
+            elem = *it;
+            cpy_list_dst->dtype.str_lst.push_back(
+                   dynamic_cast <Dtype_STRING *> (elem->clone()));
+    } 
+
+    return cpy_list_dst ;
+}
+
+void
+Dtype_STRING_LST::SetValue(void *value) {
+
+    std::string *str_ptr;
+    Dtype_STRING *dtype_str;
+
+    std::list<std::string *> *str_lst_ptr = reinterpret_cast <std::list<std::string *> *> (value);
+
+    for (std::list<std::string *>::iterator it = str_lst_ptr->begin(); 
+            it != str_lst_ptr->end(); ++it) {
+
+        str_ptr = *it;
+        dtype_str = new Dtype_STRING();
+        dtype_str->SetValue (str_ptr);
+        this->dtype.str_lst.push_back (dtype_str);
+    }
+}
+
+mexprcpp_dtypes_t 
+Dtype_STRING_LST::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_STRING_LST;
+}
+
+
 
 
 
@@ -478,6 +574,8 @@ Dtype::factory(mexprcpp_dtypes_t did) {
             return new Dtype_IPv4_addr();
         case MATH_CPP_VARIABLE:
             return new Dtype_VARIABLE();
+        case MATH_CPP_STRING_LST:
+            return new Dtype_STRING_LST();
         case MATH_CPP_DTYPE_WILDCRAD:
             return new Dtype_WILDCARD();
         case MATH_CPP_DTYPE_INVALID:

@@ -66,7 +66,7 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
                 this->lst_head = node;
             }
             else {
-                 dtype->SetValue (postfix_lex_data_array[i]->token_val);
+                 dtype->SetValue ((void *)postfix_lex_data_array[i]->token_val);
             }
 
             push(stack, (void *)node);
@@ -440,6 +440,9 @@ MexprNode::IsInequalityOperator () {
         case MATH_CPP_EQ:
         case MATH_CPP_NEQ:
         case MATH_CPP_LESS_THAN:
+        case MATH_CPP_LESS_THAN_EQ:
+        case MATH_CPP_GREATER_THAN:
+        case MATH_CPP_IN:
             return true;
         default:
             return false;
