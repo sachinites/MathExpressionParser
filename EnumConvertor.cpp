@@ -125,12 +125,14 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     int out_index = 0;
     lex_data_t *lex_data;
     lex_data_t *lex_data_cpy;
+    int infix_preprocessed_size;
     lex_data_t **lex_data_arr_out;
     lex_data_t **infix_preprocessed;
-    int infix_preprocessed_size;
 
-    /* Convert codes from Application to Mexpr Library*/
-    //Converter_convert_app_to_expression_library_codes (infix, sizein);
+    /* Convert codes from Application to Mexpr Library, and combine the multiple 
+        operands for Operators operating on multiple operands eg, IN Operator. Basically
+        rearch the infix array to make it suitable to be consume by infix -> postfix conversion
+        Algorithm*/
     infix_preprocessed = mexpr_preprocess_infix_array (infix, sizein, &infix_preprocessed_size);
 
     Stack_t *stack = get_new_stack();
@@ -310,6 +312,25 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
     assert(0);
     return 0;
 }
+
+mexprcpp_dtypes_t
+sql_to_mexpr_dtype_converter (sql_dtype_t sql_dtype) {
+
+    switch (sql_dtype) {
+
+        case SQL_INT:
+            return MATH_CPP_INT;
+        case SQL_DOUBLE:
+            return MATH_CPP_DOUBLE;
+        case SQL_STRING:
+            return MATH_CPP_STRING;
+        case SQL_IPV4_ADDR:
+            return MATH_CPP_IPV4;
+        default: 
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
 
 /* Register the library the converter fn */
 int (*Mexpr_Enum_Convertor_fn_ptr) ( int external_code, 

@@ -32,8 +32,7 @@ class MexprTree {
 
     private:
     mexprcpp_dtypes_t validate_internal(MexprNode *root);
-    void CloneNodesRecursively  (MexprTree *clone_tree,
-                                                             MexprNode *src_node, 
+    void CloneNodesRecursively  (      MexprNode *src_node, 
                                                              MexprNode *new_node, int child);
                                                              
     void CreateOperandList (MexprNode *node);

@@ -59,7 +59,7 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
 
             if (dvar) {
                 assert (!dvar->is_resolved);
-                dvar->variable_name.assign(std::string((char *)postfix_lex_data_array[i]->token_val));
+                dvar->dtype.variable_name.assign(std::string((char *)postfix_lex_data_array[i]->token_val));
                 assert (!dvar->is_resolved);
                 node->lst_right = this->lst_head;
                 if ( this->lst_head) this->lst_head->lst_left = node;
@@ -172,20 +172,20 @@ MexprTree::evaluate (MexprNode  *root) {
     else if (root->left && !root->right) {
 
         res = root->compute(lrc, NULL);
-        delete lrc;
+        if (lrc->del_after_use) delete lrc;
     }
 
     /* Full Node*/
     else {
 
         res = root->compute(lrc, rrc);
-        delete lrc;
-        delete rrc;
+        if (lrc->del_after_use) delete lrc;
+        if (rrc->del_after_use) delete rrc;
     }
 
     if (!res) return NULL;
     if (res->did == MATH_CPP_DTYPE_INVALID) {
-        delete res;
+        if (res->del_after_use) delete res;
         return NULL;
     }
 
@@ -230,8 +230,7 @@ MexprTree::CreateOperandList (){
 }
 
 void
-MexprTree::CloneNodesRecursively (MexprTree *clone_tree,
-                                                             MexprNode *src_node, 
+MexprTree::CloneNodesRecursively (MexprNode *src_node, 
                                                              MexprNode *new_node, int child) {
 
     MexprNode *temp;
@@ -240,8 +239,8 @@ MexprTree::CloneNodesRecursively (MexprTree *clone_tree,
 
     if (child == 0) {
 
-        clone_tree->root = src_node->clone();
-        new_node = clone_tree->root ;
+        this->root = src_node->clone();
+        new_node = this->root ;
     }
     else if (child == -1) {
 
@@ -258,8 +257,8 @@ MexprTree::CloneNodesRecursively (MexprTree *clone_tree,
         new_node = temp;
     }    
 
-    CloneNodesRecursively (clone_tree, src_node->left, new_node, -1);
-    CloneNodesRecursively (clone_tree, src_node->right, new_node, 1);
+    CloneNodesRecursively (src_node->left, new_node, -1);
+    CloneNodesRecursively (src_node->right, new_node, 1);
 }
 
 
@@ -267,7 +266,7 @@ MexprTree *
 MexprTree::clone(MexprNode *root) {
 
     MexprTree *clone_tree = new MexprTree();
-    CloneNodesRecursively (clone_tree , root, NULL, 0);
+    clone_tree->CloneNodesRecursively (root, NULL, 0);
     clone_tree->CreateOperandList( );
     return clone_tree;
 }
@@ -477,6 +476,7 @@ MexprTree::RemoveUnresolveOperands() {
         opr->is_optimized = true;
         dtype_b = new Dtype_BOOL();
         dtype_b->dtype.b_val = true;
+        dtype_b->del_after_use = false;
         opr->optimized_result = dtype_b;
         count++;
     }

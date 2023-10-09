@@ -11,6 +11,7 @@ Dtype::Dtype() {
 
     this->did = MATH_CPP_DTYPE_INVALID;
     this->is_resolved = false;
+    del_after_use = true;
 } 
 
 Dtype::~Dtype() {}
@@ -22,6 +23,7 @@ Dtype_INT::Dtype_INT() {
 
     did = MATH_CPP_INT;
     this->is_resolved = true;
+    del_after_use = false;
 }
 
 Dtype_INT::~Dtype_INT() {
@@ -44,7 +46,7 @@ Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 Dtype *
 Dtype_INT::compute(Dtype *dtype1, Dtype *dtype2) {
 
-        return new Dtype_INT(this->dtype.int_val);
+        return this;
 }
 
 MexprNode * 
@@ -52,6 +54,7 @@ Dtype_INT::clone() {
 
     Dtype_INT *obj = new Dtype_INT();
     *obj = *this;
+    obj->del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -84,6 +87,7 @@ Dtype_DOUBLE::Dtype_DOUBLE() {
 
     did = MATH_CPP_DOUBLE;
     this->is_resolved = true;
+    del_after_use = false;
 }
 
  Dtype_DOUBLE::Dtype_DOUBLE(double val) {
@@ -91,6 +95,7 @@ Dtype_DOUBLE::Dtype_DOUBLE() {
         this->did = MATH_CPP_DOUBLE;
         this->dtype.d_val = val;
         this->is_resolved = true;
+        del_after_use = false;
  }
 
 
@@ -101,10 +106,7 @@ Dtype_DOUBLE::~Dtype_DOUBLE() {
 Dtype *
 Dtype_DOUBLE::compute(Dtype *dtype1, Dtype *dtype2) {
 
-        Dtype *cpy = new Dtype_DOUBLE();
-        Dtype_DOUBLE *cpy_d = dynamic_cast <Dtype_DOUBLE*>(cpy);
-        *cpy_d = *this;
-        return cpy;
+    return this;
 }
 
 MexprNode * 
@@ -112,6 +114,7 @@ Dtype_DOUBLE::clone() {
 
     Dtype_DOUBLE *obj = new Dtype_DOUBLE();
     *obj = *this;
+    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -153,10 +156,7 @@ Dtype_STRING::~Dtype_STRING() {
 Dtype *
 Dtype_STRING::compute(Dtype *dtype1, Dtype *dtype2) {
 
-        Dtype *cpy = new Dtype_STRING();
-        Dtype_STRING *cpy_str = dynamic_cast <Dtype_STRING*>(cpy);
-        *cpy_str = *this;
-        return cpy;
+    return this;
 }
 
 MexprNode * 
@@ -164,6 +164,7 @@ Dtype_STRING::clone() {
 
     Dtype_STRING *obj = new Dtype_STRING();
     obj->dtype.str_val = this->dtype.str_val;
+    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -216,6 +217,7 @@ Dtype_IPv4_addr::Dtype_IPv4_addr() {
 
     did = MATH_CPP_IPV4;
     this->is_resolved = true;
+    del_after_use = false;
 }
 
 Dtype_IPv4_addr::~Dtype_IPv4_addr() {
@@ -225,10 +227,7 @@ Dtype_IPv4_addr::~Dtype_IPv4_addr() {
 Dtype *
 Dtype_IPv4_addr::compute(Dtype *dtype1, Dtype *dtype2) {
 
-        Dtype *cpy = new Dtype_IPv4_addr();
-        Dtype_IPv4_addr *cpy_ipv4 = dynamic_cast <Dtype_IPv4_addr*>(cpy);
-        *cpy_ipv4 = *this;
-        return cpy;
+    return this;
 }
 
 MexprNode * 
@@ -269,6 +268,7 @@ Dtype_BOOL::Dtype_BOOL () {
     did = MATH_CPP_BOOL;
     this->dtype.b_val = false;
     this->is_resolved = true;
+    del_after_use = false;
 }
 
 Dtype_BOOL::~Dtype_BOOL() {
@@ -278,10 +278,7 @@ Dtype_BOOL::~Dtype_BOOL() {
 Dtype *
 Dtype_BOOL::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    Dtype *cpy = new Dtype_BOOL();
-    Dtype_BOOL *cpy_bool = dynamic_cast<Dtype_BOOL *>(cpy);
-    *cpy_bool = *this;
-    return cpy;
+    return this;
 }
 
 MexprNode * 
@@ -324,6 +321,8 @@ Dtype_BOOL::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 Dtype_WILDCARD::Dtype_WILDCARD() {
 
     did = MATH_CPP_DTYPE_WILDCRAD;
+    is_resolved = true;
+    del_after_use = false;
 }
 
 Dtype_WILDCARD::~Dtype_WILDCARD() {
@@ -333,10 +332,7 @@ Dtype_WILDCARD::~Dtype_WILDCARD() {
 Dtype *
 Dtype_WILDCARD::compute(Dtype *dtype1, Dtype *dtype2) {
 
-        Dtype *cpy = new Dtype_WILDCARD();
-        Dtype_WILDCARD *cpy_wd = dynamic_cast <Dtype_WILDCARD*>(cpy);
-        *cpy_wd = *this;
-        return cpy;
+    return this;
 }
 
 MexprNode * 
@@ -344,6 +340,7 @@ Dtype_WILDCARD::clone() {
 
     Dtype_WILDCARD *obj = new Dtype_WILDCARD();
     *obj = *this;
+    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -371,6 +368,8 @@ Dtype_WILDCARD::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2
 Dtype_INVALID::Dtype_INVALID() {
 
     did = MATH_CPP_DTYPE_INVALID;
+    is_resolved = true;
+    del_after_use = false;
 }
 
 Dtype_INVALID::~Dtype_INVALID() {
@@ -416,14 +415,19 @@ Dtype_INVALID::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2)
 Dtype_VARIABLE::Dtype_VARIABLE(std::string var_name) {
 
     did = MATH_CPP_VARIABLE;
-    this->variable_name.assign(var_name);
+    this->dtype.variable_name.assign(var_name);
     this->is_resolved = false;
+    this->resolved_did = MATH_CPP_DTYPE_WILDCRAD;
+    del_after_use = false;
 }
 
 Dtype_VARIABLE::Dtype_VARIABLE() {
 
     did = MATH_CPP_VARIABLE;
+    this->dtype.variable_name.assign("");
     this->is_resolved = false;
+    this->resolved_did = MATH_CPP_DTYPE_WILDCRAD;
+    del_after_use = false;
 }
 
 Dtype_VARIABLE::~Dtype_VARIABLE() {
@@ -435,14 +439,16 @@ Dtype_VARIABLE::compute(Dtype *dtype1, Dtype *dtype2) {
 
    if (!this->is_resolved)  return NULL;
     Dtype *res =  this->compute_fn_ptr(this->data_src);
+    res->del_after_use = true;
     return res;
 }
 
 MexprNode * 
 Dtype_VARIABLE::clone() {
 
-    Dtype_VARIABLE *obj = new Dtype_VARIABLE(this->variable_name);
+    Dtype_VARIABLE *obj = new Dtype_VARIABLE(this->dtype.variable_name);
     *obj = *this;
+    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -453,6 +459,7 @@ Dtype_VARIABLE::clone() {
 
 void  
 Dtype_VARIABLE::InstallOperandProperties (
+                mexprcpp_dtypes_t resolved_did,
                 void *data_src,
                 Dtype *(*compute_fn_ptr)(void *))  {
 
@@ -460,6 +467,7 @@ Dtype_VARIABLE::InstallOperandProperties (
     this->data_src = data_src;
     this->compute_fn_ptr = compute_fn_ptr;
     this->is_resolved = true;
+    this->resolved_did = resolved_did;
 }
 
 void 
@@ -470,6 +478,7 @@ Dtype_VARIABLE::SetValue (void *value) {
 mexprcpp_dtypes_t 
 Dtype_VARIABLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
+    if (this->is_resolved) return this->resolved_did;
     return MATH_CPP_DTYPE_WILDCRAD;
 }
 
@@ -479,8 +488,9 @@ Dtype_VARIABLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2
 
 Dtype_STRING_LST::Dtype_STRING_LST() {
 
-    did = MATH_CPP_STRING_LST;
+    this->did = MATH_CPP_STRING_LST;
     this->is_resolved = true;
+    this->del_after_use = false;
 }
 
 Dtype_STRING_LST::~Dtype_STRING_LST() {
@@ -498,17 +508,7 @@ Dtype_STRING_LST::~Dtype_STRING_LST() {
 Dtype *
 Dtype_STRING_LST::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    Dtype_STRING *elem;
-    Dtype_STRING_LST *cpy_list_dst = new Dtype_STRING_LST();
-
-    for (std::list<Dtype_STRING *>::iterator it = this->dtype.str_lst.begin(); 
-            it != this->dtype.str_lst.end(); ++it) {
-
-            elem = *it;
-            cpy_list_dst->dtype.str_lst.push_back(
-                   dynamic_cast <Dtype_STRING *> (elem->clone()));
-    }
-    return cpy_list_dst ;
+    return this;
 }
 
 MexprNode * 

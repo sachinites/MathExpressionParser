@@ -15,7 +15,8 @@ protected:
 public:
     bool is_resolved;
     mexprcpp_dtypes_t did;
-
+    bool del_after_use;
+    
     virtual ~Dtype();
     static Dtype * factory(mexprcpp_dtypes_t did);
     virtual Dtype *compute(Dtype *dtype1, Dtype *dtype2) = 0;
@@ -162,15 +163,20 @@ class Dtype_INVALID : public Dtype {
 class Dtype_VARIABLE : public Dtype {
 
     public:
-        std::string variable_name;
+        struct {
+            std::string variable_name;
+        } dtype;
         void *data_src;
         Dtype *(*compute_fn_ptr)(void *);
+        mexprcpp_dtypes_t resolved_did;
+
         Dtype_VARIABLE(std::string var_name);
         Dtype_VARIABLE();
         ~Dtype_VARIABLE();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void  InstallOperandProperties (
+                mexprcpp_dtypes_t resolved_did,
                 void *data_src,
                 Dtype *(*compute_fn_ptr)(void *)) ;
 
