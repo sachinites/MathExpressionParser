@@ -33,7 +33,7 @@ T' -> * F T' |   / F T'  |  $
 Combining everything, final grammar is for computing one Inequality
 ==================================================
 
-1. Q  ->   E Ineq E  | ( Q )
+1. Q  ->   E Ineq E  | INCLAUSE | ( Q )
 2. E  ->   T E'
 3. E'  ->  + T E' | - T E' |  $
 4. T  ->   F T'

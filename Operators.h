@@ -129,4 +129,36 @@ class OperatorIn : public Operator {
         MexprNode * clone() override;
 };
 
+
+
+/* And Operator*/
+
+class OperatorAnd : public Operator {
+
+    private:
+
+    public:
+        OperatorAnd();
+        ~OperatorAnd();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
+
+
+/* Or Operator*/
+
+class OperatorOr : public Operator {
+
+    private:
+
+    public:
+        OperatorOr();
+        ~OperatorOr();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
 #endif 

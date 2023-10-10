@@ -62,11 +62,13 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
 
     *size_out = j;
 
-    std::list<std::string *> *str_lst_ptr = new std::list<std::string *>();
+    int k;
     std::string *string_ptr; 
+    std::list<std::string *> *str_lst_ptr;
+    
+        /* Now Fix up the Operators which operate on > 2 operands, 
+            for example ' in ' Operator */
 
-    /* Now Fix up the Operators which operate on > 2 operands , for example 
-        ' in ' Operator */
         for (i = 0; i < *size_out; i++) {
             
             if (lex_data_arr_out[i] == NULL) continue;
@@ -75,7 +77,8 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
 
                     case MATH_CPP_IN:
                     {
-                        int k = i + 1;
+                        str_lst_ptr = new std::list<std::string *>();
+                        k = i + 1;
                         assert(lex_data_arr_out[k]->token_code == MATH_CPP_BRACKET_START);
                         free(lex_data_arr_out[k]);
                         lex_data_arr_out[k] = NULL;
@@ -276,8 +279,14 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
             return MEXPR_OPR;
         case SQL_BRACKET_END:
             *opr_code = MATH_CPP_BRACKET_END;
-                return MEXPR_OPR;
+             return MEXPR_OPR;
 
+        case SQL_OR:
+            *opr_code = MATH_CPP_OR;
+            return MEXPR_OPR;
+        case SQL_AND:
+             *opr_code = MATH_CPP_AND;
+                return MEXPR_OPR;
 
         /* Operands*/
         case SQL_INTEGER_VALUE:

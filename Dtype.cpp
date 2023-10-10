@@ -41,6 +41,7 @@ Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
         this->did = MATH_CPP_INT;
         this->dtype.int_val = val;
         this->is_resolved = true;
+	this->del_after_use = false;
  }
 
 Dtype *
@@ -54,7 +55,6 @@ Dtype_INT::clone() {
 
     Dtype_INT *obj = new Dtype_INT();
     *obj = *this;
-    obj->del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -114,7 +114,6 @@ Dtype_DOUBLE::clone() {
 
     Dtype_DOUBLE *obj = new Dtype_DOUBLE();
     *obj = *this;
-    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -147,6 +146,7 @@ Dtype_STRING::Dtype_STRING() {
 
     did = MATH_CPP_STRING;
     this->is_resolved = true;
+    this->del_after_use = false;
 }
 
 Dtype_STRING::~Dtype_STRING() {
@@ -164,7 +164,6 @@ Dtype_STRING::clone() {
 
     Dtype_STRING *obj = new Dtype_STRING();
     obj->dtype.str_val = this->dtype.str_val;
-    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -234,7 +233,7 @@ MexprNode *
 Dtype_IPv4_addr::clone() {
 
     Dtype_IPv4_addr *obj = new Dtype_IPv4_addr();
-    *obj = *this;
+    *obj = *this; 
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -340,7 +339,6 @@ Dtype_WILDCARD::clone() {
 
     Dtype_WILDCARD *obj = new Dtype_WILDCARD();
     *obj = *this;
-    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -448,7 +446,6 @@ Dtype_VARIABLE::clone() {
 
     Dtype_VARIABLE *obj = new Dtype_VARIABLE(this->dtype.variable_name);
     *obj = *this;
-    del_after_use = true;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;

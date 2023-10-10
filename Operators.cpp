@@ -19,32 +19,6 @@ Operator::~Operator() {
     }
 }
 
-Operator* 
-Operator::factory (mexprcpp_operators_t opr_code) {
-
-    switch (opr_code) {
-
-        case MATH_CPP_MOD:
-            return new OperatorMod();
-        case MATH_CPP_PLUS:
-            return new OperatorPlus();
-        case MATH_CPP_MINUS:
-            return new OperatorMinus();
-        case MATH_CPP_MUL:
-            return new OperatorMul();
-        case MATH_CPP_DIV:
-            return new OperatorDiv();
-        case MATH_CPP_EQ:
-            return new OperatorEq();
-        case MATH_CPP_IN:
-            return new OperatorIn();
-        default:
-            return NULL;
-    }
-    return NULL;
-}
-
-
 
 
 /* MOD operator */
@@ -1074,3 +1048,203 @@ OperatorIn::clone() {
     obj->lst_right = NULL;
     return obj;
 }
+
+
+
+
+
+
+/* AND Operator*/
+
+OperatorAnd::OperatorAnd() {
+
+    opid = MATH_CPP_AND;
+    name = "and";
+    is_unary = false;
+}
+
+OperatorAnd::~OperatorAnd() { }
+
+Dtype* 
+OperatorAnd::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
+    assert (dtype1->did == MATH_CPP_BOOL &&
+               dtype2->did == MATH_CPP_BOOL);
+
+    Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
+    res->dtype.b_val = false;
+    res->del_after_use = true;
+
+    Dtype_BOOL *dtype1_res = dynamic_cast <Dtype_BOOL *> (dtype1);
+    Dtype_BOOL *dtype2_res = dynamic_cast <Dtype_BOOL *> (dtype2);
+
+    res->dtype.b_val = dtype1_res->dtype.b_val && dtype2_res->dtype.b_val ;
+
+    return res;
+}
+
+mexprcpp_dtypes_t 
+OperatorAnd::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_BOOL:
+
+            switch (did2) {
+
+                case MATH_CPP_BOOL:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+            break;
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_BOOL:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+MexprNode * 
+OperatorAnd::clone() {
+
+    OperatorAnd *obj = new OperatorAnd();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
+
+/* OR Operator*/
+
+OperatorOr::OperatorOr() {
+
+    opid = MATH_CPP_OPR_MAX;
+    name = "or";
+    is_unary = false;
+}
+
+OperatorOr::~OperatorOr() { }
+
+Dtype* 
+OperatorOr::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
+    assert (dtype1->did == MATH_CPP_BOOL &&
+               dtype2->did == MATH_CPP_BOOL);
+
+    Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
+    res->dtype.b_val = false;
+    res->del_after_use = true;
+
+    Dtype_BOOL *dtype1_res = dynamic_cast <Dtype_BOOL *> (dtype1);
+    Dtype_BOOL *dtype2_res = dynamic_cast <Dtype_BOOL *> (dtype2);
+
+    res->dtype.b_val = dtype1_res->dtype.b_val || dtype2_res->dtype.b_val ;
+
+    return res;
+}
+
+mexprcpp_dtypes_t 
+OperatorOr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_BOOL:
+
+            switch (did2) {
+
+                case MATH_CPP_BOOL:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+            break;
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_BOOL:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+MexprNode * 
+OperatorOr::clone() {
+
+    OperatorOr *obj = new OperatorOr();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
+
+
+Operator* 
+Operator::factory (mexprcpp_operators_t opr_code) {
+
+    switch (opr_code) {
+
+        case MATH_CPP_MOD:
+            return new OperatorMod();
+        case MATH_CPP_PLUS:
+            return new OperatorPlus();
+        case MATH_CPP_MINUS:
+            return new OperatorMinus();
+        case MATH_CPP_MUL:
+            return new OperatorMul();
+        case MATH_CPP_DIV:
+            return new OperatorDiv();
+        case MATH_CPP_EQ:
+            return new OperatorEq();
+        case MATH_CPP_IN:
+            return new OperatorIn();
+        case MATH_CPP_OR:
+            return new OperatorOr();
+        case MATH_CPP_AND:
+            return new OperatorAnd();
+        default:
+            return NULL;
+    }
+    return NULL;
+}
+
