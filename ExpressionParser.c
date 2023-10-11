@@ -207,11 +207,11 @@ INCLAUSE () {
 
     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-     token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex() );
 
-      if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR;
+    if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR;
 
-      RETURN_PARSE_SUCCESS;
+    RETURN_PARSE_SUCCESS;
 }
 
 
