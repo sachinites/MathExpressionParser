@@ -340,6 +340,28 @@ sql_to_mexpr_dtype_converter (sql_dtype_t sql_dtype) {
     }
 }
 
+mexprcpp_agg_t 
+sql_to_mexpr_agg_fn_converter (sql_agg_fn_t agg_fn) {
+
+    switch (agg_fn) {
+
+        case SQL_SUM:
+            return MATH_CPP_AGG_SUM;
+        case SQL_MIN:
+            return MATH_CPP_AGG_MIN;
+        case SQL_MAX:
+            return MATH_CPP_AGG_MAX;
+        case SQL_COUNT:
+            return MATH_CPP_AGG_COUNT;
+        case SQL_AVG:
+            return MATH_CPP_AGG_COUNT;
+        default:
+            assert(0);
+    }
+    return MATH_CPP_AGG_MAXX;
+}
+
+
 
 /* Register the library the converter fn */
 int (*Mexpr_Enum_Convertor_fn_ptr) ( int external_code, 

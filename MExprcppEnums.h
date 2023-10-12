@@ -66,6 +66,19 @@ typedef enum {
     
 } mexprcpp_dtypes_t;
 
+typedef enum mexprcpp_agg_ {
+
+    MATH_CPP_AGG_FIRST = (int)MATH_CPP_DTYPE_MAX + 1,
+    MATH_CPP_AGG_COUNT,
+    MATH_CPP_AGG_MAX,
+    MATH_CPP_AGG_MIN,
+    MATH_CPP_AGG_AVG,
+    MATH_CPP_AGG_SUM,
+    MATH_CPP_AGG_MUL,
+    MATH_CPP_AGG_MAXX
+
+} mexprcpp_agg_t;
+
 static inline int 
 Math_cpp_operator_precedence (int token_code) {
 

@@ -16,6 +16,12 @@ Dtype::Dtype() {
 
 Dtype::~Dtype() {}
 
+mexprcpp_dtypes_t 
+Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return this->did;
+}
+
 
 /* Dtype_INT */
 
@@ -30,18 +36,13 @@ Dtype_INT::~Dtype_INT() {
 
 }
 
-mexprcpp_dtypes_t 
-Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
-
-    return this->did;
-}
 
  Dtype_INT::Dtype_INT(int val) {
 
         this->did = MATH_CPP_INT;
         this->dtype.int_val = val;
         this->is_resolved = true;
-	this->del_after_use = false;
+	    this->del_after_use = false;
  }
 
 Dtype *
@@ -76,7 +77,6 @@ Dtype_INT::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
     return MATH_CPP_INT;
 }
-
 
 
 
@@ -215,6 +215,8 @@ Dtype_STRING::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
 Dtype_IPv4_addr::Dtype_IPv4_addr() {
 
     did = MATH_CPP_IPV4;
+    dtype.ip_addr_str = "";
+    dtype.ipaddr_int = 0;
     this->is_resolved = true;
     del_after_use = false;
 }

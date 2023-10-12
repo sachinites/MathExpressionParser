@@ -203,4 +203,78 @@ class Dtype_STRING_LST : public Dtype {
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
 };
 
+template <class T>
+class Dtype_LIST_TEMPLATE : public Dtype {
+
+    public:
+
+        struct {
+
+            std::list <T * > str_lst;
+        } dtype;
+
+        Dtype_LIST_TEMPLATE(mexprcpp_dtypes_t did);
+        ~Dtype_LIST_TEMPLATE();
+        Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
+        MexprNode * clone() override;
+        void SetValue(void *value) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+
+};
+
+template <class T>
+ Dtype_LIST_TEMPLATE<T>::Dtype_LIST_TEMPLATE(mexprcpp_dtypes_t did) {
+
+    this->did = did;
+    is_resolved = true;
+    del_after_use = false;
+    dtype.str_lst = NULL;
+ }
+
+ template <class T>
+ Dtype_LIST_TEMPLATE<T>::~Dtype_LIST_TEMPLATE() {}
+
+ template <class T>
+ Dtype *
+ Dtype_LIST_TEMPLATE<T>::compute (Dtype *dtype1, Dtype *dtype2)  {
+
+    return this;
+ };
+
+template <class T>
+MexprNode * 
+Dtype_LIST_TEMPLATE<T>::clone() {
+
+    T *elem ;
+
+    Dtype_LIST_TEMPLATE<T> *obj = new Dtype_LIST_TEMPLATE<T>();
+    
+    for (typename std::list <T *>::iterator it = this->dtype.str_lst.begin();     
+            it != this->dtype.str_lst.end(); ++it ) {
+
+        elem = *it;
+
+        T *clone_elem = elem->clone ();
+
+        obj->dtype.str_lst.push_back (clone_elem);
+    }
+
+    return obj;
+ };
+
+
+template <class T>
+void 
+Dtype_LIST_TEMPLATE<T>::SetValue(void *value) {
+
+
+}
+
+template <class T>
+ mexprcpp_dtypes_t 
+ Dtype_LIST_TEMPLATE<T>::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_DTYPE_INVALID;
+ }
+
 #endif 

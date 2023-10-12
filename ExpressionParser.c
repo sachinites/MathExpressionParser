@@ -276,7 +276,7 @@ P () {
     }
 }
 
-/* F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | G ( E, E) */
+/* F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | IPV4 | G ( E, E) */
 parse_rc_t
 F () {
 
@@ -306,7 +306,7 @@ F () {
 
     RESTORE_CHKP(initial_chkp);
 
-    // INTEGER | DECIMAL | VAR | 'SENTENCE'
+    // INTEGER | DECIMAL | VAR | 'SENTENCE' | IPV4
     do {
 
         token_code = cnvrt (cyylex() );
@@ -317,6 +317,7 @@ F () {
             case MATH_CPP_DOUBLE:
             case MATH_CPP_VARIABLE:
             case MATH_CPP_STRING:
+            case MATH_CPP_IPV4:
                 RETURN_PARSE_SUCCESS;
             default:
                 break;

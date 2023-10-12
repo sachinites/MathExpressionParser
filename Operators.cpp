@@ -832,6 +832,18 @@ OperatorEq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
             }                
 
 
+            case MATH_CPP_IPV4:
+
+            switch (did2) {
+
+                case MATH_CPP_IPV4:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_IPV4;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }      
+
+
            case MATH_CPP_DTYPE_WILDCRAD:
 
             switch (did2) {
@@ -839,6 +851,7 @@ OperatorEq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
                 case MATH_CPP_INT:
                 case MATH_CPP_DOUBLE:
                 case MATH_CPP_STRING:
+                case MATH_CPP_IPV4:
                     return MATH_CPP_BOOL;
                 case MATH_CPP_DTYPE_WILDCRAD:
                     return MATH_CPP_DTYPE_WILDCRAD;
@@ -937,6 +950,22 @@ OperatorEq::compute(Dtype *dtype1, Dtype *dtype2) {
                 }
             }
             break;
+
+
+        case MATH_CPP_IPV4:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_IPV4:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val = dynamic_cast<Dtype_IPv4_addr *> (dtype1)->dtype.ipaddr_int == 
+                                                        dynamic_cast<Dtype_IPv4_addr *> (dtype2)->dtype.ipaddr_int ;
+                    res_b->del_after_use = true;
+                    return res_b;
+                }
+                break;
+            }
 
         default:
             return NULL;
