@@ -48,6 +48,16 @@ AggMin::~AggMin() {
 }
 
 
+AggSum::AggSum() {
+
+    this->agg_id = MATH_CPP_AGG_SUM;
+}
+
+AggSum::~AggSum() {
+
+}
+
+
 
 
 /* =========== Bottom LEVEL ===================*/
@@ -73,6 +83,29 @@ AggMaxInt::aggregate (Dtype *new_dtype) {
 }
 
 
+
+AggMaxString::AggMaxString (Dtype_STRING  *agg) {
+
+    this->aggregator = agg;
+    agg->dtype.str_val = "";
+}
+
+AggMaxString::~AggMaxString() {}
+
+void 
+AggMaxString::aggregate (Dtype *new_dtype) {
+
+    Dtype_STRING *new_dtype_str = dynamic_cast <Dtype_STRING *> (new_dtype);
+    Dtype_STRING *this_dtype_str= dynamic_cast <Dtype_STRING *> (this->aggregator);
+    
+    if (this_dtype_str->dtype.str_val.length() < 
+                new_dtype_str->dtype.str_val.length()) {
+
+        this_dtype_str->dtype.str_val.assign (new_dtype_str->dtype.str_val);
+    }
+}
+
+
 AggMinInt::AggMinInt (Dtype_INT  *agg) {
 
     this->aggregator = agg;
@@ -94,6 +127,24 @@ AggMinInt::aggregate (Dtype *new_dtype) {
 
 
 
+AggSumInt::AggSumInt (Dtype_INT  *agg) {
+
+    this->aggregator = agg;
+    agg->dtype.int_val = 0;
+}
+
+AggSumInt::~AggSumInt() {}
+
+void 
+AggSumInt::aggregate (Dtype *new_dtype) {
+
+    Dtype_INT *new_dtype_int = dynamic_cast <Dtype_INT *> (new_dtype);
+    Dtype_INT *this_dtype_int = dynamic_cast <Dtype_INT *> (this->aggregator);
+
+    this_dtype_int->dtype.int_val += new_dtype_int->dtype.int_val;
+}
+
+
 /* ========================== factory Method =====================*/
 
 Aggregator *
@@ -112,6 +163,8 @@ Aggregator::factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype) {
 
                 case MATH_CPP_INT:
                     return new AggMaxInt (new Dtype_INT());
+                case MATH_CPP_STRING:
+                    return new AggMaxString (new Dtype_STRING());
             }
             break;
 
@@ -131,7 +184,15 @@ Aggregator::factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype) {
         case MATH_CPP_AGG_AVG:
             break;
         case MATH_CPP_AGG_SUM:
+
+            switch (dtype) {
+
+                case MATH_CPP_INT:
+                    return new AggSumInt (new Dtype_INT());
+            }            
             break;
+
+
         case MATH_CPP_AGG_MUL:
             break;
         default:   

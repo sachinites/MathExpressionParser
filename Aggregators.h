@@ -52,6 +52,18 @@ class AggMin : public Aggregator {
 } ;
 
 
+class AggSum : public Aggregator {
+
+    private:
+
+    protected:
+        AggSum();
+
+    public:
+        ~AggSum();
+        virtual void aggregate  (Dtype *new_data) = 0;
+} ;
+
 
 /* =========== Bottom LEVEL ===================*/
 
@@ -81,6 +93,19 @@ class AggMaxDouble : public AggMax {
 };
 
 
+class AggMaxString : public AggMax {
+
+    private:
+
+    protected:
+
+    public:
+        AggMaxString(Dtype_STRING *dtype);
+        ~AggMaxString();
+        virtual void aggregate  (Dtype *new_data) override;
+};
+
+
 class AggMinInt : public AggMin {
 
     private:
@@ -105,5 +130,29 @@ class AggMinDouble : public AggMin{
         virtual void aggregate  (Dtype *new_data) override;
 };
 
+
+class AggSumInt : public AggSum {
+
+    private:
+
+    protected:
+
+    public:
+        AggSumInt(Dtype_INT  *agg);
+        ~AggSumInt();
+        virtual void aggregate  (Dtype *new_data) override;
+};
+
+class AggSumDouble : public AggSum{
+
+    private:
+
+    protected:
+
+    public:
+        AggSumDouble();
+        ~AggSumDouble();
+        virtual void aggregate  (Dtype *new_data) override;
+};
 
 #endif 
