@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <algorithm>
 #include <list>
+#include <memory.h>
 #include "Dtype.h"
 
 class MexprNode;
@@ -78,7 +79,12 @@ Dtype_INT::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     return MATH_CPP_INT;
 }
 
+int 
+Dtype_INT::serialize(void *mem) {
 
+    memcpy (mem, &this->dtype.int_val, sizeof (this->dtype.int_val));
+    return sizeof (this->dtype.int_val);
+}
 
 
 /* Dtype_DOUBLE */
@@ -136,6 +142,12 @@ Dtype_DOUBLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
     return MATH_CPP_DOUBLE;
 }
 
+int 
+Dtype_DOUBLE::serialize(void *mem) {
+
+    memcpy (mem, &this->dtype.d_val, sizeof (this->dtype.d_val));
+    return sizeof (this->dtype.d_val);
+}
 
 
 
@@ -206,6 +218,12 @@ Dtype_STRING::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
     return MATH_CPP_STRING;
 }
 
+int 
+Dtype_STRING::serialize(void *mem) {
+
+    memcpy (mem, this->dtype.str_val.c_str(), this->dtype.str_val.length());
+    return this->dtype.str_val.length();
+}
 
 
 
@@ -256,6 +274,13 @@ mexprcpp_dtypes_t
 Dtype_IPv4_addr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
     return MATH_CPP_IPV4;
+}
+
+int 
+Dtype_IPv4_addr::serialize(void *mem) {
+
+    memcpy (mem, &this->dtype.ipaddr_int, sizeof (this->dtype.ipaddr_int));
+    return sizeof (this->dtype.ipaddr_int);
 }
 
 
@@ -314,6 +339,13 @@ Dtype_BOOL::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     return MATH_CPP_BOOL;
 }
 
+int 
+Dtype_BOOL::serialize(void *mem) {
+
+    uint8_t val = this->dtype.b_val == true ? 1 : 0;
+    memcpy (mem, &val, 1);
+    return 1;
+}
 
 
 
@@ -360,7 +392,11 @@ Dtype_WILDCARD::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2
     return MATH_CPP_DTYPE_WILDCRAD;
 }
 
+int 
+Dtype_WILDCARD::serialize(void *mem) {
 
+    return 0;
+}
 
 
 /* Dtype : Dtype_INVALID */
@@ -406,6 +442,11 @@ Dtype_INVALID::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2)
     return MATH_CPP_DTYPE_INVALID;
 }
 
+int 
+Dtype_INVALID::serialize(void *mem) {
+
+    return 0;
+}
 
 
 
@@ -481,6 +522,13 @@ Dtype_VARIABLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2
     return MATH_CPP_DTYPE_WILDCRAD;
 }
 
+int 
+Dtype_VARIABLE::serialize(void *mem) {
+
+    return 0;
+}
+
+
 
 
 /* Dtype : Dtype_STRING_LST*/
@@ -552,7 +600,21 @@ Dtype_STRING_LST::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t di
 }
 
 
+int
+Dtype_STRING_LST::serialize(void *mem) {
 
+    int offset = 0;
+    Dtype_STRING *dtype_str;
+
+    for (std::list<Dtype_STRING *>::iterator it = this->dtype.str_lst.begin(); 
+            it != this->dtype.str_lst.end(); ++it) {
+
+            dtype_str = *it;
+            offset += dtype_str->serialize ((void *)((char *)mem + offset));
+    } 
+
+    return offset;
+}
 
 
 

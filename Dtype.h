@@ -23,6 +23,7 @@ public:
     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) ;
     virtual MexprNode * clone() = 0;
     virtual void SetValue(void *value) = 0;
+    virtual int serialize(void *mem) = 0;
 };
 
 
@@ -43,6 +44,7 @@ public:
     MexprNode * clone() override;
     void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    virtual int serialize(void *mem) override;
 };
 
 
@@ -63,6 +65,7 @@ public:
     MexprNode * clone() override;
     void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    virtual int serialize(void *mem) override;
 };
 
 
@@ -84,6 +87,7 @@ public:
     MexprNode * clone() override;
     void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    virtual int serialize(void *mem) override;
 };
 
 
@@ -104,6 +108,7 @@ public:
     void SetValue(void *value) override;
     void SetValue(std::string *string_ptr);
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    virtual int serialize(void *mem) override;
 };
 
 
@@ -118,6 +123,7 @@ class Dtype_WILDCARD : public Dtype {
         MexprNode * clone() override;
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual int serialize(void *mem) override;
 };
 
 
@@ -138,6 +144,7 @@ class Dtype_BOOL : public Dtype {
         MexprNode * clone() override;
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual int serialize(void *mem) override;
 };
 
 
@@ -154,6 +161,7 @@ class Dtype_INVALID : public Dtype {
         MexprNode * clone() override;
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual int serialize(void *mem) override;
 };
 
 
@@ -182,6 +190,7 @@ class Dtype_VARIABLE : public Dtype {
 
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual int serialize(void *mem) override;
 };
 
 
@@ -201,6 +210,7 @@ class Dtype_STRING_LST : public Dtype {
         MexprNode * clone() override;
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual int serialize(void *mem) override;
 };
 
 template <class T>
@@ -219,6 +229,7 @@ class Dtype_LIST_TEMPLATE : public Dtype {
         MexprNode * clone() override;
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual int serialize(void *mem) override;
 
 };
 
@@ -276,5 +287,9 @@ template <class T>
 
     return MATH_CPP_DTYPE_INVALID;
  }
+
+template <class T> 
+int  
+Dtype_LIST_TEMPLATE<T>::serialize(void *mem) { return 0;}
 
 #endif 
