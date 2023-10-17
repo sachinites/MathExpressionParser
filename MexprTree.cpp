@@ -17,6 +17,7 @@ typedef struct lex_data_ {
 
 MexprNode::MexprNode() {
 
+    this->flags = 0;
     this->parent = NULL;
     this->left = NULL;
     this->right = NULL;
@@ -26,6 +27,24 @@ MexprNode::MexprNode() {
 
 MexprNode::~MexprNode() {
 
+}
+
+void
+MexprNode::SetFlag(uint8_t flag_bit) {
+
+    this->flags |= flag_bit;
+}
+        
+void 
+MexprNode::UnSetFlag(uint8_t flag_bit) {
+
+    this->flags &= ~flag_bit;
+}
+
+bool
+MexprNode::IsFlagSet(uint8_t flag_bit) {
+
+    return (this->flags & flag_bit);
 }
 
 
@@ -481,6 +500,7 @@ MexprTree::RemoveUnresolveOperands() {
         opr->optimized_result = dtype_b;
         count++;
     }
+    this->validate (this->root);
     this->optimize(this->root);
     return count;    
 }

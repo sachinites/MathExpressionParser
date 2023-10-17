@@ -35,6 +35,10 @@ OperatorMod::~OperatorMod() {  }
 mexprcpp_dtypes_t
 OperatorMod::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_INT:
@@ -69,6 +73,10 @@ Dtype *
 OperatorMod::compute(Dtype *dtype1, Dtype *dtype2) {
 
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
 
     if (res_did == MATH_CPP_DTYPE_INVALID) return NULL;
 
@@ -119,6 +127,11 @@ OperatorPlus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
         double, double => double
         string, string => string
     */
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_INT:
@@ -178,6 +191,11 @@ Dtype*
 OperatorPlus::compute(Dtype *dtype1, Dtype *dtype2) {
 
     Dtype *res;
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
     if (res_did == MATH_CPP_DTYPE_INVALID || 
@@ -305,6 +323,11 @@ OperatorMinus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2)
         double, int => double
         double, double => double
     */
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_INT:
@@ -357,6 +380,11 @@ Dtype*
 OperatorMinus::compute(Dtype *dtype1, Dtype *dtype2) {
 
     Dtype *res;
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
     if (res_did == MATH_CPP_DTYPE_INVALID || 
@@ -461,6 +489,10 @@ OperatorMul::compute(Dtype *dtype1, Dtype *dtype2) {
 
     Dtype *res;
 
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
     if (res_did == MATH_CPP_DTYPE_INVALID || 
@@ -544,6 +576,11 @@ OperatorMul::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
         double, int => double
         double, double => double
     */
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_INT:
@@ -623,6 +660,10 @@ Dtype *
 OperatorDiv::compute(Dtype *dtype1, Dtype *dtype2) {
 
     Dtype *res;
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
 
     mexprcpp_dtypes_t res_did = this->ResultStorageType (dtype1->did, dtype2->did);
     
@@ -708,6 +749,11 @@ OperatorDiv::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
         double, int => double
         double, double => double
     */
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_INT:
@@ -793,6 +839,11 @@ OperatorEq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
         double, double => bool
         string, string => bool
     */
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_INT:
@@ -1034,9 +1085,14 @@ OperatorIn::compute(Dtype *dtype1, Dtype *dtype2) {
 mexprcpp_dtypes_t 
 OperatorIn::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_VARIABLE:
+        case MATH_CPP_STRING:
 
             switch (did2) {
 
@@ -1119,6 +1175,10 @@ OperatorAnd::compute(Dtype *dtype1, Dtype *dtype2) {
 mexprcpp_dtypes_t 
 OperatorAnd::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
     switch (did1) {
 
         case MATH_CPP_BOOL:
@@ -1200,6 +1260,10 @@ OperatorOr::compute(Dtype *dtype1, Dtype *dtype2) {
 
 mexprcpp_dtypes_t 
 OperatorOr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
 
     switch (did1) {
 

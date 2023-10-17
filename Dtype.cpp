@@ -13,6 +13,7 @@ Dtype::Dtype() {
     this->did = MATH_CPP_DTYPE_INVALID;
     this->is_resolved = false;
     del_after_use = true;
+    unresolvable = false;
 } 
 
 Dtype::~Dtype() {}
@@ -176,6 +177,7 @@ Dtype_STRING::clone() {
 
     Dtype_STRING *obj = new Dtype_STRING();
     obj->dtype.str_val = this->dtype.str_val;
+    obj->flags = this->flags;
     obj->parent = NULL;
     obj->left = NULL;
     obj->right = NULL;
@@ -563,6 +565,8 @@ Dtype_STRING_LST::clone() {
     
     Dtype_STRING *elem;
     Dtype_STRING_LST *cpy_list_dst = new Dtype_STRING_LST();
+
+    cpy_list_dst->flags = this->flags;
 
     for (std::list<Dtype_STRING *>::iterator it = this->dtype.str_lst.begin(); 
             it != this->dtype.str_lst.end(); ++it) {
