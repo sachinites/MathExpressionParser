@@ -11,6 +11,7 @@ class MexprNode {
 
     private:
     protected:
+        uint8_t flags;
         /* Must be instantiated by the derieved class only*/
         MexprNode ();
     public:
@@ -19,6 +20,9 @@ class MexprNode {
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) = 0;
         virtual MexprNode * clone() = 0;
         bool IsInequalityOperator();
+        void SetFlag(uint8_t flag_bit);
+        void UnSetFlag(uint8_t flag_bit);
+        bool IsFlagSet(uint8_t flag_bit);
         MexprNode *parent;
         MexprNode *left;
         MexprNode *right;

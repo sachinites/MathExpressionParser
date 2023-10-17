@@ -16,6 +16,7 @@ public:
     bool is_resolved;
     mexprcpp_dtypes_t did;
     bool del_after_use;
+    bool unresolvable;
     
     virtual ~Dtype();
     static Dtype * factory(mexprcpp_dtypes_t did);
