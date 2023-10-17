@@ -101,6 +101,38 @@ public:
 };
 
 
+/* Sqr operator */
+
+class OperatorSqr : public Operator {
+
+private:
+
+public:
+    OperatorSqr();
+    ~OperatorSqr();
+    Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    MexprNode * clone() override;
+};
+
+
+/* Sqrt operator */
+
+class OperatorSqrt : public Operator {
+
+private:
+
+public:
+    OperatorSqrt();
+    ~OperatorSqrt();
+    Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+    mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    MexprNode * clone() override;
+};
+
+
+
+
 /* EQ operator */
 
 class OperatorEq : public Operator {

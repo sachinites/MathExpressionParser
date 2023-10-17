@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <assert.h>
 #include <string>
+#include <math.h>
 #include "Operators.h"
 #include "Dtype.h"
 
@@ -712,9 +713,9 @@ OperatorDiv::compute(Dtype *dtype1, Dtype *dtype2) {
                 {
                     res = Dtype::factory (MATH_CPP_DOUBLE);
                     Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
-                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val /
-                                                        (double)((double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val == 0 ? 1 : \
-                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val) ;
+                    res_d->dtype.d_val = (dynamic_cast<Dtype_DOUBLE *> (dtype1))->dtype.d_val /
+                                                        (double)((double)(dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val) == 0 ? 1 : \
+                                                        (dynamic_cast<Dtype_INT *> (dtype2))->dtype.int_val) ;
                     res->del_after_use = true;
                     return res;                
                 }
@@ -814,6 +815,165 @@ OperatorDiv::clone() {
     obj->lst_right = NULL;
     return obj;
 }
+
+
+
+/* Sqr operator */
+
+OperatorSqr::OperatorSqr() {
+
+    opid = MATH_CPP_SQR;
+    name = "sqr";
+    is_unary = true;
+}
+
+OperatorSqr::~OperatorSqr() { }
+
+
+mexprcpp_dtypes_t
+OperatorSqr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+        case MATH_CPP_DOUBLE:
+        case MATH_CPP_DTYPE_WILDCRAD:
+            return did1;
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+Dtype *
+OperatorSqr::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+        {
+            Dtype_INT *dtype1_int = dynamic_cast <Dtype_INT *> (dtype1);
+            res = new Dtype_INT (dtype1_int->dtype.int_val * dtype1_int->dtype.int_val);
+            res->del_after_use = true;
+            return res;
+        }
+        break;
+
+        case MATH_CPP_DOUBLE:
+        {
+             Dtype_DOUBLE *dtype1_d = dynamic_cast <Dtype_DOUBLE *> (dtype1);
+             res = new Dtype_DOUBLE (dtype1_d->dtype.d_val * dtype1_d->dtype.d_val);
+             res->del_after_use = true;
+             return res;
+        }
+        break;
+
+        default:
+            return NULL;
+    }
+}
+
+MexprNode * 
+OperatorSqr::clone() {
+
+    OperatorSqr *obj = new OperatorSqr();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
+/* Sqrt operator */
+
+OperatorSqrt::OperatorSqrt() {
+
+    opid = MATH_CPP_SQRT;
+    name = "sqrt";
+    is_unary = true;
+}
+
+OperatorSqrt::~OperatorSqrt() { }
+
+
+mexprcpp_dtypes_t
+OperatorSqrt::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+        case MATH_CPP_DOUBLE:
+            return MATH_CPP_DOUBLE;
+        case MATH_CPP_DTYPE_WILDCRAD:
+            return did1;
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+Dtype *
+OperatorSqrt::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+
+    if (this->is_optimized) {
+        return this->optimized_result;
+    }
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+        {
+            Dtype_INT *dtype1_int = dynamic_cast <Dtype_INT *> (dtype1);
+            res = new Dtype_DOUBLE (sqrt (dtype1_int->dtype.int_val));
+            res->del_after_use = true;
+            return res;
+        }
+        break;
+
+        case MATH_CPP_DOUBLE:
+        {
+             Dtype_DOUBLE *dtype1_d = dynamic_cast <Dtype_DOUBLE *> (dtype1);
+             res = new Dtype_DOUBLE (sqrt (dtype1_d->dtype.d_val));
+             res->del_after_use = true;
+             return res;
+        }
+        break;
+
+        default:
+            return NULL;
+    }
+}
+
+MexprNode * 
+OperatorSqrt::clone() {
+
+    OperatorSqrt *obj = new OperatorSqrt();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
 
 
 
@@ -1335,6 +1495,10 @@ Operator::factory (mexprcpp_operators_t opr_code) {
             return new OperatorOr();
         case MATH_CPP_AND:
             return new OperatorAnd();
+        case MATH_CPP_SQR:
+            return new OperatorSqr();
+        case MATH_CPP_SQRT:
+            return new OperatorSqrt();            
         default:
             return NULL;
     }
