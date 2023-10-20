@@ -15,12 +15,11 @@ protected:
 public:
     bool is_resolved;
     mexprcpp_dtypes_t did;
-    bool del_after_use;
     bool unresolvable;
     
     virtual ~Dtype();
     static Dtype * factory(mexprcpp_dtypes_t did);
-    virtual Dtype *compute(Dtype *dtype1, Dtype *dtype2) = 0;
+    virtual Dtype *compute(Dtype *dtype1, Dtype *dtype2) =0;
     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) ;
     virtual MexprNode * clone() = 0;
     virtual void SetValue(void *value) = 0;
@@ -239,7 +238,6 @@ template <class T>
 
     this->did = did;
     is_resolved = true;
-    del_after_use = false;
     dtype.str_lst = NULL;
  }
 

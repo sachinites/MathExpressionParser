@@ -192,20 +192,20 @@ MexprTree::evaluate (MexprNode  *root) {
     else if (root->left && !root->right) {
 
         res = root->compute(lrc, NULL);
-        if (lrc->del_after_use) delete lrc;
+        delete lrc;
     }
 
     /* Full Node*/
     else {
 
         res = root->compute(lrc, rrc);
-        if (lrc->del_after_use) delete lrc;
-        if (rrc->del_after_use) delete rrc;
+        delete lrc;
+        delete rrc;
     }
 
     if (!res) return NULL;
     if (res->did == MATH_CPP_DTYPE_INVALID) {
-        if (res->del_after_use) delete res;
+        delete res;
         return NULL;
     }
 
@@ -388,6 +388,8 @@ MexprTree::destroy_internal(MexprNode *root) {
     dtype_var = dynamic_cast <Dtype_VARIABLE *> (root);
 
     if (dtype_var)  this->NodeRemoveFromList (root);
+    /* Mexpr Lib never release the data src, it is application
+        responsibility to delete the data srcs*/
     delete root;
 }
 
@@ -496,7 +498,6 @@ MexprTree::RemoveUnresolveOperands() {
         opr->is_optimized = true;
         dtype_b = new Dtype_BOOL();
         dtype_b->dtype.b_val = true;
-        dtype_b->del_after_use = false;
         opr->optimized_result = dtype_b;
         count++;
     }

@@ -295,6 +295,13 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
             *opr_code = MATH_CPP_SQRT;
              return MEXPR_OPR;
 
+        case SQL_MATH_MAX:
+            *opr_code = MATH_CPP_MAX;
+            return MEXPR_OPR;
+        case SQL_MATH_MIN:
+            *opr_code = MATH_CPP_MIN;
+            return MEXPR_OPR;
+
 
 
         /* Operands*/
@@ -346,6 +353,24 @@ sql_to_mexpr_dtype_converter (sql_dtype_t sql_dtype) {
             return MATH_CPP_IPV4;
         default: 
             return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+sql_dtype_t
+mexpr_to_sql_dtype_converter (mexprcpp_dtypes_t dtype) {
+
+    switch (dtype) {
+
+        case MATH_CPP_INT:
+            return SQL_INT;
+        case MATH_CPP_DOUBLE:
+            return SQL_DOUBLE;
+        case MATH_CPP_STRING:
+            return SQL_STRING;
+        case MATH_CPP_IPV4:
+            return SQL_IPV4_ADDR;
+        default: 
+            return SQL_DTYPE_MAX;
     }
 }
 

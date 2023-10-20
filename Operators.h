@@ -147,6 +147,8 @@ class OperatorEq : public Operator {
         MexprNode * clone() override;
 };
 
+
+
 /* IN Operator*/
 
 class OperatorIn : public Operator {
@@ -192,5 +194,38 @@ class OperatorOr : public Operator {
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         MexprNode * clone() override;
 };
+
+
+
+/* Max Operator*/
+
+class OperatorMax : public Operator {
+
+    private:
+
+    public:
+        OperatorMax();
+        ~OperatorMax();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
+
+/* Min Operator*/
+
+class OperatorMin : public Operator {
+
+    private:
+
+    public:
+        OperatorMin();
+        ~OperatorMin();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
+
 
 #endif 

@@ -11,9 +11,7 @@ Aggregator::Aggregator() {
 
 Aggregator::~Aggregator() {
 
-    if (this->aggregator->del_after_use)
-        delete this->aggregator;
-
+    delete this->aggregator;
     this->aggregator = NULL;
     this->agg_id = MATH_CPP_AGG_MAXX;
 }

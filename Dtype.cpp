@@ -12,7 +12,6 @@ Dtype::Dtype() {
 
     this->did = MATH_CPP_DTYPE_INVALID;
     this->is_resolved = false;
-    del_after_use = true;
     unresolvable = false;
 } 
 
@@ -25,13 +24,17 @@ Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 }
 
 
+
+
+
+
+
 /* Dtype_INT */
 
 Dtype_INT::Dtype_INT() {
 
     did = MATH_CPP_INT;
     this->is_resolved = true;
-    del_after_use = false;
 }
 
 Dtype_INT::~Dtype_INT() {
@@ -44,13 +47,12 @@ Dtype_INT::~Dtype_INT() {
         this->did = MATH_CPP_INT;
         this->dtype.int_val = val;
         this->is_resolved = true;
-	    this->del_after_use = false;
  }
 
 Dtype *
 Dtype_INT::compute(Dtype *dtype1, Dtype *dtype2) {
 
-        return this;
+        return dynamic_cast <Dtype *>(clone() );
 }
 
 MexprNode * 
@@ -94,7 +96,6 @@ Dtype_DOUBLE::Dtype_DOUBLE() {
 
     did = MATH_CPP_DOUBLE;
     this->is_resolved = true;
-    del_after_use = false;
 }
 
  Dtype_DOUBLE::Dtype_DOUBLE(double val) {
@@ -102,7 +103,6 @@ Dtype_DOUBLE::Dtype_DOUBLE() {
         this->did = MATH_CPP_DOUBLE;
         this->dtype.d_val = val;
         this->is_resolved = true;
-        del_after_use = false;
  }
 
 
@@ -113,7 +113,7 @@ Dtype_DOUBLE::~Dtype_DOUBLE() {
 Dtype *
 Dtype_DOUBLE::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    return this;
+    return dynamic_cast <Dtype *>(clone() );
 }
 
 MexprNode * 
@@ -159,7 +159,6 @@ Dtype_STRING::Dtype_STRING() {
 
     did = MATH_CPP_STRING;
     this->is_resolved = true;
-    this->del_after_use = false;
 }
 
 Dtype_STRING::~Dtype_STRING() {
@@ -169,7 +168,7 @@ Dtype_STRING::~Dtype_STRING() {
 Dtype *
 Dtype_STRING::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    return this;
+    return dynamic_cast <Dtype *>(clone() );
 }
 
 MexprNode * 
@@ -238,7 +237,6 @@ Dtype_IPv4_addr::Dtype_IPv4_addr() {
     dtype.ip_addr_str = "";
     dtype.ipaddr_int = 0;
     this->is_resolved = true;
-    del_after_use = false;
 }
 
 Dtype_IPv4_addr::~Dtype_IPv4_addr() {
@@ -248,7 +246,7 @@ Dtype_IPv4_addr::~Dtype_IPv4_addr() {
 Dtype *
 Dtype_IPv4_addr::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    return this;
+    return dynamic_cast <Dtype *>(clone() );
 }
 
 MexprNode * 
@@ -296,7 +294,6 @@ Dtype_BOOL::Dtype_BOOL () {
     did = MATH_CPP_BOOL;
     this->dtype.b_val = false;
     this->is_resolved = true;
-    del_after_use = false;
 }
 
 Dtype_BOOL::~Dtype_BOOL() {
@@ -306,7 +303,7 @@ Dtype_BOOL::~Dtype_BOOL() {
 Dtype *
 Dtype_BOOL::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    return this;
+    return dynamic_cast <Dtype *>(clone() );
 }
 
 MexprNode * 
@@ -357,7 +354,6 @@ Dtype_WILDCARD::Dtype_WILDCARD() {
 
     did = MATH_CPP_DTYPE_WILDCRAD;
     is_resolved = true;
-    del_after_use = false;
 }
 
 Dtype_WILDCARD::~Dtype_WILDCARD() {
@@ -367,7 +363,7 @@ Dtype_WILDCARD::~Dtype_WILDCARD() {
 Dtype *
 Dtype_WILDCARD::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    return this;
+    return dynamic_cast <Dtype *>(clone() );
 }
 
 MexprNode * 
@@ -407,7 +403,6 @@ Dtype_INVALID::Dtype_INVALID() {
 
     did = MATH_CPP_DTYPE_INVALID;
     is_resolved = true;
-    del_after_use = false;
 }
 
 Dtype_INVALID::~Dtype_INVALID() {
@@ -461,7 +456,6 @@ Dtype_VARIABLE::Dtype_VARIABLE(std::string var_name) {
     this->dtype.variable_name.assign(var_name);
     this->is_resolved = false;
     this->resolved_did = MATH_CPP_DTYPE_WILDCRAD;
-    del_after_use = false;
 }
 
 Dtype_VARIABLE::Dtype_VARIABLE() {
@@ -470,7 +464,6 @@ Dtype_VARIABLE::Dtype_VARIABLE() {
     this->dtype.variable_name.assign("");
     this->is_resolved = false;
     this->resolved_did = MATH_CPP_DTYPE_WILDCRAD;
-    del_after_use = false;
 }
 
 Dtype_VARIABLE::~Dtype_VARIABLE() {
@@ -482,7 +475,6 @@ Dtype_VARIABLE::compute(Dtype *dtype1, Dtype *dtype2) {
 
    if (!this->is_resolved)  return NULL;
     Dtype *res =  this->compute_fn_ptr(this->data_src);
-    res->del_after_use = true;
     return res;
 }
 
@@ -539,7 +531,6 @@ Dtype_STRING_LST::Dtype_STRING_LST() {
 
     this->did = MATH_CPP_STRING_LST;
     this->is_resolved = true;
-    this->del_after_use = false;
 }
 
 Dtype_STRING_LST::~Dtype_STRING_LST() {
@@ -557,7 +548,7 @@ Dtype_STRING_LST::~Dtype_STRING_LST() {
 Dtype *
 Dtype_STRING_LST::compute(Dtype *dtype1, Dtype *dtype2) {
 
-    return this;
+    return dynamic_cast <Dtype *>(clone() );
 }
 
 MexprNode * 
