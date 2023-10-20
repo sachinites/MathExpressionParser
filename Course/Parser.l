@@ -1,48 +1,6 @@
 %{
 
-#include <assert.h>
-
-// Write all the supporting C - code declarations/definitions
-
-// Define all supporive data structures BEGIN
-
-typedef struct lex_data_ {
-
-    int token_code;
-    int token_len;
-    char* token_val;
-
-} lex_data_t;
-
-
-#define MAX_MEXPR_LEN  512
-#define MAX_STRING_SIZE 512
-#define PARSER_EOL  10000
-#define PARSER_WHITE_SPACE 10002
-
-typedef struct stack_ {
-
-    int top;
-    lex_data_t data[MAX_MEXPR_LEN];
-} stack_t;
-
-
-// Define all supporive data structures END
-
-
-// dedicated to declare all global variables which parser will use BEGIN
-
-extern "C" int yylex();
-
-extern char lex_buffer[MAX_STRING_SIZE];
-extern stack_t undo_stack;
-extern int cyylex();
-extern void yyrewind(int n);
-extern char *curr_ptr ;
-extern char *lex_curr_token;
-extern int lex_curr_token_len;
-
-
+#include "ParserExport.h"
 
 
 stack_t undo_stack = {-1, {0, 0, 0}};
@@ -94,6 +52,7 @@ cyylex() {
     lex_data.token_val = (char *)calloc (1, yyleng + 1);
     strncpy (lex_data.token_val, yytext, yyleng);
     lex_data.token_val[yyleng] = '\0';
+    lex_push(lex_data);
     return token_code;
 }
 
@@ -119,9 +78,37 @@ yyrewind (int n) {
     yy_scan_string(curr_ptr);
 }
 
+void 
+Parser_stack_reset () {
+
+    int i;
+    lex_data_t *lex_data;
+
+    for (i = 0; i < undo_stack.top; i++) {
+        lex_data = &undo_stack.data[i];
+        lex_data->token_code = 0;
+        lex_data->token_len = 0;
+        if (lex_data->token_val) {
+            free (lex_data->token_val);
+            lex_data->token_val = NULL;
+        }
+    }
+    undo_stack.top = -1;
+    curr_ptr = lex_buffer;
+    lex_curr_token = NULL;
+    lex_curr_token_len = 0;
+}
+
+void 
+lex_set_scan_buffer (const char *buffer) {
+
+    yy_scan_string (buffer);
+}
+
+
+
 
 // dedicated to declare all global variables which parser will use END
-
 
 #include "MexprcppEnums.h"
 
@@ -270,6 +257,8 @@ yyrewind (int n) {
 
 // C main function
 
+extern void Parse_Equations(); 
+
 int main (int argc, char **argv) {
 
     while (1) {
@@ -283,21 +272,12 @@ int main (int argc, char **argv) {
             continue;
         }
 
-        yy_scan_string (lex_buffer);
+        lex_set_scan_buffer (lex_buffer);
 
+        Parse_Equations();   
 
-        int token_code;
-
-        token_code = yylex();
-
-        while (token_code != PARSER_EOL) {
-
-            printf ("token_code = %d, token = %s ,  token_len = %d\n", token_code, yytext, yyleng);
-            token_code = yylex();
-        }
-
+        Parser_stack_reset();
     }
-
 
     return 0;
 }
