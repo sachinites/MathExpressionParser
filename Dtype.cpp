@@ -35,6 +35,7 @@ Dtype_INT::Dtype_INT() {
 
     did = MATH_CPP_INT;
     this->is_resolved = true;
+    this->dtype.int_val = 0;
 }
 
 Dtype_INT::~Dtype_INT() {

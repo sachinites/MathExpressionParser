@@ -65,6 +65,20 @@ class AggSum : public Aggregator {
 } ;
 
 
+
+class AggCount : public Aggregator {
+
+    private:
+
+    protected:
+
+    public:
+        AggCount();
+        ~AggCount();
+        virtual void aggregate  (Dtype *new_data) override;
+};
+
+
 /* =========== Bottom LEVEL ===================*/
 
 class AggMaxInt : public AggMax {

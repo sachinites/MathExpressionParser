@@ -270,6 +270,18 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
             *opr_code = MATH_CPP_EQ;
             return MEXPR_OPR;
 
+        case SQL_NOT_EQ:
+            *opr_code = MATH_CPP_NEQ;
+             return MEXPR_OPR;
+
+        case SQL_LESS_THAN:
+            *opr_code = MATH_CPP_LESS_THAN;
+             return MEXPR_OPR;
+
+        case SQL_GREATER_THAN:
+            *opr_code = MATH_CPP_GREATER_THAN;
+            return MEXPR_OPR;
+
         case SQL_IN:
             *opr_code = MATH_CPP_IN;
             return MEXPR_OPR;

@@ -148,6 +148,52 @@ class OperatorEq : public Operator {
 };
 
 
+/* NOT-EQ operator */
+
+class OperatorNeq : public Operator {
+
+    private:
+
+    public:
+        OperatorNeq();
+        ~OperatorNeq();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
+
+/* LessThan operator */
+
+class OperatorLessThan : public Operator {
+
+    private:
+
+    public:
+        OperatorLessThan();
+        ~OperatorLessThan();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
+
+/* GreaterThan operator */
+
+class OperatorGreaterThan : public Operator {
+
+    private:
+
+    public:
+        OperatorGreaterThan();
+        ~OperatorGreaterThan();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
+
+
 
 /* IN Operator*/
 

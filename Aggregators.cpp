@@ -56,6 +56,23 @@ AggSum::~AggSum() {
 }
 
 
+AggCount::AggCount() {
+
+    this->agg_id = MATH_CPP_AGG_COUNT;
+    this->aggregator = Dtype::factory (MATH_CPP_INT);
+}
+
+AggCount::~AggCount() {}
+
+void
+AggCount:: aggregate  (Dtype *new_data) {
+
+    if (new_data) {
+        Dtype_INT *count_agg = dynamic_cast <Dtype_INT *> (this->aggregator);
+        count_agg->dtype.int_val++;
+    }
+}
+
 
 
 /* =========== Bottom LEVEL ===================*/
@@ -151,6 +168,7 @@ Aggregator::factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype) {
     switch (agg_type) {
 
         case MATH_CPP_AGG_COUNT:
+            return new AggCount();
             break;
 
 
