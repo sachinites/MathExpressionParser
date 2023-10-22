@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string>
 #include <math.h>
+#include <regex>
 #include "Operators.h"
 #include "Dtype.h"
 
@@ -1798,6 +1799,109 @@ OperatorIn::clone() {
 
 
 
+/* LIKE Operator*/
+
+OperatorLIKE::OperatorLIKE() {
+
+    opid = MATH_CPP_LIKE;
+    name = "LIKE";
+    is_unary = false;
+}
+
+OperatorLIKE::~OperatorLIKE() { }
+
+Dtype* 
+OperatorLIKE::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    if (this->is_optimized) {
+        return dynamic_cast<Dtype *> (this->optimized_result->clone() );
+    }
+
+    assert (dtype1->did == MATH_CPP_STRING &&
+                dtype2->did == MATH_CPP_STRING);
+
+    Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
+    res->dtype.b_val = false;
+
+    Dtype_STRING *text = dynamic_cast <Dtype_STRING *>(dtype1);
+    Dtype_STRING *regex = dynamic_cast <Dtype_STRING *>(dtype2);
+
+    std::regex pattern(regex->dtype.str_val);
+
+    if (std::regex_search(text->dtype.str_val, pattern)) {
+        res->dtype.b_val = true;
+    }
+
+    return res;
+}
+
+mexprcpp_dtypes_t 
+OperatorLIKE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    if (this->is_optimized) {
+        return this->optimized_result->did;
+    }
+
+    switch (did1) {
+
+        case MATH_CPP_STRING:
+
+            switch (did2) {
+
+                case MATH_CPP_STRING:
+                case MATH_CPP_VARIABLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+        break;
+
+        case MATH_CPP_VARIABLE:
+
+            switch (did2) {
+
+                case MATH_CPP_STRING:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+            break;
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_STRING:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+MexprNode * 
+OperatorLIKE::clone() {
+
+    OperatorLIKE *obj = new OperatorLIKE();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
+
+
 
 /* AND Operator*/
 
@@ -2008,7 +2112,6 @@ OperatorMax::compute(Dtype *dtype1, Dtype *dtype2) {
                 }
                 break;
 
-
                 case MATH_CPP_DOUBLE:
                 {
                     Dtype_INT *Dtype_dtyp1_int = dynamic_cast<Dtype_INT *>(dtype1);
@@ -2026,8 +2129,6 @@ OperatorMax::compute(Dtype *dtype1, Dtype *dtype2) {
                     return NULL;
             } 
         break;
-
-
 
         case MATH_CPP_DOUBLE:
 
@@ -2065,7 +2166,6 @@ OperatorMax::compute(Dtype *dtype1, Dtype *dtype2) {
             } 
         break;
 
-
         case MATH_CPP_STRING:
 
             switch (dtype2->did) {
@@ -2086,7 +2186,6 @@ OperatorMax::compute(Dtype *dtype1, Dtype *dtype2) {
 
         default:
             return NULL;
-
     }
 
     return NULL;
@@ -2384,6 +2483,8 @@ Operator::factory (mexprcpp_operators_t opr_code) {
             return new OperatorGreaterThan();
         case MATH_CPP_IN:
             return new OperatorIn();
+        case MATH_CPP_LIKE:
+            return new OperatorLIKE();
         case MATH_CPP_OR:
             return new OperatorOr();
         case MATH_CPP_AND:

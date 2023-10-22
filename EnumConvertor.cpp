@@ -285,7 +285,11 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
         case SQL_IN:
             *opr_code = MATH_CPP_IN;
             return MEXPR_OPR;
+        case SQL_LIKE:
+            *opr_code = MATH_CPP_LIKE;
+            return MEXPR_OPR;
 
+            
         case SQL_BRACKET_START:
             *opr_code = MATH_CPP_BRACKET_START;
             return MEXPR_OPR;

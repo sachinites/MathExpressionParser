@@ -24,6 +24,7 @@ typedef enum {
     MATH_CPP_SIN,
     MATH_CPP_COS,
     MATH_CPP_POW,
+    MATH_CPP_LIKE,
 
     /* Membership operator*/
     MATH_CPP_IN,
@@ -107,6 +108,7 @@ Math_cpp_operator_precedence (int token_code) {
         case MATH_CPP_GREATER_THAN:
         case MATH_CPP_NEQ:
         case MATH_CPP_EQ:
+        case MATH_CPP_LIKE:
             return 3;
         case MATH_CPP_AND:
             return 2;

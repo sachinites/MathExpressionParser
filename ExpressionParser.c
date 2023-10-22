@@ -228,6 +228,7 @@ Ineq () {
         case MATH_CPP_GREATER_THAN:
         case MATH_CPP_EQ:
         case MATH_CPP_NEQ:
+        case MATH_CPP_LIKE:
             break;
         default:
             RETURN_PARSE_ERROR;

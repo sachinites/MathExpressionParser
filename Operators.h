@@ -211,6 +211,22 @@ class OperatorIn : public Operator {
 
 
 
+/* LIKE Operator*/
+
+class OperatorLIKE : public Operator {
+
+    private:
+
+    public:
+        OperatorLIKE();
+        ~OperatorLIKE();
+        Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        MexprNode * clone() override;
+};
+
+
+
 /* And Operator*/
 
 class OperatorAnd : public Operator {
