@@ -7,6 +7,8 @@
 #include "MexprTree.h"
 #include "MExprcppEnums.h"
 
+class Dtype_STRING;
+
 class Dtype : public MexprNode {
 
 protected:
@@ -24,6 +26,7 @@ public:
     virtual MexprNode * clone() = 0;
     virtual void SetValue(void *value) = 0;
     virtual int serialize(void *mem) = 0;
+    virtual Dtype_STRING *toString() = 0;
 };
 
 
@@ -45,6 +48,7 @@ public:
     void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
+    virtual Dtype_STRING *toString() override;
 };
 
 
@@ -66,6 +70,7 @@ public:
     void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
+    virtual Dtype_STRING *toString() override;
 };
 
 
@@ -88,6 +93,7 @@ public:
     void SetValue(void *value) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
+    virtual Dtype_STRING *toString() override;
 };
 
 
@@ -109,6 +115,7 @@ public:
     void SetValue(std::string *string_ptr);
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
+    virtual Dtype_STRING *toString() override;
 };
 
 
@@ -124,6 +131,7 @@ class Dtype_WILDCARD : public Dtype {
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
+        virtual Dtype_STRING *toString() override;
 };
 
 
@@ -145,6 +153,7 @@ class Dtype_BOOL : public Dtype {
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
+        virtual Dtype_STRING *toString() override;
 };
 
 
@@ -162,6 +171,7 @@ class Dtype_INVALID : public Dtype {
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
+        virtual Dtype_STRING *toString() override;
 };
 
 
@@ -191,6 +201,7 @@ class Dtype_VARIABLE : public Dtype {
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
+        virtual Dtype_STRING *toString() override;
 };
 
 
@@ -211,6 +222,7 @@ class Dtype_STRING_LST : public Dtype {
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
+        virtual Dtype_STRING *toString() override;
 };
 
 template <class T>
@@ -230,7 +242,7 @@ class Dtype_LIST_TEMPLATE : public Dtype {
         void SetValue(void *value) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
-
+        virtual Dtype_STRING *toString() override;
 };
 
 template <class T>
@@ -290,5 +302,12 @@ template <class T>
 template <class T> 
 int  
 Dtype_LIST_TEMPLATE<T>::serialize(void *mem) { return 0;}
+
+
+
+template <class T>
+Dtype_STRING *
+Dtype_LIST_TEMPLATE<T>::toString() { return NULL ; }
+
 
 #endif 

@@ -1817,13 +1817,18 @@ OperatorLIKE::compute(Dtype *dtype1, Dtype *dtype2) {
         return dynamic_cast<Dtype *> (this->optimized_result->clone() );
     }
 
-    assert (dtype1->did == MATH_CPP_STRING &&
-                dtype2->did == MATH_CPP_STRING);
+    assert (dtype2->did == MATH_CPP_STRING);
+
+    Dtype_STRING *text = dtype1->toString();
+    
+    if (!text) {
+        printf ("Error : LIKE left operand could not be stringified\n");
+        return NULL;
+    }
 
     Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
     res->dtype.b_val = false;
-
-    Dtype_STRING *text = dynamic_cast <Dtype_STRING *>(dtype1);
+    
     Dtype_STRING *regex = dynamic_cast <Dtype_STRING *>(dtype2);
 
     std::regex pattern(regex->dtype.str_val);
@@ -1832,6 +1837,7 @@ OperatorLIKE::compute(Dtype *dtype1, Dtype *dtype2) {
         res->dtype.b_val = true;
     }
 
+    delete text;
     return res;
 }
 
@@ -1844,45 +1850,21 @@ OperatorLIKE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
 
     switch (did1) {
 
-        case MATH_CPP_STRING:
-
-            switch (did2) {
-
-                case MATH_CPP_STRING:
-                case MATH_CPP_VARIABLE:
-                case MATH_CPP_DTYPE_WILDCRAD:
-                    return MATH_CPP_BOOL;
-                default:
-                    return MATH_CPP_DTYPE_INVALID;
-            }
-        break;
-
-        case MATH_CPP_VARIABLE:
-
-            switch (did2) {
-
-                case MATH_CPP_STRING:
-                case MATH_CPP_DTYPE_WILDCRAD:
-                    return MATH_CPP_BOOL;
-                default:
-                    return MATH_CPP_DTYPE_INVALID;
-            }
-            break;
-
-        case MATH_CPP_DTYPE_WILDCRAD:
-
-            switch (did2) {
-
-                case MATH_CPP_STRING:
-                    return MATH_CPP_BOOL;
-                case MATH_CPP_DTYPE_WILDCRAD:
-                    return MATH_CPP_DTYPE_WILDCRAD;
-                default:
-                    return MATH_CPP_DTYPE_INVALID;
-            }
-
-        default:
+        case MATH_CPP_DTYPE_INVALID:
+        case MATH_CPP_STRING_LST:
+        case MATH_CPP_BOOL:
             return MATH_CPP_DTYPE_INVALID;
+
+        default: // On left hand side all data types are supported for LIKE except above
+            {
+                switch (did2) {
+
+                    case MATH_CPP_STRING:
+                        return MATH_CPP_BOOL;
+                    default:
+                        return MATH_CPP_DTYPE_INVALID;
+                }
+            }
     }
 }
 

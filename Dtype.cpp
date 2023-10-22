@@ -7,6 +7,7 @@
 #include "Dtype.h"
 
 class MexprNode;
+class Dtype_STRING;
 
 Dtype::Dtype() {
 
@@ -90,6 +91,19 @@ Dtype_INT::serialize(void *mem) {
     return sizeof (this->dtype.int_val);
 }
 
+Dtype_STRING *
+Dtype_INT::toString () {
+
+    int val = this->dtype.int_val;
+    
+    Dtype_STRING *stringify = dynamic_cast<Dtype_STRING *> (Dtype::factory(MATH_CPP_STRING));
+    stringify->dtype.str_val = std::to_string (val);
+    stringify->is_resolved = true;
+    return stringify;
+}
+
+
+
 
 /* Dtype_DOUBLE */
 
@@ -149,6 +163,17 @@ Dtype_DOUBLE::serialize(void *mem) {
 
     memcpy (mem, &this->dtype.d_val, sizeof (this->dtype.d_val));
     return sizeof (this->dtype.d_val);
+}
+
+Dtype_STRING *
+Dtype_DOUBLE::toString () {
+
+    double val = this->dtype.d_val;
+
+    Dtype_STRING *stringify = dynamic_cast<Dtype_STRING *> (Dtype::factory(MATH_CPP_STRING));
+    stringify->dtype.str_val = std::to_string (val);
+    stringify->is_resolved = true;
+    return stringify;
 }
 
 
@@ -227,6 +252,12 @@ Dtype_STRING::serialize(void *mem) {
     return this->dtype.str_val.length();
 }
 
+Dtype_STRING *
+Dtype_STRING::toString () {
+
+    return dynamic_cast<Dtype_STRING *> (this->clone());
+}
+
 
 
 
@@ -284,7 +315,15 @@ Dtype_IPv4_addr::serialize(void *mem) {
     return sizeof (this->dtype.ipaddr_int);
 }
 
+Dtype_STRING *
+Dtype_IPv4_addr::toString () {
 
+    Dtype_STRING *stringify = 
+        dynamic_cast<Dtype_STRING *> (Dtype::factory(MATH_CPP_STRING));
+
+    stringify->dtype.str_val = this->dtype.ip_addr_str;
+    return stringify;
+}
 
 
 
@@ -347,6 +386,16 @@ Dtype_BOOL::serialize(void *mem) {
     return 1;
 }
 
+Dtype_STRING *
+Dtype_BOOL::toString () {
+
+    return NULL;
+}
+
+
+
+
+
 
 
 /* Dtype : Dtype_WILDCARD */
@@ -397,6 +446,15 @@ Dtype_WILDCARD::serialize(void *mem) {
     return 0;
 }
 
+Dtype_STRING *
+Dtype_WILDCARD::toString () {
+
+    return NULL;
+}
+
+
+
+
 
 /* Dtype : Dtype_INVALID */
 
@@ -444,6 +502,12 @@ int
 Dtype_INVALID::serialize(void *mem) {
 
     return 0;
+}
+
+Dtype_STRING *
+Dtype_INVALID::toString () {
+
+    return NULL;
 }
 
 
@@ -522,6 +586,13 @@ Dtype_VARIABLE::serialize(void *mem) {
 
     return 0;
 }
+
+Dtype_STRING *
+Dtype_VARIABLE::toString () {
+
+    return NULL;
+}
+
 
 
 
@@ -611,6 +682,15 @@ Dtype_STRING_LST::serialize(void *mem) {
 
     return offset;
 }
+
+Dtype_STRING *
+Dtype_STRING_LST::toString () {
+
+    return NULL;
+}
+
+
+
 
 
 
