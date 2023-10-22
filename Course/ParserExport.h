@@ -71,5 +71,8 @@ extern void lex_set_scan_buffer (const char *buffer);
     int _lchkp = undo_stack.top;    \
     parse_rc_t err = PARSE_SUCCESS
 
-
+#define PARSER_LOG_ERR(token_obtained, expected_token)  \
+    printf ("%s(%d) : Token Obtained = %d (%s) , expected token = %d\n",    \
+        __FUNCTION__, __LINE__, token_obtained, lex_curr_token, expected_token);
+        
 #endif 

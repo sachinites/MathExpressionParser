@@ -258,6 +258,9 @@ lex_set_scan_buffer (const char *buffer) {
 // C main function
 
 extern void Parse_Equations(); 
+extern parse_rc_t Z() ;
+extern parse_rc_t A() ;
+extern parse_rc_t C() ;
 
 int main (int argc, char **argv) {
 
@@ -274,7 +277,22 @@ int main (int argc, char **argv) {
 
         lex_set_scan_buffer (lex_buffer);
 
-        Parse_Equations();   
+        //Parse_Equations();   
+        parse_rc_t err = A();
+        if (err == PARSE_ERR) {
+            printf ("Rejected : Set of all Strings starting with a and have alternate a and b\n");
+        }
+        else {
+            printf ("Accepted : Set of all Strings starting with a and have alternate a and b\n");
+        }
+
+        printf ("Parsed String : \n");
+        
+        for (int i = 0; i <= undo_stack.top; i++) {
+
+            lex_data_t *lex_data = (lex_data_t *)&undo_stack.data[i];
+            printf ("%s ", lex_data->token_val);
+        }
 
         Parser_stack_reset();
     }
