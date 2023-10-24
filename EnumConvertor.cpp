@@ -404,7 +404,7 @@ sql_to_mexpr_agg_fn_converter (sql_agg_fn_t agg_fn) {
         case SQL_COUNT:
             return MATH_CPP_AGG_COUNT;
         case SQL_AVG:
-            return MATH_CPP_AGG_COUNT;
+            return MATH_CPP_AGG_AVG;
         default:
             assert(0);
     }

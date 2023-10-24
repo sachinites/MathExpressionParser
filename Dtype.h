@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <list>
+#include <stdbool.h>
 #include "MexprTree.h"
 #include "MExprcppEnums.h"
 
@@ -25,8 +26,12 @@ public:
     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) ;
     virtual MexprNode * clone() = 0;
     virtual void SetValue(void *value) = 0;
+    virtual void SetValue(Dtype *) = 0;
     virtual int serialize(void *mem) = 0;
     virtual Dtype_STRING *toString() = 0;
+    /* Operator overloading*/
+    virtual bool operator< (Dtype& ) ;
+    virtual void operator+= (Dtype& ) ;
 };
 
 
@@ -46,6 +51,7 @@ public:
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
     void SetValue(void *value) override;
+    virtual void SetValue(Dtype *) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
     virtual Dtype_STRING *toString() override;
@@ -68,9 +74,12 @@ public:
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
     void SetValue(void *value) override;
+    virtual void SetValue(Dtype *) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
     virtual Dtype_STRING *toString() override;
+    virtual bool operator< (Dtype& ) override;
+    virtual void operator+= (Dtype& ) override;
 };
 
 
@@ -91,9 +100,12 @@ public:
     Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
     MexprNode * clone() override;
     void SetValue(void *value) override;
+    virtual void SetValue(Dtype *) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
     virtual Dtype_STRING *toString() override;
+    virtual bool operator< (Dtype& ) override;
+    virtual void operator+= (Dtype&) override;
 };
 
 
@@ -113,9 +125,12 @@ public:
     MexprNode * clone() override;
     void SetValue(void *value) override;
     void SetValue(std::string *string_ptr);
+    virtual void SetValue(Dtype *) override;
     mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
     virtual int serialize(void *mem) override;
     virtual Dtype_STRING *toString() override;
+    virtual bool operator< (Dtype&) override;
+    virtual void operator+= (Dtype&) override;
 };
 
 
@@ -129,6 +144,7 @@ class Dtype_WILDCARD : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(void *value) override;
+        virtual void SetValue(Dtype *) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
         virtual Dtype_STRING *toString() override;
@@ -151,6 +167,7 @@ class Dtype_BOOL : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(void *value) override;
+        virtual void SetValue(Dtype *) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
         virtual Dtype_STRING *toString() override;
@@ -169,6 +186,7 @@ class Dtype_INVALID : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(void *value) override;
+        virtual void SetValue(Dtype *) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
         virtual Dtype_STRING *toString() override;
@@ -199,6 +217,7 @@ class Dtype_VARIABLE : public Dtype {
                 Dtype *(*compute_fn_ptr)(void *)) ;
 
         void SetValue(void *value) override;
+        virtual void SetValue(Dtype *) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
         virtual Dtype_STRING *toString() override;
@@ -220,6 +239,7 @@ class Dtype_STRING_LST : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(void *value) override;
+        virtual void SetValue(Dtype *) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
         virtual Dtype_STRING *toString() override;
@@ -240,6 +260,7 @@ class Dtype_LIST_TEMPLATE : public Dtype {
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
         void SetValue(void *value) override;
+        virtual void SetValue(Dtype *) override;
         mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
         virtual int serialize(void *mem) override;
         virtual Dtype_STRING *toString() override;
@@ -291,6 +312,14 @@ Dtype_LIST_TEMPLATE<T>::SetValue(void *value) {
 
 
 }
+
+template <class T>
+void 
+Dtype_LIST_TEMPLATE<T>::SetValue(Dtype *value) {
+
+
+}
+
 
 template <class T>
  mexprcpp_dtypes_t 

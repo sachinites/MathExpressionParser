@@ -1,3 +1,4 @@
+#include <limits>
 #include "Aggregators.h"
 
 
@@ -31,9 +32,25 @@ AggMax::AggMax() {
     this->agg_id = MATH_CPP_AGG_MAX;
 }
 
+AggMax::AggMax(Dtype* aggregator) {
+
+    AggMax();
+    this->aggregator = aggregator;
+}
+
 AggMax::~AggMax() {
 
 }
+
+void
+AggMax::aggregate  (Dtype* new_data) {
+
+    bool rc = *this->aggregator < *new_data;
+    if (rc) {
+        this->aggregator->SetValue (new_data);
+    }
+}
+
 
 
 AggMin::AggMin() {
@@ -41,8 +58,23 @@ AggMin::AggMin() {
     this->agg_id = MATH_CPP_AGG_MIN;
 }
 
+AggMin::AggMin(Dtype* aggregator) {
+
+    AggMin();
+    this->aggregator = aggregator;
+}
+
 AggMin::~AggMin() {
 
+}
+
+void
+AggMin::aggregate  (Dtype *new_data) {
+
+    bool rc = *this->aggregator < *new_data;
+    if (!rc) {
+        this->aggregator->SetValue (new_data);
+    }
 }
 
 
@@ -51,8 +83,20 @@ AggSum::AggSum() {
     this->agg_id = MATH_CPP_AGG_SUM;
 }
 
+AggSum::AggSum(Dtype* aggregator) {
+
+    AggSum();
+    this->aggregator = aggregator;
+}
+
 AggSum::~AggSum() {
 
+}
+
+void 
+AggSum::aggregate  (Dtype *new_data) {
+
+    *this->aggregator += *new_data;
 }
 
 
@@ -67,96 +111,12 @@ AggCount::~AggCount() {}
 void
 AggCount:: aggregate  (Dtype *new_data) {
 
+    Dtype_INT lobj;
+    lobj.dtype.int_val = 1;
+
     if (new_data) {
-        Dtype_INT *count_agg = dynamic_cast <Dtype_INT *> (this->aggregator);
-        count_agg->dtype.int_val++;
+        (*this->aggregator) += lobj;
     }
-}
-
-
-
-/* =========== Bottom LEVEL ===================*/
-
-
-AggMaxInt::AggMaxInt (Dtype_INT  *agg) {
-
-    this->aggregator = agg;
-    agg->dtype.int_val = INT32_MIN;
-}
-
-AggMaxInt::~AggMaxInt() {}
-
-void 
-AggMaxInt::aggregate (Dtype *new_dtype) {
-
-    Dtype_INT *new_dtype_int = dynamic_cast <Dtype_INT *> (new_dtype);
-    Dtype_INT *this_dtype_int = dynamic_cast <Dtype_INT *> (this->aggregator);
-    
-    if (this_dtype_int->dtype.int_val < new_dtype_int->dtype.int_val )
-        this_dtype_int->dtype.int_val = new_dtype_int->dtype.int_val;
-
-}
-
-
-
-AggMaxString::AggMaxString (Dtype_STRING  *agg) {
-
-    this->aggregator = agg;
-    agg->dtype.str_val = "";
-}
-
-AggMaxString::~AggMaxString() {}
-
-void 
-AggMaxString::aggregate (Dtype *new_dtype) {
-
-    Dtype_STRING *new_dtype_str = dynamic_cast <Dtype_STRING *> (new_dtype);
-    Dtype_STRING *this_dtype_str= dynamic_cast <Dtype_STRING *> (this->aggregator);
-    
-    if (this_dtype_str->dtype.str_val.length() < 
-                new_dtype_str->dtype.str_val.length()) {
-
-        this_dtype_str->dtype.str_val.assign (new_dtype_str->dtype.str_val);
-    }
-}
-
-
-AggMinInt::AggMinInt (Dtype_INT  *agg) {
-
-    this->aggregator = agg;
-    agg->dtype.int_val = INT32_MAX;
-}
-
-AggMinInt::~AggMinInt() {}
-
-void 
-AggMinInt::aggregate (Dtype *new_dtype) {
-
-    Dtype_INT *new_dtype_int = dynamic_cast <Dtype_INT *> (new_dtype);
-    Dtype_INT *this_dtype_int = dynamic_cast <Dtype_INT *> (this->aggregator);
-    
-    if (this_dtype_int->dtype.int_val > new_dtype_int->dtype.int_val )
-        this_dtype_int->dtype.int_val = new_dtype_int->dtype.int_val;
-
-}
-
-
-
-AggSumInt::AggSumInt (Dtype_INT  *agg) {
-
-    this->aggregator = agg;
-    agg->dtype.int_val = 0;
-}
-
-AggSumInt::~AggSumInt() {}
-
-void 
-AggSumInt::aggregate (Dtype *new_dtype) {
-
-    Dtype_INT *new_dtype_int = dynamic_cast <Dtype_INT *> (new_dtype);
-    Dtype_INT *this_dtype_int = dynamic_cast <Dtype_INT *> (this->aggregator);
-
-    this_dtype_int->dtype.int_val += new_dtype_int->dtype.int_val;
 }
 
 
@@ -169,48 +129,58 @@ Aggregator::factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype) {
 
         case MATH_CPP_AGG_COUNT:
             return new AggCount();
-            break;
-
-
 
         case MATH_CPP_AGG_MAX:
-            
-            switch (dtype) {
-
-                case MATH_CPP_INT:
-                    return new AggMaxInt (new Dtype_INT());
-                case MATH_CPP_STRING:
-                    return new AggMaxString (new Dtype_STRING());
+            {
+                switch (dtype) {
+                    case MATH_CPP_INT:
+                    {
+                        Dtype_INT *dtype = new Dtype_INT();
+                        dtype->dtype.int_val = std::numeric_limits<int32_t>::min();
+                        return new AggMax (dtype);
+                    }
+                    case MATH_CPP_DOUBLE:
+                    {
+                        Dtype_DOUBLE *dtype = new Dtype_DOUBLE();
+                        dtype->dtype.d_val = std::numeric_limits<double>::min();
+                        return new AggMax (dtype);
+                    }
+                    default:
+                        return new AggMax (Dtype::factory(dtype));
+                }
             }
             break;
-
-
 
         case MATH_CPP_AGG_MIN:
-
-            switch (dtype) {
-
-                case MATH_CPP_INT:
-                    return new AggMinInt (new Dtype_INT());
+            {
+                switch (dtype) {
+                    case MATH_CPP_INT:
+                    {
+                        Dtype_INT *dtype = new Dtype_INT();
+                        dtype->dtype.int_val = std::numeric_limits<int32_t>::max();
+                        return new AggMin (dtype);
+                    }
+                    case MATH_CPP_DOUBLE:
+                    {
+                        Dtype_DOUBLE *dtype = new Dtype_DOUBLE();
+                        dtype->dtype.d_val = std::numeric_limits<double>::max();
+                        return new AggMin (dtype);
+                    }
+                    default:
+                        return new AggMin (Dtype::factory(dtype));
+                }
             }
             break;
 
-
-
         case MATH_CPP_AGG_AVG:
-            break;
+            return NULL;
+
         case MATH_CPP_AGG_SUM:
-
-            switch (dtype) {
-
-                case MATH_CPP_INT:
-                    return new AggSumInt (new Dtype_INT());
-            }            
-            break;
-
+            return new AggSum (Dtype::factory(dtype));
 
         case MATH_CPP_AGG_MUL:
-            break;
+           return NULL;
+
         default:   
             return NULL;
     }

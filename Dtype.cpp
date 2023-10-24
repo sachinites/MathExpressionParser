@@ -24,6 +24,19 @@ Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     return this->did;
 }
 
+bool
+Dtype::operator< (Dtype& new_data)  {
+
+    assert(0);
+    return false;
+}
+
+void
+Dtype::operator+= (Dtype& new_data) {
+
+    assert(0);
+}
+
 
 
 
@@ -42,7 +55,6 @@ Dtype_INT::Dtype_INT() {
 Dtype_INT::~Dtype_INT() {
 
 }
-
 
  Dtype_INT::Dtype_INT(int val) {
 
@@ -78,6 +90,13 @@ Dtype_INT::SetValue(void *value) {
     this->is_resolved = true;
 }
 
+void 
+Dtype_INT::SetValue(Dtype *value) {
+
+    this->dtype.int_val = dynamic_cast <Dtype_INT *> (value)->dtype.int_val;
+    this->is_resolved = true;
+}
+
 mexprcpp_dtypes_t 
 Dtype_INT::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
@@ -101,6 +120,21 @@ Dtype_INT::toString () {
     stringify->is_resolved = true;
     return stringify;
 }
+
+bool
+Dtype_INT::operator< (Dtype& new_data)  {
+
+    Dtype_INT *data = dynamic_cast <Dtype_INT *> (&new_data);
+    return this->dtype.int_val < data->dtype.int_val;
+}
+
+void
+Dtype_INT::operator+= (Dtype&  new_data) {
+
+    Dtype_INT *data = dynamic_cast <Dtype_INT *> (&new_data);
+    this->dtype.int_val += data->dtype.int_val ;
+}
+
 
 
 
@@ -152,6 +186,13 @@ Dtype_DOUBLE::SetValue(void *value) {
     this->is_resolved = true;
 }
 
+void 
+Dtype_DOUBLE::SetValue(Dtype *value) {
+
+    this->dtype.d_val = dynamic_cast <Dtype_DOUBLE *> (value)->dtype.d_val;
+    this->is_resolved = true;
+}
+
 mexprcpp_dtypes_t 
 Dtype_DOUBLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
@@ -174,6 +215,20 @@ Dtype_DOUBLE::toString () {
     stringify->dtype.str_val = std::to_string (val);
     stringify->is_resolved = true;
     return stringify;
+}
+
+bool
+Dtype_DOUBLE::operator< (Dtype& new_data)  {
+
+    Dtype_DOUBLE *data = dynamic_cast <Dtype_DOUBLE *> (&new_data);
+    return this->dtype.d_val < data->dtype.d_val;
+}
+
+void
+Dtype_DOUBLE::operator+= (Dtype& new_data) {
+
+    Dtype_DOUBLE *data = dynamic_cast <Dtype_DOUBLE *> (&new_data);
+    this->dtype.d_val += data->dtype.d_val ;
 }
 
 
@@ -226,6 +281,13 @@ Dtype_STRING::SetValue(void *value) {
 }
 
 void 
+Dtype_STRING::SetValue(Dtype *value) {
+
+    Dtype_STRING *value_str = dynamic_cast<Dtype_STRING *> (value);
+    this->SetValue (&value_str->dtype.str_val);
+}
+
+void 
 Dtype_STRING::SetValue(std::string *string_ptr) {
 
     this->dtype.str_val.assign(*string_ptr);
@@ -257,6 +319,21 @@ Dtype_STRING::toString () {
 
     return dynamic_cast<Dtype_STRING *> (this->clone());
 }
+
+bool
+Dtype_STRING::operator< (Dtype& new_data)  {
+
+    Dtype_STRING *data = dynamic_cast <Dtype_STRING *> (&new_data);
+    return this->dtype.str_val.length() < data->dtype.str_val.length();
+}
+
+void
+Dtype_STRING::operator+= (Dtype& new_data) {
+
+    Dtype_STRING *data = dynamic_cast <Dtype_STRING *> (&new_data);
+    this->dtype.str_val.append(data->dtype.str_val) ;
+}
+
 
 
 
@@ -302,6 +379,16 @@ Dtype_IPv4_addr::SetValue(void *value) {
     this->is_resolved = true;
 }
 
+void 
+Dtype_IPv4_addr::SetValue(Dtype *value) {
+
+    Dtype_IPv4_addr *value_d = dynamic_cast <Dtype_IPv4_addr *> (value);
+    this->dtype.ip_addr_str.assign (value_d->dtype.ip_addr_str);
+    this->dtype.ipaddr_int = value_d->dtype.ipaddr_int;
+    this->is_resolved = true;
+}
+
+
 mexprcpp_dtypes_t 
 Dtype_IPv4_addr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
@@ -324,6 +411,7 @@ Dtype_IPv4_addr::toString () {
     stringify->dtype.str_val = this->dtype.ip_addr_str;
     return stringify;
 }
+
 
 
 
@@ -371,6 +459,15 @@ Dtype_BOOL::SetValue (void *_value) {
     }
     this->is_resolved = true;
 }
+
+void 
+Dtype_BOOL::SetValue(Dtype *value) {
+
+    Dtype_BOOL *value_d = dynamic_cast <Dtype_BOOL *> (value);
+    this->dtype.b_val = value_d->dtype.b_val;
+    this->is_resolved = true;
+}
+
 
 mexprcpp_dtypes_t 
 Dtype_BOOL::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
@@ -433,6 +530,10 @@ void
 Dtype_WILDCARD::SetValue (void *value) {
 
 }
+void 
+Dtype_WILDCARD::SetValue (Dtype *value) {
+
+}
 
 mexprcpp_dtypes_t 
 Dtype_WILDCARD::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
@@ -489,6 +590,11 @@ Dtype_INVALID::clone() {
 
 void 
 Dtype_INVALID::SetValue (void *value) {
+
+}
+
+void 
+Dtype_INVALID::SetValue (Dtype *value) {
 
 }
 
@@ -571,6 +677,10 @@ Dtype_VARIABLE::InstallOperandProperties (
 
 void 
 Dtype_VARIABLE::SetValue (void *value) {
+
+}
+void 
+Dtype_VARIABLE::SetValue (Dtype *value) {
 
 }
 
@@ -659,6 +769,27 @@ Dtype_STRING_LST::SetValue(void *value) {
         this->dtype.str_lst.push_back (dtype_str);
     }
 }
+
+void
+Dtype_STRING_LST::SetValue(Dtype *value) {
+
+    std::string *str_ptr;
+    Dtype_STRING *dtype_str;
+    Dtype_STRING *dtype_str_clone;
+
+    Dtype_STRING_LST *value_d = dynamic_cast<Dtype_STRING_LST *>(value);
+
+    std::list<Dtype_STRING *> *str_lst_ptr = &value_d->dtype.str_lst;
+
+    for (std::list<Dtype_STRING *>::iterator it = str_lst_ptr->begin(); 
+            it != str_lst_ptr->end(); ++it) {
+
+        dtype_str = *it;
+        dtype_str_clone = reinterpret_cast<Dtype_STRING *> (dtype_str->clone());
+        this->dtype.str_lst.push_back (dtype_str_clone);
+    }    
+}
+
 
 mexprcpp_dtypes_t 
 Dtype_STRING_LST::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {

@@ -67,7 +67,7 @@ COLS() {
 
         err = COLS();
 
-        if (err == PARSE_ERR) break;
+
 
         RETURN_PARSE_SUCCESS;
 
