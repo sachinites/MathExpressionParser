@@ -5,8 +5,9 @@
 #include <string>
 #include "../RDBMSImplementation/SqlParser/ParserExport.h"
 #include "MExprcppEnums.h"
+#include "Dtype.h"
 #include "../RDBMSImplementation/SqlParser/SqlParserStruct.h"
-
+#include "../RDBMSImplementation/core/sql_utils.h"
 #include "MiniStack.cpp"
 
 static int 
@@ -65,6 +66,7 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
     int k;
     std::string *string_ptr; 
     std::list<std::string *> *str_lst_ptr;
+    std::list<int32_t > *int_lst_ptr;
     
         /* Now Fix up the Operators which operate on > 2 operands, 
             for example ' in ' Operator */
@@ -77,6 +79,19 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
 
                     case MATH_CPP_IN:
                     {
+                        /* In Operator is also used for :   <interger> in <interval>. We dont need
+                            any fixup processing in this case*/
+                        if (lex_data_arr_out[i+1]->token_code == MATH_CPP_INTERVAL) {
+                            int_lst_ptr =  new std::list<int32_t >();
+                            int a = 0, b = 0;
+                            assert(sql_read_interval_values (lex_data_arr_out[i+1]->token_val, &a, &b));
+                             int_lst_ptr->push_back(a);
+                             int_lst_ptr->push_back(b);
+                             lex_data_arr_out[i+1]->token_val = (char *)int_lst_ptr;
+                             lex_data_arr_out[i+1]->token_len = 0;
+                            break;
+                        }
+
                         str_lst_ptr = new std::list<std::string *>();
                         k = i + 1;
                         assert(lex_data_arr_out[k]->token_code == MATH_CPP_BRACKET_START);
@@ -342,6 +357,10 @@ RDBMS_to_Mexpr_Enum_Convertor (int external_code,
             *dtype_code =  MATH_CPP_VARIABLE;
             return MEXPR_OPND;
 
+        case SQL_INTERVAL_VALUE:
+            *dtype_code = MATH_CPP_INTERVAL;
+             return MEXPR_OPND;
+
         /* Extras */
         case SQL_COMMA:
             *opr_code = MATH_CPP_COMMA;
@@ -367,6 +386,8 @@ sql_to_mexpr_dtype_converter (sql_dtype_t sql_dtype) {
             return MATH_CPP_STRING;
         case SQL_IPV4_ADDR:
             return MATH_CPP_IPV4;
+        case SQL_INTERVAL:
+            return MATH_CPP_INTERVAL;
         default: 
             return MATH_CPP_DTYPE_INVALID;
     }
@@ -385,6 +406,8 @@ mexpr_to_sql_dtype_converter (mexprcpp_dtypes_t dtype) {
             return SQL_STRING;
         case MATH_CPP_IPV4:
             return SQL_IPV4_ADDR;
+        case MATH_CPP_INTERVAL:
+            return SQL_INTERVAL;
         default: 
             return SQL_DTYPE_MAX;
     }

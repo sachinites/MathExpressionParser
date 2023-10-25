@@ -822,7 +822,76 @@ Dtype_STRING_LST::toString () {
 
 
 
+ Dtype_INTERVAL:: Dtype_INTERVAL() 
+ {
+    this->did = MATH_CPP_INTERVAL;
+    this->dtype.lb = 0;
+    this->dtype.ub = 0;
+    this->is_resolved = true;
+}
 
+ Dtype_INTERVAL::~Dtype_INTERVAL() { }
+
+ Dtype *
+Dtype_INTERVAL::compute(Dtype *dtype1, Dtype *dtype2) {
+
+     return dynamic_cast <Dtype *>(clone() );
+ }
+
+MexprNode * 
+Dtype_INTERVAL::clone() {
+
+    Dtype_INTERVAL *obj = new Dtype_INTERVAL();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+void 
+Dtype_INTERVAL::SetValue(void *value) {
+
+    std::list<int32_t> *int_lst_ptr = reinterpret_cast <std::list<int32_t> *>(value);
+    this->dtype.lb = int_lst_ptr->front();
+    this->dtype.ub = int_lst_ptr->back();
+}
+
+void 
+Dtype_INTERVAL::SetValue(Dtype *value) {
+
+    Dtype_INTERVAL *value_interval = dynamic_cast <Dtype_INTERVAL *>(value);
+    this->dtype.lb = value_interval->dtype.lb;
+    this->dtype.ub = value_interval->dtype.ub;
+}
+
+mexprcpp_dtypes_t 
+Dtype_INTERVAL::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_INTERVAL;
+}
+
+ int
+Dtype_INTERVAL::serialize(void *mem) {
+
+    int rc = 0;
+    memcpy ( (char *)mem + rc, &this->dtype.lb, sizeof ( this->dtype.lb));
+    rc += sizeof ( this->dtype.lb);
+    memcpy ( (char *)mem + rc, &this->dtype.ub, sizeof ( this->dtype.ub));
+    rc += sizeof ( this->dtype.ub);
+    return rc;
+ }
+
+
+Dtype_STRING *
+Dtype_INTERVAL::toString() {
+
+    Dtype_STRING * rc = new Dtype_STRING();
+    rc->dtype.str_val = "[" + std::to_string(this->dtype.lb) + "," + std::to_string(this->dtype.ub) + "]"; 
+    return rc;
+}
 
 
 Dtype * 
@@ -844,6 +913,8 @@ Dtype::factory(mexprcpp_dtypes_t did) {
             return new Dtype_VARIABLE();
         case MATH_CPP_STRING_LST:
             return new Dtype_STRING_LST();
+        case MATH_CPP_INTERVAL:
+            return new Dtype_INTERVAL();
         case MATH_CPP_DTYPE_WILDCRAD:
             return new Dtype_WILDCARD();
         case MATH_CPP_DTYPE_INVALID:
