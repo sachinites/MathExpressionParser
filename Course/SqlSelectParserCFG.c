@@ -15,7 +15,7 @@ TAB -> <variable>
 static parse_rc_t  TAB() ;
 static parse_rc_t  COL() ;
 static parse_rc_t  COLS() ;
- parse_rc_t  Q() ;
+ parse_rc_t  Qry() ;
 
 // TAB -> <variable>
 parse_rc_t 
@@ -94,7 +94,7 @@ COLS() {
 //Q -> select COLS from TAB
 
 parse_rc_t 
-Q() {
+Qry() {
 
     parse_init();
 

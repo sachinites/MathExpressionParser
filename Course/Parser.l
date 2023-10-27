@@ -261,7 +261,8 @@ extern void Parse_Equations();
 extern parse_rc_t Z() ;
 extern parse_rc_t A() ;
 extern parse_rc_t C() ;
- extern parse_rc_t  Q() ;
+extern parse_rc_t  Q() ;
+extern parse_rc_t E();
 
 int main (int argc, char **argv) {
 
@@ -288,7 +289,9 @@ int main (int argc, char **argv) {
             printf ("Accepted : Set of all Strings starting with a and have alternate a and b\n");
         }
 #endif
-        parse_rc_t err = Q();
+
+#if 0
+        parse_rc_t err = Qry();
 
         printf ("Parsed String : \n");
         
@@ -298,7 +301,7 @@ int main (int argc, char **argv) {
         else {
             printf ("Accepted : Valid Select Statement \n");
         }
-
+#endif 
 #if 0
         for (int i = 0; i <= undo_stack.top; i++) {
 
@@ -306,6 +309,26 @@ int main (int argc, char **argv) {
             printf ("%s ", lex_data->token_val);
         }
 #endif
+
+         parse_rc_t err = E();
+
+        int token_code = cyylex();
+
+        if (token_code != PARSER_EOL) {
+
+            printf ("Rejectd : Entire String is not a Valid Mathematical Expression\n");
+        }
+        else {
+
+            if (err == PARSE_ERR ) {
+
+                printf ("Rejected\n");
+            }
+            else {
+                printf ("Accepted\n");
+            }
+        }
+
         Parser_stack_reset();
     }
 
