@@ -263,6 +263,8 @@ extern parse_rc_t A() ;
 extern parse_rc_t C() ;
 extern parse_rc_t  Q() ;
 extern parse_rc_t E();
+extern lex_data_t **
+mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out);
 
 int main (int argc, char **argv) {
 
@@ -325,7 +327,28 @@ int main (int argc, char **argv) {
                 printf ("Rejected\n");
             }
             else {
+
                 printf ("Accepted\n");
+
+                int size_out = 0;
+                lex_data_t **postfix_array = mexpr_convert_infix_to_postfix (
+                                                                undo_stack.data,
+                                                                undo_stack.top + 1,
+                                                                &sizeout);
+
+                // print the postfix_array here to verify !
+                printf ("Postfix : ");
+
+                for (i = 0; i < size_out; i++) {
+
+                    lex_data_t *lex_data = postfix_array[i];
+                    printf ("%s ", lex_data->token_val);
+                    free(lex_data->token_val);
+                    free(lex_data);
+                }
+                free(postfix_array);
+                
+                printf ("\n");
             }
         }
 
