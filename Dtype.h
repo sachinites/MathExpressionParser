@@ -245,6 +245,32 @@ class Dtype_STRING_LST : public Dtype {
         virtual Dtype_STRING *toString() override;
 };
 
+
+/* Dtype : Dtype_INTERVAL */
+
+class Dtype_INTERVAL : public Dtype {
+
+    public:
+
+        struct {
+           int lb;
+           int ub;
+        } dtype;
+        
+        Dtype_INTERVAL();
+        ~Dtype_INTERVAL();
+        Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
+        MexprNode * clone() override;
+        void SetValue(void *value) override;
+        virtual void SetValue(Dtype *) override;
+        mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual int serialize(void *mem) override;
+        virtual Dtype_STRING *toString() override;
+};
+
+
+
+
 template <class T>
 class Dtype_LIST_TEMPLATE : public Dtype {
 

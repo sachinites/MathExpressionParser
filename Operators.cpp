@@ -1720,65 +1720,136 @@ OperatorIn::compute(Dtype *dtype1, Dtype *dtype2) {
         return dynamic_cast<Dtype *> (this->optimized_result->clone() );
     }
 
-    assert (dtype1->did == MATH_CPP_STRING &&
-        dtype2->did == MATH_CPP_STRING_LST);
+    switch (dtype1->did ) {
 
-    Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
-    res->dtype.b_val = false;
-    Dtype_STRING_LST *str_lst = dynamic_cast <Dtype_STRING_LST *> (dtype2);
-    Dtype_STRING *str = dynamic_cast <Dtype_STRING *> (dtype1);
-    Dtype_STRING *elem;
+        case MATH_CPP_STRING:
+        {
 
-    for (std::list<Dtype_STRING *>::iterator it = str_lst->dtype.str_lst.begin(); 
-            it != str_lst->dtype.str_lst.end(); ++it) {
+                switch (dtype2->did) {
 
-        elem = *it;
+                    case MATH_CPP_STRING_LST:
+                    {
+                            Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
+                            res->dtype.b_val = false;
+                            Dtype_STRING_LST *str_lst = dynamic_cast <Dtype_STRING_LST *> (dtype2);
+                            Dtype_STRING *str = dynamic_cast <Dtype_STRING *> (dtype1);
+                            Dtype_STRING *elem;
 
-        if (elem->dtype.str_val == str->dtype.str_val) {
-            res->dtype.b_val = true;
-            return res;
+                            for (std::list<Dtype_STRING *>::iterator it = str_lst->dtype.str_lst.begin(); 
+                                    it != str_lst->dtype.str_lst.end(); ++it) {
+
+                                elem = *it;
+
+                                if (elem->dtype.str_val == str->dtype.str_val) {
+                                    res->dtype.b_val = true;
+                                    return res;
+                                }
+                            }
+                            return res;    
+                    }
+                    break;
+                }
         }
+        break;
+
+
+        case MATH_CPP_INT:
+        {
+            switch (dtype2->did) {
+
+                case MATH_CPP_INTERVAL:
+                {
+
+                    Dtype_BOOL *res = dynamic_cast <Dtype_BOOL *>( Dtype::factory (MATH_CPP_BOOL));
+                    res->dtype.b_val = false;
+                    Dtype_INT *dtype1_int = dynamic_cast <Dtype_INT *> (dtype1);
+                    Dtype_INTERVAL *dtype2_ival = dynamic_cast <Dtype_INTERVAL *> (dtype2);
+                    int a = dtype1_int->dtype.int_val;
+                    int lb = dtype2_ival->dtype.lb;
+                    int ub = dtype2_ival->dtype.ub;
+                    if (a >= lb && a <= ub)  res->dtype.b_val  = true;
+                    return res;
+                }
+                break;
+            }
+        }
+        break;
+
+        default:
+            assert(0);
     }
 
-    return res;
+    return NULL;
 }
 
-mexprcpp_dtypes_t 
+mexprcpp_dtypes_t
 OperatorIn::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
-    if (this->is_optimized) {
+    if (this->is_optimized)
+    {
         return this->optimized_result->did;
     }
 
-    switch (did1) {
+    switch (did1)
+    {
 
-        case MATH_CPP_VARIABLE:
-        case MATH_CPP_STRING:
+    case MATH_CPP_VARIABLE:
+    {
+        switch (did2)
+        {
 
-            switch (did2) {
-
-                case MATH_CPP_STRING_LST:
-                case MATH_CPP_DTYPE_WILDCRAD:
-                    return MATH_CPP_BOOL;
-                default:
-                    return MATH_CPP_DTYPE_INVALID;
-            }
-            break;
-
+        case MATH_CPP_STRING_LST:
+        case MATH_CPP_INTERVAL:
         case MATH_CPP_DTYPE_WILDCRAD:
-
-            switch (did2) {
-
-                case MATH_CPP_STRING_LST:
-                    return MATH_CPP_BOOL;
-                case MATH_CPP_DTYPE_WILDCRAD:
-                    return MATH_CPP_DTYPE_WILDCRAD;
-                default:
-                    return MATH_CPP_DTYPE_INVALID;
-            }
-
+            return MATH_CPP_BOOL;
         default:
             return MATH_CPP_DTYPE_INVALID;
+        }
+    }
+    break;
+
+    case MATH_CPP_STRING:
+
+        switch (did2)
+        {
+
+        case MATH_CPP_STRING_LST:
+        case MATH_CPP_DTYPE_WILDCRAD:
+            return MATH_CPP_BOOL;
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+        }
+        break;
+
+    case MATH_CPP_INT:
+
+        switch (did2)
+        {
+
+        case MATH_CPP_INTERVAL:
+        case MATH_CPP_DTYPE_WILDCRAD:
+            return MATH_CPP_BOOL;
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+        }
+        break;
+
+    case MATH_CPP_DTYPE_WILDCRAD:
+
+        switch (did2)
+        {
+
+        case MATH_CPP_INTERVAL:
+        case MATH_CPP_STRING_LST:
+            return MATH_CPP_BOOL;
+        case MATH_CPP_DTYPE_WILDCRAD:
+            return MATH_CPP_DTYPE_WILDCRAD;
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+        }
+
+    default:
+        return MATH_CPP_DTYPE_INVALID;
     }
 }
 

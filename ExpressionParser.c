@@ -183,35 +183,58 @@ IDENT_LST () {
 }
 
 /* Parse the  ' in ' operator 
-    INCALUSE ->  Identifier in (IDENT_LST)
+    INCALUSE ->  Identifier in (IDENT_LST) | Identifier in [<integer>,<integer>]
     IDENT_LST -> "Word(s)" | "Word(s)" , IDENT_LST
 */
 parse_rc_t 
 INCLAUSE () {
 
     parse_init();
+    int initial_chkp;
 
-    token_code = cnvrt (cyylex() );
+    //  INCALUSE ->  Identifier in (IDENT_LST)
+    do {
 
-    if (token_code != MATH_CPP_VARIABLE)  RETURN_PARSE_ERROR;
+        token_code = cnvrt (cyylex() );
 
-    token_code = cnvrt (cyylex() );
+        if (token_code != MATH_CPP_VARIABLE)  RETURN_PARSE_ERROR;
 
-    if (token_code != MATH_CPP_IN) RETURN_PARSE_ERROR;
+        token_code = cnvrt (cyylex() );
 
-    token_code = cnvrt (cyylex() );
+        if (token_code != MATH_CPP_IN) RETURN_PARSE_ERROR;
 
-    if (token_code != MATH_CPP_BRACKET_START) RETURN_PARSE_ERROR;
+        CHECKPOINT(initial_chkp);
 
-    err = PARSER_CALL(IDENT_LST);
+        token_code = cnvrt (cyylex() );
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_BRACKET_START) break;
 
-    token_code = cnvrt (cyylex() );
+        err = PARSER_CALL(IDENT_LST);
 
-    if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) break;
 
-    RETURN_PARSE_SUCCESS;
+        token_code = cnvrt (cyylex() );
+
+        if (token_code != MATH_CPP_BRACKET_END) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+
+    //  INCALUSE ->  Identifier in [<integer>,<integer>]
+    do {
+
+        token_code = cnvrt (cyylex() );
+
+        if (token_code != MATH_CPP_INTERVAL) break;
+
+        RETURN_PARSE_SUCCESS;
+        
+    } while (0);
+
+    RETURN_PARSE_ERROR;
 }
 
 
