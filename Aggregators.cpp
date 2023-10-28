@@ -12,8 +12,11 @@ Aggregator::Aggregator() {
 
 Aggregator::~Aggregator() {
 
-    delete this->aggregator;
-    this->aggregator = NULL;
+   if ( this->aggregator) {
+        delete this->aggregator;
+        this->aggregator = NULL;
+   }
+   
     this->agg_id = MATH_CPP_AGG_MAXX;
 }
 
@@ -21,6 +24,12 @@ Dtype *
 Aggregator::getAggregatedValue () {
 
     return this->aggregator;
+}
+
+void
+Aggregator::SetAggregator (Dtype *new_aggregator) {
+
+    this->aggregator = new_aggregator;
 }
 
 
@@ -145,6 +154,8 @@ Aggregator::factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype) {
                         dtype->dtype.d_val = std::numeric_limits<double>::min();
                         return new AggMax (dtype);
                     }
+                    case MATH_CPP_DTYPE_INVALID:
+                        return new AggMax();
                     default:
                         return new AggMax (Dtype::factory(dtype));
                 }
@@ -166,6 +177,8 @@ Aggregator::factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype) {
                         dtype->dtype.d_val = std::numeric_limits<double>::max();
                         return new AggMin (dtype);
                     }
+                    case MATH_CPP_DTYPE_INVALID:
+                        return new AggMin();                    
                     default:
                         return new AggMin (Dtype::factory(dtype));
                 }
@@ -176,8 +189,16 @@ Aggregator::factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype) {
             return NULL;
 
         case MATH_CPP_AGG_SUM:
-            return new AggSum (Dtype::factory(dtype));
+        {
+            switch (dtype) {
 
+                case MATH_CPP_DTYPE_INVALID:
+                     return new AggSum();
+                default:
+                    return new AggSum (Dtype::factory(dtype));
+            }
+        }
+            
         case MATH_CPP_AGG_MUL:
            return NULL;
 

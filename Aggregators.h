@@ -13,14 +13,15 @@ class Aggregator {
 
     protected:
         mexprcpp_agg_t agg_id;
-        Dtype *aggregator;
         Aggregator();
 
     public:
+        Dtype *aggregator;
         virtual ~Aggregator();
         virtual void aggregate (Dtype* new_data) = 0;
         static Aggregator *factory (mexprcpp_agg_t agg_type, mexprcpp_dtypes_t dtype);
         Dtype *getAggregatedValue ();
+        void SetAggregator (Dtype *);
 }; 
 
 
@@ -32,8 +33,8 @@ class AggMax : public Aggregator {
     private:
 
     protected:
-        AggMax( );
     public:
+        AggMax( );
         AggMax(Dtype* aggregator);
         ~AggMax();
         virtual void aggregate  (Dtype* new_data) override;
@@ -44,9 +45,9 @@ class AggMin : public Aggregator {
     private:
 
     protected:
-        AggMin( );
-
+       
     public:
+         AggMin( );
         AggMin(Dtype* aggregator);
         ~AggMin();
         virtual void aggregate  (Dtype* new_data) override;
@@ -58,9 +59,9 @@ class AggSum : public Aggregator {
     private:
 
     protected:
-       AggSum();
-
+       
     public:
+         AggSum();
          AggSum(Dtype* aggregator);
         ~AggSum();
         virtual void aggregate  (Dtype* new_data) override;

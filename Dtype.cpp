@@ -324,7 +324,7 @@ bool
 Dtype_STRING::operator< (Dtype& new_data)  {
 
     Dtype_STRING *data = dynamic_cast <Dtype_STRING *> (&new_data);
-    return this->dtype.str_val.length() < data->dtype.str_val.length();
+    return this->dtype.str_val < data->dtype.str_val;
 }
 
 void
