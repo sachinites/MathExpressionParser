@@ -25,9 +25,11 @@ Combining everything, final grammar is :
 2.    E’  ->  + T E' | - T E' |  $
 3.    T  ->   F T’
 4.    T’ ->   * F T' |   / F T'  |  $
-5.    F  ->   ( E ) |  INTEGER | DECIMAL | VAR
+5.    F  ->   ( E ) |  INTEGER | DECIMAL | VAR | G(E,E) | P(E)
 6.    Q -> E INEQ E
 7.    INEQ ->     MATH_CPP_EQ  |  MATH_CPP_NEQ |  MATH_CPP_LESS_THAN  |   MATH_CPP_LESS_THAN_EQ
+8.   G -> max | min | pow
+9.   P  -> sqr | sqrt
 */
 
 parse_rc_t E() ;
@@ -37,8 +39,50 @@ static parse_rc_t T_dash() ;
 static parse_rc_t F() ;
 parse_rc_t Q() ;
 parse_rc_t INEQ() ;
+static parse_rc_t G() ;
+static parse_rc_t P() ;
 
-// F  ->   ( E ) |  INTEGER | DECIMAL | VAR
+
+
+// G -> max | min | pow
+parse_rc_t 
+G() {
+
+    parse_init();
+
+    token_code = cyylex();
+
+    switch (token_code) {
+
+        case MATH_CPP_POW:
+        case MATH_CPP_MAX:
+        case MATH_CPP_MIN:
+            RETURN_PARSE_SUCCESS;
+        default:
+            RETURN_PARSE_ERROR;
+    }
+}
+
+// P  -> sqr | sqrt
+parse_rc_t 
+P() {
+
+    parse_init();
+
+    token_code = cyylex();
+
+    switch (token_code) {
+
+        case MATH_CPP_SQR:
+        case MATH_CPP_SQRT:
+            RETURN_PARSE_SUCCESS;
+        default:
+            RETURN_PARSE_ERROR;
+    }    
+}
+
+
+// F  ->   ( E ) |  INTEGER | DECIMAL | VAR | STRING
 parse_rc_t 
 F() {
 
@@ -69,8 +113,60 @@ F() {
 
     RESTORE_CHKP(initial_chkp);
 
+    // F -> G(E,E) 
+    do {
 
-    // F --> INTEGER | DECIMAL | VAR 
+        err = G();
+
+        if (err == PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != MATH_CPP_BRACKET_START) break;
+
+        err = E();
+
+        if (err == PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != MATH_CPP_COMMA) break;
+
+        token_code = cyylex();
+
+        if (token_code != MATH_CPP_BRACKET_END) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+    
+    RESTORE_CHKP(initial_chkp);
+
+    // G -> P (E)
+    do {
+
+        err = P();
+
+        if (err == PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != MATH_CPP_BRACKET_START) break;
+
+        err = E();
+
+         token_code = cyylex();
+
+         if (token_code != MATH_CPP_BRACKET_END) break;
+
+         RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+
+    RESTORE_CHKP(initial_chkp);
+
+    // F --> INTEGER | DECIMAL | VAR | STRING
 
     token_code = cyylex();
 
@@ -79,6 +175,7 @@ F() {
         case MATH_CPP_INT:
         case MATH_CPP_DOUBLE:
         case MATH_CPP_VARIABLE:
+        case MATH_CPP_STRING:
             RETURN_PARSE_SUCCESS;
         default:
             RETURN_PARSE_ERROR;
