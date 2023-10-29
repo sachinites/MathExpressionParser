@@ -334,12 +334,12 @@ int main (int argc, char **argv) {
                 lex_data_t **postfix_array = mexpr_convert_infix_to_postfix (
                                                                 undo_stack.data,
                                                                 undo_stack.top + 1,
-                                                                &sizeout);
+                                                                &size_out);
 
                 // print the postfix_array here to verify !
                 printf ("Postfix : ");
 
-                for (i = 0; i < size_out; i++) {
+                for (int i = 0; i < size_out; i++) {
 
                     lex_data_t *lex_data = postfix_array[i];
                     printf ("%s ", lex_data->token_val);
