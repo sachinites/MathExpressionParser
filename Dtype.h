@@ -211,7 +211,7 @@ class Dtype_VARIABLE : public Dtype {
         ~Dtype_VARIABLE();
         Dtype *compute(Dtype *dtype1, Dtype *dtype2) override;
         MexprNode * clone() override;
-        void  InstallOperandProperties (
+        void  ResolveOperand (
                 mexprcpp_dtypes_t resolved_did,
                 void *data_src,
                 Dtype *(*compute_fn_ptr)(void *)) ;

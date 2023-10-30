@@ -27,7 +27,7 @@ Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 bool
 Dtype::operator< (Dtype& new_data)  {
 
-    assert(0);
+    printf ("Order by on this Expression is not supported\n");
     return false;
 }
 
@@ -663,7 +663,7 @@ Dtype_VARIABLE::clone() {
 }
 
 void  
-Dtype_VARIABLE::InstallOperandProperties (
+Dtype_VARIABLE::ResolveOperand (
                 mexprcpp_dtypes_t resolved_did,
                 void *data_src,
                 Dtype *(*compute_fn_ptr)(void *))  {
