@@ -8,4 +8,7 @@ g++ -g -c EnumConvertor.cpp -o EnumConvertor.o
 g++ -g lex.yy.o ExpressionParser.o SqlSelectParserCFG.o EnumConvertor.o -o exe -lfl
 g++ -g -c infix_to_postfix_test.c -o infix_to_postfix_test.o
 g++ -g infix_to_postfix_test.o -o infix_to_postfix_test.exe
+g++ -g -c MexprTree.cpp -o MexprTree.o
+g++ -g -c Operators.cpp -o Operators.o
+g++ -g -c Dtype.cpp -o Dtype.o
 

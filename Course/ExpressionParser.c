@@ -82,7 +82,7 @@ P() {
 }
 
 
-// F  ->   ( E ) |  INTEGER | DECIMAL | VAR | STRING
+// F  ->   ( E ) |  INTEGER | DECIMAL | VAR | STRING | G(E,E) | P(E)
 parse_rc_t 
 F() {
 

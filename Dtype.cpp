@@ -663,7 +663,7 @@ Dtype_VARIABLE::clone() {
 }
 
 void  
-Dtype_VARIABLE::InstallOperandProperties (
+Dtype_VARIABLE::ResolveOperand (
                 mexprcpp_dtypes_t resolved_did,
                 void *data_src,
                 Dtype *(*compute_fn_ptr)(void *))  {
