@@ -4,8 +4,7 @@
 #include "MexprTree.h"
 #include "Dtype.h"
 #include "Operators.h"
-
-#include "MiniStack.cpp"
+#include <stack>
 
 typedef struct lex_data_ {
 
@@ -63,7 +62,7 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
     this->root = NULL;
     this->lst_head = NULL;
 
-    Stack_t *stack = get_new_stack();
+    std::stack<MexprNode *> stack;
 
     for (i = 0; i < size; i++) {
 
@@ -89,7 +88,7 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
                  dtype->SetValue ((void *)postfix_lex_data_array[i]->token_val);
             }
 
-            push(stack, (void *)node);
+            stack.push(node);
 
         } while (0);
 
@@ -99,30 +98,29 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
 
         if (opr->is_unary == false){
 
-            MexprNode *right = (MexprNode *)pop(stack);
-            MexprNode *left = (MexprNode *)pop(stack);
+            MexprNode *right = stack.top(); stack.pop();
+            MexprNode *left = stack.top(); stack.pop();
             MexprNode *opNode = opr;
 
             opNode->left = left;
             opNode->right = right;
             left->parent = opNode;
             right->parent = opNode;
-            push(stack, opNode);
+            stack.push (opNode);
         }
         else {
 
-            MexprNode *left = (MexprNode *)pop(stack);
+            MexprNode *left = stack.top(); stack.pop();
             MexprNode * opNode = opr;
             opNode->left = left;
             opNode->right = NULL;
             left->parent = opNode;
-            push(stack, opNode);
+            stack.push (opNode);
         }
     }
 
-    this->root = (MexprNode *)pop(stack);
-    assert (isStackEmpty (stack));
-    free_stack(stack);
+    this->root = stack.top(); stack.pop();
+    assert (stack.empty());
     assert(!this->root->parent);    
 }
 

@@ -151,3 +151,40 @@ OperatorMin:: OperatorMin() {
  }
 
 OperatorMin:: ~OperatorMin() {}
+
+
+
+Operator* 
+Operator::factory (mexprcpp_operators_t opr_code) {
+
+    switch (opr_code) {
+
+        case MATH_CPP_PLUS:
+            return new OperatorPlus();
+        case MATH_CPP_MINUS:
+            return new OperatorMinus();
+        case MATH_CPP_MUL:
+            return new OperatorMul();
+        case MATH_CPP_DIV:
+            return new OperatorDiv();
+        case MATH_CPP_EQ:
+            return new OperatorEq();
+        case MATH_CPP_NEQ:
+            return new OperatorNeq();
+        case MATH_CPP_LESS_THAN:
+            return new OperatorLessThan();
+        case MATH_CPP_GREATER_THAN:
+            return new OperatorGreaterThan();
+        case MATH_CPP_SQR:
+            return new OperatorSqr();
+        case MATH_CPP_SQRT:
+            return new OperatorSqrt();           
+        case MATH_CPP_MAX:
+            return new OperatorMax();
+        case MATH_CPP_MIN:
+            return new OperatorMin(); 
+        default:
+            return NULL;
+    }
+    return NULL;
+}

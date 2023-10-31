@@ -20,6 +20,7 @@ class Operator : public MexprNode {
         int opid;
         std::string name; // operator nname, for example "+"
         bool is_unary;
+        static Operator* factory (mexprcpp_operators_t opr_code);
 };
 
 

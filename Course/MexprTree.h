@@ -15,6 +15,11 @@ class MexprNode {
 
     public:
         virtual ~MexprNode();
+        MexprNode *parent;
+        MexprNode *left;
+        MexprNode *right;
+        MexprNode *lst_left;
+        MexprNode *lst_right;
 
 };
 
@@ -31,7 +36,9 @@ class MexprTree {
     public:
         MexprNode *root; 
         MexprNode *lst_head; /// will discuss in next lecture video !
+        MexprTree();
         MexprTree(lex_data_t **postfix_lex_data_array, int size); // constructor 
+        static void InorderPrint (MexprTree *tree);
 
 } ;
 

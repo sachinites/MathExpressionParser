@@ -15,6 +15,9 @@ class Dtype : public MexprNode {
     public:
         mexprcpp_dtypes_t did;  // Dtype ID 
         virtual ~Dtype();
+        static Dtype * factory(mexprcpp_dtypes_t did);
+        virtual void SetValue(void *value) = 0;
+        virtual void SetValue(Dtype *) = 0;
 
 } ;
 
@@ -36,6 +39,8 @@ class Dtype_INT : public Dtype {
         Dtype_INT();
         Dtype_INT(int val); // paramterized constructor for convenience
         ~Dtype_INT();
+        virtual void SetValue(void *value) override;
+        virtual void SetValue(Dtype *)  override;
 };
 
 
@@ -51,12 +56,14 @@ class Dtype_DOUBLE : public Dtype {
 
         /* Data strure that would store int*/
         struct {
-            int d_val;
+            double d_val;
         } dtype;
 
         Dtype_DOUBLE();
         Dtype_DOUBLE(double val); // paramterized constructor for convenience
         ~Dtype_DOUBLE();
+        virtual void SetValue(void *value) override;
+        virtual void SetValue(Dtype *)  override;
 };
 
 
@@ -78,6 +85,8 @@ class Dtype_STRING : public Dtype {
 
         Dtype_STRING();
         ~Dtype_STRING();
+        virtual void SetValue(void *value) override;
+        virtual void SetValue(Dtype *)  override;
 };
 
 #endif 
