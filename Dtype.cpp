@@ -27,7 +27,7 @@ Dtype::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 bool
 Dtype::operator< (Dtype& new_data)  {
 
-    assert(0);
+    printf ("Order by on this Expression is not supported\n");
     return false;
 }
 
@@ -768,6 +768,7 @@ Dtype_STRING_LST::SetValue(void *value) {
         dtype_str->SetValue (str_ptr);
         this->dtype.str_lst.push_back (dtype_str);
     }
+    this->is_resolved = true;
 }
 
 void
@@ -788,6 +789,7 @@ Dtype_STRING_LST::SetValue(Dtype *value) {
         dtype_str_clone = reinterpret_cast<Dtype_STRING *> (dtype_str->clone());
         this->dtype.str_lst.push_back (dtype_str_clone);
     }    
+     this->is_resolved = true;
 }
 
 
@@ -857,6 +859,7 @@ Dtype_INTERVAL::SetValue(void *value) {
     std::list<int32_t> *int_lst_ptr = reinterpret_cast <std::list<int32_t> *>(value);
     this->dtype.lb = int_lst_ptr->front();
     this->dtype.ub = int_lst_ptr->back();
+     this->is_resolved = true;
 }
 
 void 
@@ -865,6 +868,7 @@ Dtype_INTERVAL::SetValue(Dtype *value) {
     Dtype_INTERVAL *value_interval = dynamic_cast <Dtype_INTERVAL *>(value);
     this->dtype.lb = value_interval->dtype.lb;
     this->dtype.ub = value_interval->dtype.ub;
+     this->is_resolved = true;
 }
 
 mexprcpp_dtypes_t 
