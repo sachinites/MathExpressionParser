@@ -37,6 +37,7 @@ class MexprTree {
         MexprNode *root; 
         MexprNode *lst_head; /// will discuss in next lecture video !
         MexprTree();
+        virtual ~MexprTree();
         MexprTree(lex_data_t **postfix_lex_data_array, int size); // constructor 
         static void InorderPrint (MexprTree *tree);
 

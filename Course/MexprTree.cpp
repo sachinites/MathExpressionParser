@@ -14,6 +14,10 @@ MexprNode::MexprNode() {
     this->lst_right = NULL;
 }
 
+MexprNode::~MexprNode() {
+
+
+}
 
 MexprTree:: MexprTree() {
 
@@ -21,6 +25,9 @@ MexprTree:: MexprTree() {
     this->lst_head = NULL;
  }
 
+MexprTree::~MexprTree() {
+
+}
 
 MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
 

@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "MexprcppEnums.h"
 #include "ParserExport.h"
+#include "MexprTree.h"
 
 #define STACK_IMPL 
 
@@ -296,10 +297,50 @@ main (int argc, char **argv) {
 
     }; 
 
+        // 2 + 3 + 4 
+        lex_data_t infix_array5[] = {
+
+        {  MATH_CPP_INT, 1, "2" },
+        {  MATH_CPP_PLUS, 1, "+" },
+        {  MATH_CPP_INT, 1, "3" },
+        {  MATH_CPP_PLUS, 1, "+" },
+        {  MATH_CPP_INT, 1, "4" }
+
+    }; 
+
+        // max (2, 3) + max (4, sqrt(16)) + 8 
+
+        lex_data_t infix_array6[] = {
+
+        {  MATH_CPP_MAX, 3, "max" },
+        {  MATH_CPP_BRACKET_START, 1, "(" },        
+        {  MATH_CPP_INT, 1, "2" },
+        {  MATH_CPP_COMMA, 1, "," },
+        {  MATH_CPP_INT, 1, "3" },
+        {  MATH_CPP_BRACKET_END, 1, ")" },
+
+        {  MATH_CPP_PLUS, 1, "+" },
+
+        {  MATH_CPP_MAX, 3, "max" },
+        {  MATH_CPP_BRACKET_START, 1, "(" },             
+        {  MATH_CPP_INT, 1, "4" },
+        {  MATH_CPP_COMMA, 1, "," },
+        {  MATH_CPP_SQRT, 4, "sqrt" },
+        {  MATH_CPP_BRACKET_START, 1, "(" },           
+        {  MATH_CPP_INT, 2, "16" },
+        {  MATH_CPP_BRACKET_END, 1, ")" },
+        {  MATH_CPP_BRACKET_END, 1, ")" },
+
+        {  MATH_CPP_PLUS, 1, "+" },
+
+        {  MATH_CPP_INT, 1, "8" }
+
+    }; 
+
     int size_out = 0;
     lex_data_t **postfix = mexpr_convert_infix_to_postfix (
-                                        infix_array4,
-                                        sizeof (infix_array4)/sizeof(infix_array4[0]),
+                                        infix_array6,
+                                        sizeof (infix_array6)/sizeof(infix_array6[0]),
                                         &size_out);
 
     printf ("Postfix : ");
@@ -309,6 +350,14 @@ main (int argc, char **argv) {
         lex_data_t *lex_data = postfix[i];
         printf ("%s ", lex_data->token_val);
     }
+    printf ("\n");
+
+    printf ("Constructing Expression Tree \n");
+
+    MexprTree *tree = new MexprTree (postfix, size_out);
+
+    printf ("Printing MexprTree : \n");
+    MexprTree::InorderPrint (tree);
     printf ("\n");
 
     return 0;
