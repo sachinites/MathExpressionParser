@@ -29,7 +29,7 @@ typedef struct lex_data_ lex_data_t;
 class MexprTree {
 
     private:
-
+    mexprcpp_dtypes_t validate_internal  (MexprNode *root);
 
     protected:
 
@@ -41,7 +41,7 @@ class MexprTree {
         virtual ~MexprTree();
         MexprTree(lex_data_t **postfix_lex_data_array, int size); // constructor 
         static void InorderPrint (MexprTree *tree);
-
-} ;
+        bool validate (MexprNode *root);
+} ; 
 
 #endif 

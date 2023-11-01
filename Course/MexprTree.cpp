@@ -143,3 +143,44 @@ void
 
     _InorderPrint(tree->root);
  }
+
+mexprcpp_dtypes_t
+ MexprTree::validate_internal (MexprNode *root) {
+
+    mexprcpp_dtypes_t res = MATH_CPP_DTYPE_INVALID;
+
+    mexprcpp_dtypes_t lrc, rrc;
+
+    if (!root) return res;
+
+    lrc = validate_internal(root->left);
+    rrc = validate_internal(root->right);
+
+
+    /* if i am leaf*/
+
+    if (!root->left && !root->right) {
+
+        return root->ResultStorageType (MATH_CPP_DTYPE_INVALID,
+                                                              MATH_CPP_DTYPE_INVALID);
+    }
+
+    /* If i am unary operator */
+
+    if (root->left && !root->right) {
+
+        return root->ResultStorageType (lrc, MATH_CPP_DTYPE_INVALID);
+    }
+
+    /* If I am binary operator */
+    return root->ResultStorageType(lrc, rrc);
+
+ }
+
+
+ bool 
+ MexprTree::validate (MexprNode *root) {
+
+    mexprcpp_dtypes_t dtype = validate_internal (root);
+    return (dtype != MATH_CPP_DTYPE_INVALID);
+ }

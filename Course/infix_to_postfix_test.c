@@ -337,10 +337,23 @@ main (int argc, char **argv) {
 
     }; 
 
+        // 2 + 3 + "Hello" 
+        lex_data_t infix_array7[] = {
+
+        {  MATH_CPP_INT, 1, "2" },
+        {  MATH_CPP_PLUS, 1, "+" },
+        {  MATH_CPP_INT, 1, "3" },
+        {  MATH_CPP_PLUS, 1, "+" },
+        {  MATH_CPP_STRING, 5, "Hello" }
+
+    }; 
+
+
+
     int size_out = 0;
     lex_data_t **postfix = mexpr_convert_infix_to_postfix (
-                                        infix_array6,
-                                        sizeof (infix_array6)/sizeof(infix_array6[0]),
+                                        infix_array7,
+                                        sizeof (infix_array7)/sizeof(infix_array7[0]),
                                         &size_out);
 
     printf ("Postfix : ");
@@ -359,6 +372,15 @@ main (int argc, char **argv) {
     printf ("Printing MexprTree : \n");
     MexprTree::InorderPrint (tree);
     printf ("\n");
+
+    /* Validation Test */
+    if (tree->validate (tree->root)) {
+
+        printf ("Expression Tree is Valid\n");
+    }
+    else {
+        printf ("Expression Tree is not Valid\n");
+    }
 
     return 0;
 }
