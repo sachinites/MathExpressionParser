@@ -154,7 +154,7 @@ MexprTree::validate_internal (MexprNode *root) {
     }
 
     /* If I am Half node*/
-    if (!root->left && root->right) {
+    if (root->left && !root->right) {
 
         return root->ResultStorageType(lrc, MATH_CPP_DTYPE_INVALID);
     }
