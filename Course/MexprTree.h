@@ -20,7 +20,8 @@ class MexprNode {
         MexprNode *right;
         MexprNode *lst_left;
         MexprNode *lst_right;
-
+        virtual MexprNode * clone() = 0;
+        //virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) = 0;
 };
 
 typedef struct lex_data_ lex_data_t;

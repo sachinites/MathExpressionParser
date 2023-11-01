@@ -30,6 +30,20 @@ Dtype_INT::~Dtype_INT() {
 
 }
 
+MexprNode * 
+Dtype_INT::clone() {
+
+    Dtype_INT *obj = new Dtype_INT();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
 void 
 Dtype_INT::SetValue(void *value) {
 
@@ -74,7 +88,18 @@ Dtype_DOUBLE::SetValue(Dtype *value)  {
     this->dtype.d_val = dynamic_cast <Dtype_DOUBLE *> (value)->dtype.d_val;
 }
 
+MexprNode * 
+Dtype_DOUBLE::clone() {
 
+    Dtype_DOUBLE *obj = new Dtype_DOUBLE();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 
@@ -114,6 +139,59 @@ Dtype_STRING::SetValue(Dtype *value)  {
     this->SetValue ((void *)value_str->dtype.str_val.c_str()); // leverage the Ist SetValue fn
 }
 
+MexprNode * 
+Dtype_STRING::clone() {
+
+    Dtype_STRING *obj = new Dtype_STRING();
+    obj->dtype.str_val = this->dtype.str_val;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
+
+Dtype_BOOL::Dtype_BOOL() {
+
+    this->did = MATH_CPP_BOOL;
+    this->dtype.b_val = false;
+}
+
+Dtype_BOOL::~Dtype_BOOL() {
+
+}
+
+void 
+Dtype_BOOL::SetValue(void *value)  {
+
+    // empty
+}
+
+
+void 
+Dtype_BOOL::SetValue(Dtype *dtype)  {
+
+    Dtype_BOOL *dtype_bool = dynamic_cast <Dtype_BOOL *> (dtype);
+    this->dtype.b_val = dtype_bool->dtype.b_val;
+}
+
+MexprNode * 
+Dtype_BOOL::clone() {
+
+    Dtype_BOOL *obj = new Dtype_BOOL();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
 
  Dtype * 
  Dtype::factory(mexprcpp_dtypes_t did) {
@@ -126,6 +204,8 @@ Dtype_STRING::SetValue(Dtype *value)  {
             return new Dtype_DOUBLE();
         case MATH_CPP_STRING:
             return new Dtype_STRING();
+        case MATH_CPP_BOOL:
+            return new Dtype_BOOL;
         default:
             return NULL;
     }

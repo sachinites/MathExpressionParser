@@ -21,6 +21,7 @@ class Operator : public MexprNode {
         std::string name; // operator nname, for example "+"
         bool is_unary;
         static Operator* factory (mexprcpp_operators_t opr_code);
+        virtual MexprNode * clone() = 0;
 };
 
 
@@ -34,7 +35,7 @@ class OperatorPlus : public Operator {
     public:
         OperatorPlus();
      ~OperatorPlus();
-
+     virtual MexprNode * clone() override;
 };
 
 
@@ -47,6 +48,7 @@ class OperatorMinus : public Operator {
     public:
         OperatorMinus();
      ~OperatorMinus();
+     virtual MexprNode * clone() override;
 
 };
 
@@ -61,6 +63,7 @@ class OperatorMul : public Operator {
     public:
         OperatorMul();
      ~OperatorMul();
+     virtual MexprNode * clone() override;
 
 };
 
@@ -75,7 +78,7 @@ class OperatorDiv : public Operator {
     public:
         OperatorDiv();
      ~OperatorDiv();
-
+    virtual MexprNode * clone() override;
 };
 
 
@@ -89,7 +92,7 @@ class OperatorEq : public Operator {
     public:
         OperatorEq();
      ~OperatorEq();
-
+    virtual MexprNode * clone() override;
 };
 
 
@@ -103,7 +106,7 @@ class OperatorNeq : public Operator {
     public:
         OperatorNeq();
      ~OperatorNeq();
-
+    virtual MexprNode * clone() override;
 };
 
 
@@ -117,7 +120,7 @@ class OperatorLessThan : public Operator {
     public:
         OperatorLessThan();
      ~OperatorLessThan();
-
+    virtual MexprNode * clone() override;
 };
 
 
@@ -131,7 +134,7 @@ class OperatorGreaterThan : public Operator {
     public:
         OperatorGreaterThan();
      ~OperatorGreaterThan();
-
+    virtual MexprNode * clone() override;
 };
 
 
@@ -145,8 +148,8 @@ class OperatorSqr : public Operator {
     public:
         OperatorSqr();
      ~OperatorSqr();
-
-};
+    virtual MexprNode * clone() override;
+};  
 
 
 
@@ -159,7 +162,7 @@ class OperatorSqrt : public Operator {
     public:
         OperatorSqrt();
      ~OperatorSqrt();
-
+    virtual MexprNode * clone() override;
 };
 
 
@@ -173,7 +176,7 @@ class OperatorMax : public Operator {
     public:
         OperatorMax();
      ~OperatorMax();
-
+    virtual MexprNode * clone() override;
 };
 
 
@@ -186,7 +189,7 @@ class OperatorMin : public Operator {
     public:
         OperatorMin();
      ~OperatorMin();
-
+    virtual MexprNode * clone() override;
 };
 
 

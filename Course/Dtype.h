@@ -18,7 +18,7 @@ class Dtype : public MexprNode {
         static Dtype * factory(mexprcpp_dtypes_t did);
         virtual void SetValue(void *value) = 0;
         virtual void SetValue(Dtype *) = 0;
-
+        virtual MexprNode * clone() = 0;
 } ;
 
 
@@ -41,6 +41,7 @@ class Dtype_INT : public Dtype {
         ~Dtype_INT();
         virtual void SetValue(void *value) override;
         virtual void SetValue(Dtype *)  override;
+        virtual MexprNode * clone() override;
 };
 
 
@@ -64,6 +65,7 @@ class Dtype_DOUBLE : public Dtype {
         ~Dtype_DOUBLE();
         virtual void SetValue(void *value) override;
         virtual void SetValue(Dtype *)  override;
+        virtual MexprNode * clone() override;
 };
 
 
@@ -87,6 +89,28 @@ class Dtype_STRING : public Dtype {
         ~Dtype_STRING();
         virtual void SetValue(void *value) override;
         virtual void SetValue(Dtype *)  override;
+        virtual MexprNode * clone() override;
+};
+
+
+
+class Dtype_BOOL : public Dtype {
+
+    private:
+
+    protected:
+
+    public:
+
+        struct {
+                bool b_val;
+        }dtype;
+
+        Dtype_BOOL();
+        ~Dtype_BOOL();
+        virtual void SetValue(void *value) override;
+        virtual void SetValue(Dtype *)  override;
+        virtual MexprNode * clone() override;
 };
 
 #endif 

@@ -26,6 +26,21 @@ Operator::~Operator () {
   OperatorPlus::~OperatorPlus()  {}
 
 
+MexprNode * 
+OperatorPlus::clone() {
+   OperatorPlus *obj = new OperatorPlus();
+   *obj = *this;
+   obj->parent = NULL;
+   obj->left = NULL;
+   obj->right = NULL;
+   obj->lst_left = NULL;
+   obj->lst_right = NULL;
+   return obj;
+}
+
+
+
+
 
  OperatorMinus:: OperatorMinus() {
 
@@ -36,6 +51,19 @@ Operator::~Operator () {
 
   OperatorMinus::~OperatorMinus()  {}
   
+MexprNode * 
+OperatorMinus::clone() {
+
+    OperatorMinus *obj = new OperatorMinus();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
 
 
 OperatorMul:: OperatorMul() {
@@ -47,6 +75,19 @@ OperatorMul:: OperatorMul() {
 
 OperatorMul::~OperatorMul()  {}
   
+MexprNode *
+OperatorMul::clone() {
+
+    OperatorMul *obj = new OperatorMul();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
 
 
 
@@ -60,6 +101,19 @@ OperatorDiv:: OperatorDiv() {
 
 OperatorDiv::~OperatorDiv()  {}
   
+MexprNode *
+OperatorDiv::clone() {
+
+    OperatorDiv *obj = new OperatorDiv();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
 
 
 OperatorEq:: OperatorEq() {
@@ -71,6 +125,18 @@ OperatorEq:: OperatorEq() {
 
 OperatorEq:: ~OperatorEq() {}
 
+MexprNode * 
+OperatorEq::clone() {
+
+    OperatorEq *obj = new OperatorEq();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 OperatorNeq:: OperatorNeq() {
@@ -82,6 +148,18 @@ OperatorNeq:: OperatorNeq() {
 
 OperatorNeq:: ~OperatorNeq() {}
 
+MexprNode * 
+OperatorNeq::clone() {
+
+    OperatorNeq *obj = new OperatorNeq();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 
@@ -94,6 +172,18 @@ OperatorLessThan:: OperatorLessThan() {
 
 OperatorLessThan:: ~OperatorLessThan() {}
 
+MexprNode * 
+OperatorLessThan::clone() {
+
+    OperatorLessThan *obj = new OperatorLessThan();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 OperatorGreaterThan:: OperatorGreaterThan() {
@@ -105,7 +195,18 @@ OperatorGreaterThan:: OperatorGreaterThan() {
 
 OperatorGreaterThan:: ~OperatorGreaterThan() {}
 
+MexprNode * 
+OperatorGreaterThan::clone() {
 
+    OperatorGreaterThan *obj = new OperatorGreaterThan();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 OperatorSqr:: OperatorSqr() {
@@ -117,6 +218,18 @@ OperatorSqr:: OperatorSqr() {
 
 OperatorSqr:: ~OperatorSqr() {}
 
+MexprNode * 
+OperatorSqr::clone() {
+
+    OperatorSqr *obj = new OperatorSqr();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 
@@ -128,6 +241,20 @@ OperatorSqrt:: OperatorSqrt() {
  }
 
 OperatorSqrt:: ~OperatorSqrt() {}
+
+MexprNode * 
+OperatorSqrt::clone() {
+
+    OperatorSqrt *obj = new OperatorSqrt();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
 
 
 
@@ -141,6 +268,20 @@ OperatorMax:: OperatorMax() {
 
 OperatorMax:: ~OperatorMax() {}
 
+MexprNode * 
+OperatorMax::clone() {
+
+    OperatorMax *obj = new OperatorMax();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
+
+
 
 
 OperatorMin:: OperatorMin() {
@@ -151,6 +292,19 @@ OperatorMin:: OperatorMin() {
  }
 
 OperatorMin:: ~OperatorMin() {}
+
+MexprNode * 
+OperatorMin::clone() {
+
+    OperatorMin *obj = new OperatorMin();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;
+}
 
 
 
