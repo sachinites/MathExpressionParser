@@ -57,6 +57,15 @@ Dtype_INT::SetValue(Dtype *value)  {
     this->dtype.int_val = dynamic_cast <Dtype_INT *> (value)->dtype.int_val;
 }
 
+mexprcpp_dtypes_t 
+Dtype_INT::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_INT;
+}
+
+
+
+
 
 
 Dtype_DOUBLE::Dtype_DOUBLE() {
@@ -99,6 +108,12 @@ Dtype_DOUBLE::clone() {
     obj->lst_left = NULL;
     obj->lst_right = NULL;
     return obj;
+}
+
+mexprcpp_dtypes_t 
+Dtype_DOUBLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_DOUBLE;
 }
 
 
@@ -152,6 +167,12 @@ Dtype_STRING::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t 
+Dtype_STRING::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_STRING;
+}
+
 
 
 Dtype_BOOL::Dtype_BOOL() {
@@ -191,6 +212,11 @@ Dtype_BOOL::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t 
+Dtype_BOOL::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    return MATH_CPP_BOOL;
+}
 
 
  Dtype * 

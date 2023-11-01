@@ -38,7 +38,64 @@ OperatorPlus::clone() {
    return obj;
 }
 
+mexprcpp_dtypes_t 
+OperatorPlus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
+   switch (did1) {
+
+         case MATH_CPP_INT:
+         switch (did2) {
+
+            case MATH_CPP_INT:
+               return MATH_CPP_INT;
+            case MATH_CPP_DOUBLE:
+               return MATH_CPP_DOUBLE;
+            case MATH_CPP_DTYPE_WILDCRAD:
+               return MATH_CPP_INT;
+            default:
+               return MATH_CPP_DTYPE_INVALID;
+         }
+         break;
+
+         case MATH_CPP_DOUBLE:
+         switch (did2) {
+
+            case MATH_CPP_INT:
+            case MATH_CPP_DOUBLE:
+            case MATH_CPP_DTYPE_WILDCRAD:
+               return MATH_CPP_DOUBLE;
+            default:
+               return MATH_CPP_DTYPE_INVALID;
+         }
+         break;
+
+         case MATH_CPP_STRING:
+         switch (did2) {
+
+            case MATH_CPP_STRING:
+            case MATH_CPP_DTYPE_WILDCRAD:
+               return MATH_CPP_STRING;
+            default:
+               return MATH_CPP_DTYPE_INVALID;
+         }
+         break;
+
+         case MATH_CPP_DTYPE_WILDCRAD:
+         switch (did2) {
+
+            case MATH_CPP_INT:
+            case MATH_CPP_DOUBLE:
+            case MATH_CPP_STRING:
+               return did2;
+            default:
+               return  MATH_CPP_DTYPE_INVALID;
+         }
+         break;
+
+         default:
+            return MATH_CPP_DTYPE_INVALID;
+   }
+}
 
 
 
@@ -64,6 +121,56 @@ OperatorMinus::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t
+OperatorMinus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+   switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_INT;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_INT;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DOUBLE;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }            
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return did2;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }   
+}
 
 
 OperatorMul:: OperatorMul() {
@@ -88,7 +195,56 @@ OperatorMul::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t
+OperatorMul::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_INT;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_INT;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DOUBLE;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }            
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return did2;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
 
 
 
@@ -114,6 +270,58 @@ OperatorDiv::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t
+OperatorDiv::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_INT;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DOUBLE;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }            
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+
 
 
 OperatorEq:: OperatorEq() {
@@ -138,6 +346,82 @@ OperatorEq::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t
+OperatorEq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }            
+
+
+            case MATH_CPP_STRING:
+
+            switch (did2) {
+
+                case MATH_CPP_STRING:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }                
+
+
+            case MATH_CPP_IPV4:
+
+            switch (did2) {
+
+                case MATH_CPP_IPV4:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }      
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_STRING:
+                case MATH_CPP_IPV4:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+
+
 
 OperatorNeq:: OperatorNeq() {
 
@@ -160,6 +444,81 @@ OperatorNeq::clone() {
     obj->lst_right = NULL;
     return obj;
 }
+
+mexprcpp_dtypes_t
+OperatorNeq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+
+            case MATH_CPP_STRING:
+
+            switch (did2) {
+
+                case MATH_CPP_STRING:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }                
+
+
+            case MATH_CPP_IPV4:
+
+            switch (did2) {
+
+                case MATH_CPP_IPV4:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }      
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_STRING:
+                case MATH_CPP_IPV4:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
 
 
 
@@ -185,6 +544,55 @@ OperatorLessThan::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t
+OperatorLessThan::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+
 
 OperatorGreaterThan:: OperatorGreaterThan() {
 
@@ -207,6 +615,55 @@ OperatorGreaterThan::clone() {
     obj->lst_right = NULL;
     return obj;
 }
+
+mexprcpp_dtypes_t
+OperatorGreaterThan::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DOUBLE:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                default: 
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+
+           case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
 
 
 OperatorSqr:: OperatorSqr() {
@@ -231,6 +688,19 @@ OperatorSqr::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t
+OperatorSqr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+        case MATH_CPP_DOUBLE:
+        case MATH_CPP_DTYPE_WILDCRAD:
+            return did1;
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
 
 
 OperatorSqrt:: OperatorSqrt() {
@@ -255,6 +725,20 @@ OperatorSqrt::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t
+OperatorSqrt::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_INT:
+        case MATH_CPP_DOUBLE:
+            return MATH_CPP_DOUBLE;
+        case MATH_CPP_DTYPE_WILDCRAD:
+            return did1;
+        default:
+            return MATH_CPP_DTYPE_INVALID;
+    }
+}
 
 
 
@@ -281,6 +765,58 @@ OperatorMax::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t 
+OperatorMax::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+
+        case MATH_CPP_INT:
+        {
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_INT;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+        }
+        break; 
+
+
+        case MATH_CPP_DOUBLE:
+        {
+
+            switch (did2) {
+
+                    case MATH_CPP_INT:
+                    case MATH_CPP_DOUBLE:
+                        return MATH_CPP_DOUBLE;
+                    default:
+                         return MATH_CPP_DTYPE_INVALID;
+            }
+        }
+        break;
+
+
+        case MATH_CPP_STRING:
+        {
+            switch (did2) {
+
+                case MATH_CPP_STRING:
+                    return MATH_CPP_STRING;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+        }
+        break;
+
+    }
+
+    return MATH_CPP_DTYPE_INVALID;
+}
 
 
 
@@ -306,7 +842,58 @@ OperatorMin::clone() {
     return obj;
 }
 
+mexprcpp_dtypes_t 
+OperatorMin::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
+    switch (did1) {
+
+
+        case MATH_CPP_INT:
+        {
+            switch (did2) {
+
+                case MATH_CPP_INT:
+                    return MATH_CPP_INT;
+                case MATH_CPP_DOUBLE:
+                    return MATH_CPP_DOUBLE;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+        }
+        break; 
+
+
+        case MATH_CPP_DOUBLE:
+        {
+
+            switch (did2) {
+
+                    case MATH_CPP_INT:
+                    case MATH_CPP_DOUBLE:
+                        return MATH_CPP_DOUBLE;
+                    default:
+                         return MATH_CPP_DTYPE_INVALID;
+            }
+        }
+        break;
+
+
+        case MATH_CPP_STRING:
+        {
+            switch (did2) {
+
+                case MATH_CPP_STRING:
+                    return MATH_CPP_STRING;
+                default:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+        }
+        break;
+
+    }
+
+    return MATH_CPP_DTYPE_INVALID;
+}
 
 Operator* 
 Operator::factory (mexprcpp_operators_t opr_code) {
