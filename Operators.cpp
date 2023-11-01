@@ -1028,7 +1028,7 @@ OperatorEq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
                 case MATH_CPP_IPV4:
                 case MATH_CPP_DTYPE_WILDCRAD:
-                    return MATH_CPP_IPV4;
+                    return MATH_CPP_BOOL;
                 default: 
                     return MATH_CPP_DTYPE_INVALID;
             }      
@@ -1245,7 +1245,7 @@ OperatorNeq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
                 case MATH_CPP_IPV4:
                 case MATH_CPP_DTYPE_WILDCRAD:
-                    return MATH_CPP_IPV4;
+                    return MATH_CPP_BOOL;
                 default: 
                     return MATH_CPP_DTYPE_INVALID;
             }      
