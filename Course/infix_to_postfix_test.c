@@ -2,142 +2,40 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <assert.h>
+#include <stack>
 #include "MexprcppEnums.h"
 #include "ParserExport.h"
 #include "MexprTree.h"
+#include "Dtype.h"
 
-#define STACK_IMPL 
+static lex_data_t *
+lex_data_dup (lex_data_t *lex_data) {
 
-
-
-#ifdef STACK_IMPL
-
-#define MAX_STACK_SIZE 256
-
-typedef struct stack{
-    int top;
-    void* slot[MAX_STACK_SIZE];
-    int count_of_push;
-    int count_of_pop;
-}Stack_t;
-
-Stack_t*
-get_new_stack(void);
-
-int
-reset_stack(Stack_t *stack);
-
-int push(Stack_t *stack, void *node);
-
-void* pop(Stack_t *stack);
-
-void* StackGetTopElem(Stack_t *stack);
-int isStackEmpty(Stack_t *stack);
-void free_stack(Stack_t *stack);
-
-Stack_t*
-get_new_stack(void)
-{
-    Stack_t *stack = (Stack_t *)calloc(1, sizeof(Stack_t));
-    if(!stack)
-        return NULL;
-    memset(stack, 0, sizeof(Stack_t));
-    stack->top = -1;
-    stack->count_of_push = 0;
-    stack->count_of_pop = 0;
-    return stack;
+    lex_data_t *lex_data_new = (lex_data_t *)calloc (1, sizeof (lex_data_t));
+    lex_data_new->token_code = lex_data->token_code;
+    lex_data_new->token_len = lex_data->token_len;
+    lex_data_new->token_val = lex_data->token_val;
+    lex_data->token_val = NULL;
+    return lex_data_new;
 }
 
-int
-reset_stack(Stack_t *stack)
-{
-    if(!stack)
-        return 0;
-
-    memset(stack, 0, sizeof(Stack_t));
-    stack->top = -1;
-    return 0;
-}
-
-int push(Stack_t *stack, void *node)
-{
-    if(!stack || !node)
-        return -1;
-    if(stack->top < MAX_STACK_SIZE)
-    {
-        stack->top++;
-        stack->slot[stack->top] = node;
-        stack->count_of_push++;
-        return 0;
-     }
-        printf("\nstack already full\n");
-        return -1;
-}
-
-int isStackEmpty(Stack_t *stack)
-{
-    
-    assert(stack);
-     if(stack->top == -1) {
-        return 1;
-     }
-     return 0;
-}
-
-void* pop(Stack_t *stack)
-{
-    void *ret = NULL;
-    if(!stack) {
-        return NULL;
-    }
-
-    if(stack->top == -1) {
-        return NULL;
-    }
-
-    ret = stack->slot[stack->top];
-    stack->slot[stack->top] = NULL;
-    stack->top--;
-    stack->count_of_pop++;
-    return ret;
-}
-
-void* StackGetTopElem(Stack_t *stack)
-{
-    if(!stack || stack->top == -1) {
-        return NULL;
-    }
-    return stack->slot[stack->top];
-}
-
-void free_stack(Stack_t *stack)
-{
-    if(!stack) {
-        return;
-    }
-    free(stack);
-}
-
-#endif /* STACK_IMPL */
-
-
-
-
-static lex_data_t **
+lex_data_t **
 mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
     int i;
     int out_index = 0;
     lex_data_t *lex_data;
+    lex_data_t *lex_data_cpy;
+    lex_data_t **lex_data_arr_out;
+    std::stack <lex_data_t *> stack;
 
-    Stack_t *stack = get_new_stack();
-
-    lex_data_t **lex_data_arr_out = 
+    lex_data_arr_out = 
         (lex_data_t**)calloc(sizein, sizeof(lex_data_t *));
 
     for (i = 0; i < sizein; i++) {
 
             lex_data = &infix[i];
+            if (!lex_data) continue;
 
             if ( lex_data->token_code == PARSER_WHITE_SPACE || 
                   lex_data->token_code == PARSER_EOL) continue;
@@ -147,23 +45,23 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
             if (lex_data->token_code == (int)MATH_CPP_BRACKET_START)
             {
-                    push(stack, (void *)lex_data);
+                    stack.push(lex_data);
             }
             else if (lex_data->token_code == (int)MATH_CPP_BRACKET_END)
             {
-                    while (!isStackEmpty(stack) && 
-                        (((lex_data_t *)stack->slot[stack->top])->token_code != (int)MATH_CPP_BRACKET_START)) {
-                            lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                    while (!stack.empty() &&
+                        ((stack.top())->token_code != (int)MATH_CPP_BRACKET_START)) {
+                            lex_data_arr_out[out_index++] = stack.top(); stack.pop();
                     }
-                    pop(stack);
+                    stack.pop();
 
-                    while (!isStackEmpty(stack)) {
+                    while (!stack.empty()) {
 
-                        lex_data = (lex_data_t *)StackGetTopElem(stack);
+                        lex_data = stack.top();
 
                         if (Math_cpp_is_unary_operator (lex_data->token_code)) {
-
-                            lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                            lex_data_arr_out[out_index++] = lex_data_dup(stack.top());
+                            stack.pop();
                             continue;
                         }
                         break;
@@ -172,41 +70,64 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
             else if (lex_data->token_code == (int) MATH_CPP_COMMA) {
 
-                while (!isStackEmpty(stack) && 
-                    (((lex_data_t *)stack->slot[stack->top])->token_code != (int)MATH_CPP_BRACKET_START)) {
-                            lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                while (!stack.empty() && 
+                    ((stack.top())->token_code != (int)MATH_CPP_BRACKET_START)) {
+                            lex_data_arr_out[out_index++] = lex_data_dup(stack.top());
+                    stack.pop();
                 }
             }
-
+            /* If I am operand */
             else if (!Math_cpp_is_operator(lex_data->token_code)) {
-                
-                lex_data_arr_out[out_index++] = lex_data;
+                lex_data_arr_out[out_index++] = lex_data_dup(lex_data);
             }
-            else if (isStackEmpty (stack)) {
-                
-                push(stack, (void *)lex_data);
-            }
-            else {
-                while (!isStackEmpty(stack) &&
-                       !Math_cpp_is_unary_operator(lex_data->token_code) &&
-                       (Math_cpp_operator_precedence(lex_data->token_code) <=
-                        Math_cpp_operator_precedence(((lex_data_t *)stack->slot[stack->top])->token_code))) {
 
-                    lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+            /* If I am operator and and stack is empty*/
+            else if (stack.empty())  {
+                stack.push (lex_data);
+            }
+
+            /* If I am non-uniary operator and stack is not empty*/
+            else if ( !Math_cpp_is_unary_operator(lex_data->token_code)) {
+
+                while (!stack.empty() &&
+                       (Math_cpp_operator_precedence(lex_data->token_code) <=
+                        Math_cpp_operator_precedence((stack.top())->token_code))) {
+
+                    lex_data_arr_out[out_index++] = lex_data_dup (stack.top());
+                    stack.pop();
                 }
-                push(stack, (void *)lex_data);
+                stack.push(lex_data);
+            }
+
+            /* If I a unary Operator and stack is not empty*/
+            else {
+                 stack.push(lex_data);
             }
     }
 
-    while (!isStackEmpty(stack)) {
-        lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+    while (!stack.empty()) {
+        lex_data_arr_out[out_index++] =  lex_data_dup (stack.top());
+        stack.pop();
     }
 
     *size_out = out_index;
-    free_stack(stack);
     return lex_data_arr_out;
 }
 
+static void
+postfix_array_free(lex_data_t **lex_data_array, int size) {
+   
+    for (int i = 0; i < size; i++) {
+
+        if (lex_data_array[i])
+        {
+            if (lex_data_array[i]->token_val) free(lex_data_array[i]->token_val);
+            free(lex_data_array[i]);
+        }
+    }
+
+    free(lex_data_array);
+}
 
 int 
 main (int argc, char **argv) {
@@ -348,12 +269,10 @@ main (int argc, char **argv) {
 
     }; 
 
-
-
     int size_out = 0;
     lex_data_t **postfix = mexpr_convert_infix_to_postfix (
-                                        infix_array7,
-                                        sizeof (infix_array7)/sizeof(infix_array7[0]),
+                                        infix_array6,
+                                        sizeof (infix_array6)/sizeof(infix_array6[0]),
                                         &size_out);
 
     printf ("Postfix : ");
@@ -373,10 +292,44 @@ main (int argc, char **argv) {
     MexprTree::InorderPrint (tree);
     printf ("\n");
 
+    postfix_array_free (postfix, size_out);
+    
     /* Validation Test */
     if (tree->validate (tree->root)) {
 
         printf ("Expression Tree is Valid\n");
+
+        Dtype *res = tree->evaluate (tree->root);
+
+        if (!res ) {
+            printf ("Error : Expression Tree Could not be evaluated\n");
+            return 0;
+        }
+
+        printf ("Result : ");
+        switch (res->did) {
+
+            case MATH_CPP_INT:
+                printf ("%d\n",  reinterpret_cast <Dtype_INT *> (res)->dtype.int_val);
+                break;
+            case MATH_CPP_DOUBLE:
+                printf ("%lf\n",  reinterpret_cast <Dtype_DOUBLE *> (res)->dtype.d_val);
+                break;
+            case MATH_CPP_STRING:
+                printf ("%s\n",  reinterpret_cast <Dtype_STRING *> (res)->dtype.str_val.c_str());
+                break;
+            case MATH_CPP_BOOL:
+            {
+                Dtype_BOOL *dtype_b = reinterpret_cast <Dtype_BOOL *>(res);
+                dtype_b->dtype.b_val == true ? printf ("True") : printf("False");
+                printf("\n");
+                break;
+            }
+            default:
+                assert(0);
+        }
+
+        delete res;
     }
     else {
         printf ("Expression Tree is not Valid\n");

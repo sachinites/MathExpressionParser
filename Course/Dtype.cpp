@@ -63,7 +63,11 @@ Dtype_INT::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     return MATH_CPP_INT;
 }
 
+Dtype* 
+Dtype_INT::compute(Dtype *dtype1, Dtype *dtype2) {
 
+    return dynamic_cast <Dtype *>(clone() );
+}
 
 
 
@@ -115,6 +119,13 @@ Dtype_DOUBLE::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
 
     return MATH_CPP_DOUBLE;
 }
+
+Dtype* 
+Dtype_DOUBLE::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    return dynamic_cast <Dtype *>(clone() );
+}
+
 
 
 
@@ -173,6 +184,13 @@ Dtype_STRING::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
     return MATH_CPP_STRING;
 }
 
+Dtype* 
+Dtype_STRING::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    return dynamic_cast <Dtype *>(clone() );
+}
+
+
 
 
 Dtype_BOOL::Dtype_BOOL() {
@@ -216,6 +234,12 @@ mexprcpp_dtypes_t
 Dtype_BOOL::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
     return MATH_CPP_BOOL;
+}
+
+Dtype* 
+Dtype_BOOL::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    return dynamic_cast <Dtype *>(clone() );
 }
 
 

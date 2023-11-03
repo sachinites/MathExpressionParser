@@ -132,6 +132,10 @@ F() {
 
         if (token_code != MATH_CPP_COMMA) break;
 
+        err = E();
+
+        if (err == PARSE_ERR) break;
+
         token_code = cyylex();
 
         if (token_code != MATH_CPP_BRACKET_END) break;
@@ -142,7 +146,7 @@ F() {
     
     RESTORE_CHKP(initial_chkp);
 
-    // G -> P (E)
+    // F -> P (E)
     do {
 
         err = P();

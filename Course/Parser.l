@@ -266,6 +266,7 @@ extern parse_rc_t E();
 extern lex_data_t **
 mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out);
 
+#if 0
 int main (int argc, char **argv) {
 
     while (1) {
@@ -357,3 +358,4 @@ int main (int argc, char **argv) {
 
     return 0;
 }
+#endif

@@ -79,7 +79,6 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
             if (dvar) {
                 assert (!dvar->is_resolved);
                 dvar->dtype.variable_name.assign(std::string((char *)postfix_lex_data_array[i]->token_val));
-                assert (!dvar->is_resolved);
                 node->lst_right = this->lst_head;
                 if ( this->lst_head) this->lst_head->lst_left = node;
                 this->lst_head = node;

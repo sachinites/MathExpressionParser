@@ -23,6 +23,7 @@ class Operator : public MexprNode {
         static Operator* factory (mexprcpp_operators_t opr_code);
         virtual MexprNode * clone() = 0;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) = 0;
+        virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) = 0;
 };
 
 
@@ -38,6 +39,7 @@ class OperatorPlus : public Operator {
      ~OperatorPlus();
      virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -52,6 +54,7 @@ class OperatorMinus : public Operator {
      ~OperatorMinus();
      virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 
 };
 
@@ -68,6 +71,7 @@ class OperatorMul : public Operator {
      ~OperatorMul();
      virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 
 };
 
@@ -84,6 +88,7 @@ class OperatorDiv : public Operator {
      ~OperatorDiv();
     virtual MexprNode * clone() override;
     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+    virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -99,6 +104,7 @@ class OperatorEq : public Operator {
      ~OperatorEq();
     virtual MexprNode * clone() override;
     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1,mexprcpp_dtypes_t did2) override;
+    virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -114,6 +120,7 @@ class OperatorNeq : public Operator {
      ~OperatorNeq();
     virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -129,6 +136,7 @@ class OperatorLessThan : public Operator {
      ~OperatorLessThan();
     virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -144,6 +152,7 @@ class OperatorGreaterThan : public Operator {
      ~OperatorGreaterThan();
     virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -159,6 +168,7 @@ class OperatorSqr : public Operator {
      ~OperatorSqr();
     virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };  
 
 
@@ -174,6 +184,7 @@ class OperatorSqrt : public Operator {
      ~OperatorSqrt();
     virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -189,6 +200,7 @@ class OperatorMax : public Operator {
      ~OperatorMax();
     virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -203,6 +215,7 @@ class OperatorMin : public Operator {
      ~OperatorMin();
     virtual MexprNode * clone() override;
      virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 

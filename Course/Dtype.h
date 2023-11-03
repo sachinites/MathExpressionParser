@@ -20,6 +20,7 @@ class Dtype : public MexprNode {
         virtual void SetValue(Dtype *) = 0;
         virtual MexprNode * clone() = 0;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) = 0;
+        virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) = 0;
 } ;
 
 
@@ -44,6 +45,7 @@ class Dtype_INT : public Dtype {
         virtual void SetValue(Dtype *)  override;
         virtual MexprNode * clone() override;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;
+        virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -69,6 +71,7 @@ class Dtype_DOUBLE : public Dtype {
         virtual void SetValue(Dtype *)  override;
         virtual MexprNode * clone() override;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;        
+        virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -94,6 +97,7 @@ class Dtype_STRING : public Dtype {
         virtual void SetValue(Dtype *)  override;
         virtual MexprNode * clone() override;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;        
+        virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 
@@ -116,6 +120,7 @@ class Dtype_BOOL : public Dtype {
         virtual void SetValue(Dtype *)  override;
         virtual MexprNode * clone() override;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;        
+        virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
 };
 
 #endif 

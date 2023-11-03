@@ -89,6 +89,53 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
     assert (!this->root->parent);
 }
 
+void 
+MexprTree::destroy() {
+
+    // Implement to destroy and free Expression Tree
+}
+
+
+Dtype *
+MexprTree::evaluate_internal(MexprNode *root) {
+
+    Dtype *res = NULL;
+
+    if (!root) return NULL;
+
+    Dtype *lrc = evaluate_internal (root->left);
+    Dtype *rrc = evaluate_internal (root->right);
+
+    /* If i am leaf*/
+    if (!root->left && !root->right) {
+
+        return root->compute(NULL, NULL);
+    }
+
+    /* If i am unary operator*/
+    if (root->left && !root->right) {
+
+        res = root->compute (lrc, NULL);
+        delete lrc;
+        return res;
+    }
+
+    /* If i am binary operator*/
+    res = root->compute (lrc, rrc);
+    delete lrc;
+    delete rrc;
+    return res;
+}
+
+
+Dtype *
+MexprTree::evaluate(MexprNode *root) {
+
+    if (!root) return NULL;
+    return evaluate_internal (root);
+}
+
+
 static void 
 _InorderPrint (MexprNode *node) {
 

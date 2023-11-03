@@ -549,9 +549,6 @@ OperatorMul::compute(Dtype *dtype1, Dtype *dtype2) {
             return NULL;
 
     }    
-
-
-
 }
 
 mexprcpp_dtypes_t

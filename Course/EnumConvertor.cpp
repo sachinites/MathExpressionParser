@@ -1,8 +1,18 @@
 #include <stdlib.h>
 #include "MexprcppEnums.h"
 #include "ParserExport.h"
+#include <stack>
 
-#include "MiniStack.cpp"
+static lex_data_t *
+lex_data_dup (lex_data_t *lex_data) {
+
+    lex_data_t *lex_data_new = (lex_data_t *)calloc (1, sizeof (lex_data_t));
+    lex_data_new->token_code = lex_data->token_code;
+    lex_data_new->token_len = lex_data->token_len;
+    lex_data_new->token_val = lex_data->token_val;
+    lex_data->token_val = NULL;
+    return lex_data_new;
+}
 
 lex_data_t **
 mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
@@ -12,8 +22,7 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     lex_data_t *lex_data;
     lex_data_t *lex_data_cpy;
     lex_data_t **lex_data_arr_out;
-
-    Stack_t *stack = get_new_stack();
+    std::stack <lex_data_t *> stack;
 
     lex_data_arr_out = 
         (lex_data_t**)calloc(sizein, sizeof(lex_data_t *));
@@ -31,22 +40,23 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
             if (lex_data->token_code == (int)MATH_CPP_BRACKET_START)
             {
-                    push(stack, (void *)lex_data);
+                    stack.push(lex_data);
             }
             else if (lex_data->token_code == (int)MATH_CPP_BRACKET_END)
             {
-                    while (!isStackEmpty(stack) && 
-                        (((lex_data_t *)stack->slot[stack->top])->token_code != (int)MATH_CPP_BRACKET_START)) {
-                            lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                    while (!stack.empty() &&
+                        ((stack.top())->token_code != (int)MATH_CPP_BRACKET_START)) {
+                            lex_data_arr_out[out_index++] = stack.top(); stack.pop();
                     }
-                    free(pop(stack));
+                    stack.pop();
 
-                    while (!isStackEmpty(stack)) {
+                    while (!stack.empty()) {
 
-                        lex_data = (lex_data_t *)StackGetTopElem(stack);
+                        lex_data = stack.top();
 
                         if (Math_cpp_is_unary_operator (lex_data->token_code)) {
-                            lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                            lex_data_arr_out[out_index++] = lex_data_dup(stack.top());
+                            stack.pop();
                             continue;
                         }
                         break;
@@ -55,44 +65,46 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
             else if (lex_data->token_code == (int) MATH_CPP_COMMA) {
 
-                while (!isStackEmpty(stack) && 
-                    (((lex_data_t *)stack->slot[stack->top])->token_code != (int)MATH_CPP_BRACKET_START)) {
-                            lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                while (!stack.empty() && 
+                    ((stack.top())->token_code != (int)MATH_CPP_BRACKET_START)) {
+                            lex_data_arr_out[out_index++] = lex_data_dup(stack.top());
+                    stack.pop();
                 }
             }
             /* If I am operand */
             else if (!Math_cpp_is_operator(lex_data->token_code)) {
-                lex_data_arr_out[out_index++] = lex_data;
+                lex_data_arr_out[out_index++] = lex_data_dup(lex_data);
             }
 
             /* If I am operator and and stack is empty*/
-            else if (isStackEmpty (stack)) {
-                push(stack, (void *)lex_data);
+            else if (stack.empty())  {
+                stack.push (lex_data);
             }
 
             /* If I am non-uniary operator and stack is not empty*/
             else if ( !Math_cpp_is_unary_operator(lex_data->token_code)) {
 
-                while (!isStackEmpty(stack) &&
+                while (!stack.empty() &&
                        (Math_cpp_operator_precedence(lex_data->token_code) <=
-                        Math_cpp_operator_precedence(((lex_data_t *)stack->slot[stack->top])->token_code))) {
+                        Math_cpp_operator_precedence((stack.top())->token_code))) {
 
-                    lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+                    lex_data_arr_out[out_index++] = lex_data_dup (stack.top());
+                    stack.pop();
                 }
-                push(stack, (void *)lex_data);
+                stack.push(lex_data);
             }
 
             /* If I a unary Operator and stack is not empty*/
             else {
-                push(stack, (void *)lex_data);
+                 stack.push(lex_data);
             }
     }
 
-    while (!isStackEmpty(stack)) {
-        lex_data_arr_out[out_index++] = (lex_data_t *)pop(stack);
+    while (!stack.empty()) {
+        lex_data_arr_out[out_index++] =  lex_data_dup (stack.top());
+        stack.pop();
     }
 
     *size_out = out_index;
-    free_stack(stack);
     return lex_data_arr_out;
 }

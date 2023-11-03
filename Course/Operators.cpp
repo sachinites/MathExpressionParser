@@ -1,4 +1,6 @@
+#include <math.h>
 #include "Operators.h"
+#include "Dtype.h"
 
 // base class
 Operator::Operator () {
@@ -97,6 +99,96 @@ OperatorPlus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
    }
 }
 
+Dtype* 
+OperatorPlus::compute(Dtype *dtype1, Dtype *dtype2) {
+
+     Dtype *res;
+
+    // a + b
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+        {
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_INT);
+                    Dtype_INT *res_int = dynamic_cast <Dtype_INT *> (res);
+                    res_int->dtype.int_val = dynamic_cast <Dtype_INT *> (dtype1)->dtype.int_val +
+                                                            dynamic_cast <Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast <Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast <Dtype_INT *> (dtype1)->dtype.int_val + 
+                    dynamic_cast <Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+
+                default:
+                    return NULL;
+
+            }
+        }
+        break;
+
+
+        case MATH_CPP_DOUBLE:
+        {
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast <Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast <Dtype_DOUBLE *> (dtype1)->dtype.d_val +
+                        (double)dynamic_cast <Dtype_INT *> (dtype2)->dtype.int_val ;
+                    return res;
+                }
+
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                     Dtype_DOUBLE *res_d = dynamic_cast <Dtype_DOUBLE *> (res);
+                     res_d->dtype.d_val = dynamic_cast <Dtype_DOUBLE *> (dtype1)->dtype.d_val +
+                                                        dynamic_cast <Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+
+                default:
+                    return NULL;
+            }
+        }
+
+        case MATH_CPP_STRING:
+        {
+            switch (dtype2->did)
+            {
+                case MATH_CPP_STRING:
+                {
+                    res = Dtype::factory (MATH_CPP_STRING);
+                    Dtype_STRING *res_str = dynamic_cast<Dtype_STRING *> (res);
+                    res_str->dtype.str_val = dynamic_cast<Dtype_STRING *>(dtype1)->dtype.str_val +
+                                                            dynamic_cast<Dtype_STRING *>(dtype2)->dtype.str_val ;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+        }
+        break;
+
+        default:
+            return NULL;
+
+    }
+}
 
 
  OperatorMinus:: OperatorMinus() {
@@ -172,6 +264,76 @@ OperatorMinus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2)
     }   
 }
 
+Dtype*
+OperatorMinus::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_INT);
+                    Dtype_INT *res_int = dynamic_cast<Dtype_INT *> (res);
+                    res_int->dtype.int_val = dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val -
+                                                            dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val -
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val -
+                                                        (double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val -
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        default:
+            return NULL;
+
+    }
+    
+    return NULL;
+}
+
+
+
 
 OperatorMul:: OperatorMul() {
 
@@ -194,6 +356,74 @@ OperatorMul::clone() {
     obj->lst_right = NULL;
     return obj;
 }
+
+Dtype *
+OperatorMul::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_INT);
+                    Dtype_INT *res_int = dynamic_cast<Dtype_INT *> (res);
+                    res_int->dtype.int_val = dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val *
+                                                            dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val *
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val *
+                                                        (double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val *
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        default:
+            return NULL;
+
+    }    
+}
+
+
 
 mexprcpp_dtypes_t
 OperatorMul::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
@@ -321,7 +551,75 @@ OperatorDiv::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     }
 }
 
+Dtype *
+OperatorDiv::compute(Dtype *dtype1, Dtype *dtype2) {
 
+    Dtype *res;
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val /
+                                                            (double)((dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val == 0) ? 1 : \
+                                                            dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val );
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val /
+                                                        (dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val == 0 ? 1 : \
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val );
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = (dynamic_cast<Dtype_DOUBLE *> (dtype1))->dtype.d_val /
+                                                        (double)((double)(dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val) == 0 ? 1 : \
+                                                        (dynamic_cast<Dtype_INT *> (dtype2))->dtype.int_val) ;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    res = Dtype::factory (MATH_CPP_DOUBLE);
+                    Dtype_DOUBLE *res_d = dynamic_cast<Dtype_DOUBLE *> (res);
+                    res_d->dtype.d_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val /
+                                                        (dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val == 0 ? 1 : \
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val);
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        default:
+            return NULL;
+
+    }    
+}
 
 
 OperatorEq:: OperatorEq() {
@@ -420,7 +718,83 @@ OperatorEq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     }
 }
 
+Dtype*
+OperatorEq::compute(Dtype *dtype1, Dtype *dtype2) {
 
+  Dtype *res = Dtype::factory (MATH_CPP_BOOL);
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val = dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val ==
+                                                        dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val ==
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                     res_b->dtype.b_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val ==
+                                                        (double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val ==
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        case MATH_CPP_STRING:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_STRING:
+                {
+                     Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                     res_b->dtype.b_val = dynamic_cast<Dtype_STRING *> (dtype1)->dtype.str_val ==
+                                                        dynamic_cast<Dtype_STRING *> (dtype2)->dtype.str_val;
+                    return res_b;
+                }
+            }
+            break;
+
+        default:
+            return NULL;
+
+    }
+    
+    return NULL;
+}
 
 
 OperatorNeq:: OperatorNeq() {
@@ -519,7 +893,83 @@ OperatorNeq::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     }
 }
 
+Dtype*
+OperatorNeq::compute(Dtype *dtype1, Dtype *dtype2) {
 
+  Dtype *res = Dtype::factory (MATH_CPP_BOOL);
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val = dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val !=
+                                                        dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val !=
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                     res_b->dtype.b_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val !=
+                                                        (double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val !=
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        case MATH_CPP_STRING:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_STRING:
+                {
+                     Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                     res_b->dtype.b_val = dynamic_cast<Dtype_STRING *> (dtype1)->dtype.str_val !=
+                                                        dynamic_cast<Dtype_STRING *> (dtype2)->dtype.str_val;
+                    return res_b;
+                }
+            }
+            break;
+
+        default:
+            return NULL;
+
+    }
+    
+    return NULL;
+}
 
 
 OperatorLessThan:: OperatorLessThan() {
@@ -591,6 +1041,71 @@ OperatorLessThan::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t di
             return MATH_CPP_DTYPE_INVALID;
     }
 }
+
+Dtype*
+OperatorLessThan::compute(Dtype *dtype1, Dtype *dtype2) {
+
+  Dtype *res = Dtype::factory (MATH_CPP_BOOL);
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val = dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val <
+                                                        dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val <
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                     res_b->dtype.b_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val <
+                                                        (double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val <
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        default:
+            return NULL;
+
+    }
+    
+    return NULL;
+}
+
 
 
 
@@ -664,6 +1179,71 @@ OperatorGreaterThan::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t
     }
 }
 
+Dtype*
+OperatorGreaterThan::compute(Dtype *dtype1, Dtype *dtype2) {
+
+  Dtype *res = Dtype::factory (MATH_CPP_BOOL);
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val = dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val >
+                                                        dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = (double)dynamic_cast<Dtype_INT *> (dtype1)->dtype.int_val >
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                     res_b->dtype.b_val = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val >
+                                                        (double)dynamic_cast<Dtype_INT *> (dtype2)->dtype.int_val;
+                    return res;                
+                }
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_BOOL *res_b = dynamic_cast<Dtype_BOOL *> (res);
+                    res_b->dtype.b_val  = dynamic_cast<Dtype_DOUBLE *> (dtype1)->dtype.d_val >
+                                                        dynamic_cast<Dtype_DOUBLE *> (dtype2)->dtype.d_val;
+                    return res;
+                }
+                default:
+                    return NULL;
+            }
+            break;            
+
+        default:
+            return NULL;
+
+    }
+    
+    return NULL;
+}
+
+
 
 
 OperatorSqr:: OperatorSqr() {
@@ -702,6 +1282,35 @@ OperatorSqr::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     }
 }
 
+Dtype *
+OperatorSqr::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+        {
+            Dtype_INT *dtype1_int = dynamic_cast <Dtype_INT *> (dtype1);
+            res = new Dtype_INT (dtype1_int->dtype.int_val * dtype1_int->dtype.int_val);
+            return res;
+        }
+        break;
+
+        case MATH_CPP_DOUBLE:
+        {
+             Dtype_DOUBLE *dtype1_d = dynamic_cast <Dtype_DOUBLE *> (dtype1);
+             res = new Dtype_DOUBLE (dtype1_d->dtype.d_val * dtype1_d->dtype.d_val);
+             return res;
+        }
+        break;
+
+        default:
+            return NULL;
+    }
+}
+
+
 
 OperatorSqrt:: OperatorSqrt() {
 
@@ -737,6 +1346,34 @@ OperatorSqrt::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
             return did1;
         default:
             return MATH_CPP_DTYPE_INVALID;
+    }
+}
+
+Dtype *
+OperatorSqrt::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    Dtype *res;
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+        {
+            Dtype_INT *dtype1_int = dynamic_cast <Dtype_INT *> (dtype1);
+            res = new Dtype_DOUBLE (sqrt (dtype1_int->dtype.int_val));
+            return res;
+        }
+        break;
+
+        case MATH_CPP_DOUBLE:
+        {
+             Dtype_DOUBLE *dtype1_d = dynamic_cast <Dtype_DOUBLE *> (dtype1);
+             res = new Dtype_DOUBLE (sqrt (dtype1_d->dtype.d_val));
+             return res;
+        }
+        break;
+
+        default:
+            return NULL;
     }
 }
 
@@ -818,6 +1455,110 @@ OperatorMax::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
     return MATH_CPP_DTYPE_INVALID;
 }
 
+Dtype* 
+OperatorMax::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_INT *Dtype_dtyp1_int = dynamic_cast<Dtype_INT *>(dtype1);
+                    Dtype_INT *Dtype_dtyp2_int = dynamic_cast<Dtype_INT *>(dtype2);
+                    int max =  Dtype_dtyp1_int->dtype.int_val < Dtype_dtyp2_int->dtype.int_val ? \
+                                      Dtype_dtyp2_int->dtype.int_val : \
+                                      Dtype_dtyp1_int->dtype.int_val;
+                    Dtype_INT *res = dynamic_cast<Dtype_INT *> (Dtype::factory (MATH_CPP_INT));
+                    res->dtype.int_val = max;
+                    return res;
+                }
+                break;
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_INT *Dtype_dtyp1_int = dynamic_cast<Dtype_INT *>(dtype1);
+                    Dtype_DOUBLE *Dtype_dtyp2_d = dynamic_cast<Dtype_DOUBLE *>(dtype2);
+                    double max =  (double)Dtype_dtyp1_int->dtype.int_val < Dtype_dtyp2_d->dtype.d_val ? \
+                                      Dtype_dtyp2_d->dtype.d_val : \
+                                      (double)Dtype_dtyp1_int->dtype.int_val;
+                    Dtype_DOUBLE *res = dynamic_cast<Dtype_DOUBLE *> (Dtype::factory (MATH_CPP_DOUBLE));
+                    res->dtype.d_val = max;
+                    return res;                    
+                }
+                break;
+
+                default:
+                    return NULL;
+            } 
+        break;
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_DOUBLE *Dtype_dtyp1_d = dynamic_cast<Dtype_DOUBLE *>(dtype1);
+                    Dtype_INT *Dtype_dtyp2_int = dynamic_cast<Dtype_INT *>(dtype2);
+                    double max =  Dtype_dtyp1_d->dtype.d_val < (double)Dtype_dtyp2_int->dtype.int_val ? \
+                                             (double)Dtype_dtyp2_int->dtype.int_val : \
+                                              Dtype_dtyp1_d->dtype.d_val;
+                    Dtype_DOUBLE *res = dynamic_cast<Dtype_DOUBLE *> (Dtype::factory (MATH_CPP_DOUBLE));
+                    res->dtype.d_val = max;
+                    return res;
+                }
+                break;
+
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_DOUBLE *Dtype_dtyp1_d = dynamic_cast<Dtype_DOUBLE *>(dtype1);
+                    Dtype_DOUBLE *Dtype_dtyp2_d = dynamic_cast<Dtype_DOUBLE *>(dtype2);
+                    double max =  Dtype_dtyp1_d->dtype.d_val < Dtype_dtyp2_d->dtype.d_val ? \
+                                            Dtype_dtyp2_d->dtype.d_val : \
+                                            Dtype_dtyp1_d->dtype.d_val;
+                    Dtype_DOUBLE *res = dynamic_cast<Dtype_DOUBLE *> (Dtype::factory (MATH_CPP_DOUBLE));
+                    res->dtype.d_val = max;
+                    return res;                    
+                }
+                break;
+
+                default:
+                    return NULL;
+            } 
+        break;
+
+        case MATH_CPP_STRING:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_STRING:
+                {
+                    Dtype_STRING *Dtype_dtyp1_str = dynamic_cast<Dtype_STRING *>(dtype1);
+                    Dtype_STRING *Dtype_dtyp2_str = dynamic_cast<Dtype_STRING *>(dtype2);                    
+                    Dtype_STRING *res = dynamic_cast<Dtype_STRING *> (Dtype::factory (MATH_CPP_STRING));
+                    res->dtype.str_val = Dtype_dtyp1_str->dtype.str_val.length() < Dtype_dtyp2_str->dtype.str_val.length() ?   \
+                                                        Dtype_dtyp2_str->dtype.str_val :    \
+                                                        Dtype_dtyp1_str->dtype.str_val;
+                    return res;
+                }
+                break;
+            }
+        break;
+
+        default:
+            return NULL;
+    }
+
+    return NULL;
+}
+
+
+
+
 
 
 OperatorMin:: OperatorMin() {
@@ -894,6 +1635,116 @@ OperatorMin::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
     return MATH_CPP_DTYPE_INVALID;
 }
+
+Dtype* 
+OperatorMin::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    switch (dtype1->did) {
+
+        case MATH_CPP_INT:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_INT *Dtype_dtyp1_int = dynamic_cast<Dtype_INT *>(dtype1);
+                    Dtype_INT *Dtype_dtyp2_int = dynamic_cast<Dtype_INT *>(dtype2);
+                    int min =  Dtype_dtyp1_int->dtype.int_val > Dtype_dtyp2_int->dtype.int_val ? \
+                                      Dtype_dtyp2_int->dtype.int_val : \
+                                      Dtype_dtyp1_int->dtype.int_val;
+                    Dtype_INT *res = dynamic_cast<Dtype_INT *> (Dtype::factory (MATH_CPP_INT));
+                    res->dtype.int_val = min;
+                    return res;
+                }
+                break;
+
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_INT *Dtype_dtyp1_int = dynamic_cast<Dtype_INT *>(dtype1);
+                    Dtype_DOUBLE *Dtype_dtyp2_d = dynamic_cast<Dtype_DOUBLE *>(dtype2);
+                    double min =  (double)Dtype_dtyp1_int->dtype.int_val > Dtype_dtyp2_d->dtype.d_val ? \
+                                      Dtype_dtyp2_d->dtype.d_val : \
+                                      (double)Dtype_dtyp1_int->dtype.int_val;
+                    Dtype_DOUBLE *res = dynamic_cast<Dtype_DOUBLE *> (Dtype::factory (MATH_CPP_DOUBLE));
+                    res->dtype.d_val = min;
+                    return res;                    
+                }
+                break;
+
+                default:
+                    return NULL;
+            } 
+        break;
+
+
+
+        case MATH_CPP_DOUBLE:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_INT:
+                {
+                    Dtype_DOUBLE *Dtype_dtyp1_d = dynamic_cast<Dtype_DOUBLE *>(dtype1);
+                    Dtype_INT *Dtype_dtyp2_int = dynamic_cast<Dtype_INT *>(dtype2);
+                    double min =  Dtype_dtyp1_d->dtype.d_val > (double)Dtype_dtyp2_int->dtype.int_val ? \
+                                             (double)Dtype_dtyp2_int->dtype.int_val : \
+                                              Dtype_dtyp1_d->dtype.d_val;
+                    Dtype_DOUBLE *res = dynamic_cast<Dtype_DOUBLE *> (Dtype::factory (MATH_CPP_DOUBLE));
+                    res->dtype.d_val = min;
+                    return res;
+                }
+                break;
+
+
+                case MATH_CPP_DOUBLE:
+                {
+                    Dtype_DOUBLE *Dtype_dtyp1_d = dynamic_cast<Dtype_DOUBLE *>(dtype1);
+                    Dtype_DOUBLE *Dtype_dtyp2_d = dynamic_cast<Dtype_DOUBLE *>(dtype2);
+                    double min =  Dtype_dtyp1_d->dtype.d_val > Dtype_dtyp2_d->dtype.d_val ? \
+                                            Dtype_dtyp2_d->dtype.d_val : \
+                                            Dtype_dtyp1_d->dtype.d_val;
+                    Dtype_DOUBLE *res = dynamic_cast<Dtype_DOUBLE *> (Dtype::factory (MATH_CPP_DOUBLE));
+                    res->dtype.d_val = min;
+                    return res;                    
+                }
+                break;
+
+                default:
+                    return NULL;
+            } 
+        break;
+
+
+        case MATH_CPP_STRING:
+
+            switch (dtype2->did) {
+
+                case MATH_CPP_STRING:
+                {
+                    Dtype_STRING *Dtype_dtyp1_str = dynamic_cast<Dtype_STRING *>(dtype1);
+                    Dtype_STRING *Dtype_dtyp2_str = dynamic_cast<Dtype_STRING *>(dtype2);                    
+                    Dtype_STRING *res = dynamic_cast<Dtype_STRING *> (Dtype::factory (MATH_CPP_STRING));
+                    res->dtype.str_val = Dtype_dtyp1_str->dtype.str_val.length() > Dtype_dtyp2_str->dtype.str_val.length() ?   \
+                                                        Dtype_dtyp2_str->dtype.str_val :    \
+                                                        Dtype_dtyp1_str->dtype.str_val;
+                    return res;
+                }
+                break;
+            }
+        break;
+
+        default:
+            return NULL;
+
+    }
+
+    return NULL;
+}
+
+
+
+
 
 Operator* 
 Operator::factory (mexprcpp_operators_t opr_code) {
