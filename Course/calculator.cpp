@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "MexprcppEnums.h"
 #include "ParserExport.h"
 #include "Dtype.h"
 #include "MexprTree.h"
 
-extern parse_rc_t E();
-extern parse_rc_t Q();
+extern parse_rc_t E(); // to Parse MathExpressions
+extern parse_rc_t Q();// to Parse Inequality
+
 extern lex_data_t **mexpr_convert_infix_to_postfix (
                                  lex_data_t *infix, 
                                  int sizein, 
@@ -45,20 +45,20 @@ main (int argc, char **argv) {
         }
 
         lex_set_scan_buffer (lex_buffer);
+        Parser_stack_reset();
 
-        /* Check if the user has entered inequality expression*/
+        /* Check if the user has entered inequality expression eg : a + b + c + d < e*/
         err = Q();
 
         if (err == PARSE_ERR) {
 
-            /* IF the user has not entered inequality, then fallback to check
-                if the user has entered the Math Expression*/
+            /* If the user has not entered inequality, then fallback to check
+                if the user has entered the Math Expression eg : a + b + c + d */
             err = E();
 
             if (err == PARSE_ERR) {
 
                 printf ("Error : Parsing Error, Invalid Expression\n");
-                Parser_stack_reset();
                 continue;
             }
         }
@@ -71,7 +71,6 @@ main (int argc, char **argv) {
         if (token_code != PARSER_EOL) {
 
             printf ("Error : Parsing Error, Entire Input String is not a Valid Expression\n");
-            Parser_stack_reset();
             continue;
         }
 
@@ -88,13 +87,11 @@ main (int argc, char **argv) {
         if (!tree) {
 
             printf ("Error : Failed to build Expression Tree\n");
-            Parser_stack_reset();
             continue;
         }
 
         if (!tree->validate (tree->root)) {
             printf ("Error : Expression Tree failed Validation Test\n");
-            Parser_stack_reset();
             tree->destroy();
             continue;
         }
@@ -106,7 +103,6 @@ main (int argc, char **argv) {
 
         if (!res ) {
             printf ("Error : Expression Tree Could not be evaluated\n");
-            Parser_stack_reset();
             continue;
         }
 
@@ -134,6 +130,5 @@ main (int argc, char **argv) {
                 assert(0);
         }
         delete res;
-        Parser_stack_reset();
     }
 }

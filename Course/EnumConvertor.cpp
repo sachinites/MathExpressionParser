@@ -46,7 +46,7 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
             {
                     while (!stack.empty() &&
                         ((stack.top())->token_code != (int)MATH_CPP_BRACKET_START)) {
-                            lex_data_arr_out[out_index++] = stack.top(); stack.pop();
+                            lex_data_arr_out[out_index++] = lex_data_dup(stack.top()); stack.pop();
                     }
                     stack.pop();
 
