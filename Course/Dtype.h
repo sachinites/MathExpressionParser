@@ -138,7 +138,7 @@ class Dtype_VARIABLE : public Dtype {
 
         // resolution information
         void *data_src;
-        Dtype *(*compute_fn_ptr)(void *);
+        Dtype *(*compute_fn_ptr)(char *, void *);
         mexprcpp_dtypes_t resolved_did; // optional Dtype_INT
 
         Dtype_VARIABLE(std::string var_name);
@@ -150,6 +150,9 @@ class Dtype_VARIABLE : public Dtype {
         virtual MexprNode * clone() override;
         virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;        
         virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
-
+        void ResolveOperand (
+                mexprcpp_dtypes_t resolved_did,
+                void *data_src,
+                Dtype *(*compute_fn_ptr)(char *, void *));
 }; 
 #endif 

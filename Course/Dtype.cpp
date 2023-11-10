@@ -309,10 +309,26 @@ Dtype *
 Dtype_VARIABLE::compute(Dtype *dtype1, Dtype *dtype2) {
 
     if (!this->is_resolved) return NULL;
-    Dtype *res = this->compute_fn_ptr (this->data_src);
+    Dtype *res = this->compute_fn_ptr ((char *)this->dtype.variable_name.c_str(), this->data_src);
     return res;
 }
 
+void  
+Dtype_VARIABLE::ResolveOperand (
+                mexprcpp_dtypes_t resolved_did,
+                void *data_src,
+                Dtype *(*compute_fn_ptr)(char *, void *))  {
+
+    assert (!this->is_resolved);
+
+    this->data_src = data_src;
+
+    this->compute_fn_ptr = compute_fn_ptr;
+
+    this->is_resolved = true;
+
+    this->resolved_did = resolved_did;
+}
 
 
 

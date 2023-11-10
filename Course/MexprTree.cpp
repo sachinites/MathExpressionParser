@@ -29,6 +29,7 @@ MexprTree::~MexprTree() {
 
 }
 
+
 MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
 
     int i;
@@ -48,7 +49,22 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
             node = Dtype::factory ((mexprcpp_dtypes_t)(postfix_lex_data_array[i]->token_code));
 
             Dtype *dtype = dynamic_cast<Dtype *> (node);
-            dtype->SetValue((void *)postfix_lex_data_array[i]->token_val);
+
+            /* If dtype Object is Dtype_VARIABLE */
+            Dtype_VARIABLE *dvar = dynamic_cast<Dtype_VARIABLE *>(dtype);
+
+            if (dvar) {
+                // opernad node here is of type Dtype_VARIABLE
+                dvar->dtype.variable_name.assign(std::string((char *)postfix_lex_data_array[i]->token_val));
+                // add node into the Tree opernd list 
+                node->lst_right = this->lst_head;
+                if ( this->lst_head) this->lst_head->lst_left = node;
+                this->lst_head = node;
+            }
+            else {
+                // opernad node here is a constant opernad node ( int, double, string etc )
+                dtype->SetValue((void *)postfix_lex_data_array[i]->token_val);
+            }
 
              stack.push(node);
         }
