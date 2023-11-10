@@ -4,8 +4,8 @@
 #include "Dtype.h"
 #include "MexprTree.h"
 
-extern parse_rc_t E(); // to Parse MathExpressions
-extern parse_rc_t Q();// to Parse Inequality
+extern parse_rc_t E();   // to Parse MathExpressions
+extern parse_rc_t Q();  // to Parse Inequality
 
 extern lex_data_t **mexpr_convert_infix_to_postfix (
                                  lex_data_t *infix, 
