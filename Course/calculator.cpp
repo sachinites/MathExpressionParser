@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>
 #include "ParserExport.h"
 #include "Dtype.h"
 #include "MexprTree.h"
@@ -26,6 +27,51 @@ postfix_array_free(lex_data_t **lex_data_array, int size) {
 
     free(lex_data_array);
 }
+
+/* Data Src */
+static std::map<std::string, std::string> map= {
+
+    {"a", "2"},
+    {"b", "3"},
+    {"c", "4.5"},
+    {"d", "Hello"}
+};
+
+/* Compute fn on the data src.  Look up the value from Hmap corresponding 
+    to the operand name  */
+static Dtype*
+compute_fn (char *opnd_name, void *data_src) {
+
+    std::map<std::string, std::string> *map = reinterpret_cast <std::map<std::string, std::string> *> (data_src);
+    std::string opnd_name_str (opnd_name);
+    std::string value = (*map)[opnd_name_str];
+
+    if (opnd_name_str == "a" || opnd_name_str == "b") {
+
+        Dtype *dtype = Dtype::factory(MATH_CPP_INT);
+        dtype->SetValue ((void *)value.c_str());
+        return dtype;
+    }
+
+    else if  (opnd_name_str == "c") {
+
+        Dtype *dtype = Dtype::factory(MATH_CPP_DOUBLE);
+        dtype->SetValue ((void *)value.c_str());
+        return dtype;
+    }
+
+
+    else if  (opnd_name_str == "d") {
+
+        Dtype *dtype = Dtype::factory(MATH_CPP_STRING);
+        dtype->SetValue ((void *)value.c_str());
+        return dtype;
+    }
+
+    return NULL;
+}
+
+
 
 int 
 main (int argc, char **argv) {
@@ -90,11 +136,39 @@ main (int argc, char **argv) {
             continue;
         }
 
+        /* Loose Validation Test*/
         if (!tree->validate (tree->root)) {
-            printf ("Error : Expression Tree failed Validation Test\n");
+            printf ("Error : Expression Tree failed Loose-Validation Test\n");
             tree->destroy();
             continue;
         }
+
+        /* Resolve the Expression Tree now*/
+        MexprNode *opnd_node;
+
+        MexprTree_Iterator_Operands_Begin(tree, opnd_node) {
+
+            Dtype_VARIABLE *dvar = dynamic_cast < Dtype_VARIABLE *> (opnd_node);
+
+            if (dvar->dtype.variable_name == "a" || dvar->dtype.variable_name == "b") {
+                dvar->ResolveOperand (MATH_CPP_INT, (void *)&map, compute_fn);
+            }
+            else if (dvar->dtype.variable_name == "c") {
+                dvar->ResolveOperand (MATH_CPP_DOUBLE, (void *)&map, compute_fn);
+            }
+            else  if (dvar->dtype.variable_name == "d") {
+                dvar->ResolveOperand (MATH_CPP_STRING, (void *)&map, compute_fn);
+            }
+
+        } MexprTree_Iterator_Operands_End;
+
+        /* Strict Validation Test*/
+        if (!tree->validate (tree->root)) {
+            printf ("Error : Expression Tree failed Strict-Validation Test\n");
+            tree->destroy();
+            continue;
+        }
+
 
         Dtype *res = tree->evaluate (tree->root);
 

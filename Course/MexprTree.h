@@ -48,4 +48,13 @@ class MexprTree {
         void destroy();
 } ; 
 
+
+#define MexprTree_Iterator_Operands_Begin(tree_ptr, node_ptr)  \
+    { MexprNode *_next_node = NULL; \
+    for (node_ptr = tree_ptr->lst_head;  node_ptr; node_ptr = _next_node){ \
+        _next_node = node_ptr->lst_right;
+
+#define MexprTree_Iterator_Operands_End }}
+
+
 #endif 

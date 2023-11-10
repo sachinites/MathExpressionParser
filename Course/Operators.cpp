@@ -88,6 +88,7 @@ OperatorPlus::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) 
             case MATH_CPP_INT:
             case MATH_CPP_DOUBLE:
             case MATH_CPP_STRING:
+            case MATH_CPP_DTYPE_WILDCRAD:
                return did2;
             default:
                return  MATH_CPP_DTYPE_INVALID;
