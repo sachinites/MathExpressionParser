@@ -32,6 +32,38 @@ Combining everything, final grammar is :
 9.   P  -> sqr | sqrt
 */
 
+/* Grammar for logical Expressions
+1. S -> S or J | J
+2. J -> J and K | K 
+3. K -> (S) | D | K LOP Q | Q LOP K
+4. D -> Q LOP Q
+5. LOP -> and | or
+
+Removing Left Recursion :
+1. S -> S or J | J
+    S -> J S'
+    S' -> or J S' | $
+2. J -> J and K | K
+    J -> K J'
+    J' -> and K J' | $
+3. K -> (S) | D | K LOP Q | Q LOP K
+    K -> (S) K' |  D K' |  Q LOP K K'
+    K' -> LOP Q K' | $
+
+Overall Grammar will be :
+=====================
+1. S -> J S'
+2. S' -> or J S' | $
+3. J -> K J'
+4. J' -> and K J' | $
+5. K -> (S) K' | D K' | Q LOP K K'
+6. K' -> LOP Q K' | $
+7. D -> Q LOP Q
+8. LOP -> and | or
+*/
+
+
+
 parse_rc_t E() ;
 static parse_rc_t E_dash() ;
 static parse_rc_t T() ;
@@ -42,6 +74,14 @@ parse_rc_t INEQ() ;
 static parse_rc_t G() ;
 static parse_rc_t P() ;
 
+/* Logical Expression Grammar Fns*/
+static parse_rc_t D ();
+static parse_rc_t K ();
+static parse_rc_t K_dash ();
+static parse_rc_t J_dash () ;
+static parse_rc_t J () ;
+static parse_rc_t  S_dash () ;
+parse_rc_t  S () ;
 
 
 // G -> max | min | pow
@@ -364,4 +404,219 @@ INEQ() {
         default:
             RETURN_PARSE_ERROR;
     }
+}
+
+
+// D -> Q lop Q
+parse_rc_t
+D () {
+
+    parse_init();
+
+    err = Q();
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    token_code = cyylex();
+
+    if (token_code != MATH_CPP_OR &&
+            token_code != MATH_CPP_AND) {
+
+        RETURN_PARSE_ERROR;
+    }
+
+    err = Q();
+
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+     RETURN_PARSE_SUCCESS;
+}
+
+// K' -> lop Q K' | $
+parse_rc_t
+K_dash () {
+
+    parse_init();
+
+    token_code = cyylex();
+
+    if (token_code != MATH_CPP_AND &&
+        token_code != MATH_CPP_OR) {
+
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = Q();
+
+    if (err == PARSE_ERR) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = K_dash();
+
+    if (err == PARSE_ERR) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    RETURN_PARSE_SUCCESS;
+}
+
+/* K -> (S) K' | D K'  | Q lop K K'  */
+parse_rc_t
+K () {
+
+    parse_init();
+
+    int initial_chkp;
+    CHECKPOINT(initial_chkp);
+
+    //  (S) K'
+    do {
+
+        token_code = cyylex();
+
+        if (token_code != MATH_CPP_BRACKET_START) break;
+
+        err = S();
+
+        if (err == PARSE_ERR) break;
+
+        token_code = cyylex();
+
+        if (token_code != MATH_CPP_BRACKET_END) break;
+
+        err = K_dash();
+
+        if (err == PARSE_ERR) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+    // D K' 
+    do {
+
+        err = D();
+
+        if (err == PARSE_ERR) break;
+
+        err = K_dash();
+
+        if (err == PARSE_ERR) break;
+
+        RETURN_PARSE_SUCCESS;
+
+    } while (0);
+
+    RESTORE_CHKP(initial_chkp);
+
+    // Q lop K K' 
+    err = Q();
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    token_code = cyylex();
+
+    if (token_code != MATH_CPP_OR &&
+        token_code != MATH_CPP_AND) {
+
+        RETURN_PARSE_ERROR;
+    }
+
+    err = K();
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = K_dash();
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
+}
+
+/*  J' -> and K J' | $ */
+parse_rc_t
+J_dash () {
+
+    parse_init();
+
+    token_code = cyylex();
+
+    if (token_code != MATH_CPP_AND) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = K();
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    err = J_dash();
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    RETURN_PARSE_SUCCESS;
+}
+
+/* J -> K J' */
+parse_rc_t
+J () {
+
+    parse_init();
+
+    err = K();
+
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    err = J_dash();
+
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+     RETURN_PARSE_SUCCESS;
+}
+
+
+/* S' -> or J S' | $ */
+parse_rc_t
+S_dash () {   
+
+    parse_init();
+
+    token_code = cyylex();
+
+    if (token_code != MATH_CPP_OR) {
+        yyrewind(1);
+        RETURN_PARSE_SUCCESS;
+    }
+
+    err = J();
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    err = S_dash();
+
+    if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
+
+    RETURN_PARSE_SUCCESS;
+}
+
+ /*S -> J S'  */
+parse_rc_t
+S () {     
+
+    parse_init();
+
+   err = J();
+
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+   err = S_dash();
+
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+
+    RETURN_PARSE_SUCCESS;
 }
