@@ -219,4 +219,36 @@ class OperatorMin : public Operator {
 };
 
 
+
+
+class OperatorAnd : public Operator {
+
+    private:
+
+    protected:
+
+    public:
+        OperatorAnd();
+     ~OperatorAnd();
+    virtual MexprNode * clone() override;
+     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+};
+
+
+class OperatorOr : public Operator {
+
+    private:
+
+    protected:
+
+    public:
+        OperatorOr();
+     ~OperatorOr();
+    virtual MexprNode * clone() override;
+     virtual mexprcpp_dtypes_t ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) override;    
+     virtual Dtype* compute(Dtype *dtype1, Dtype *dtype2) override;
+};
+
+
 #endif 

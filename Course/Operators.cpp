@@ -1744,7 +1744,159 @@ OperatorMin::compute(Dtype *dtype1, Dtype *dtype2) {
 }
 
 
+/* AND Operator*/
 
+OperatorAnd::OperatorAnd() {
+
+    opid = MATH_CPP_AND;
+    name = "and";
+    is_unary = false;
+}
+
+OperatorAnd::~OperatorAnd() { }
+
+
+ MexprNode * 
+ OperatorAnd::clone() {
+
+    OperatorAnd *obj = new OperatorAnd();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;    
+ }
+
+mexprcpp_dtypes_t 
+ OperatorAnd::ResultStorageType(
+        mexprcpp_dtypes_t did1, 
+        mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_BOOL:
+
+            switch(did2) {
+
+                case MATH_CPP_BOOL:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch(did2) {
+
+                case MATH_CPP_BOOL:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        return MATH_CPP_DTYPE_INVALID;
+    }
+
+    return MATH_CPP_DTYPE_INVALID;
+}
+
+Dtype* 
+OperatorAnd::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    assert (dtype1->did == MATH_CPP_BOOL &&
+               dtype2->did == MATH_CPP_BOOL);
+
+    Dtype_BOOL *res = dynamic_cast<Dtype_BOOL *> (Dtype::factory(MATH_CPP_BOOL));
+    res->dtype.b_val = false;
+
+    Dtype_BOOL *dtype1_res = dynamic_cast <Dtype_BOOL *> (dtype1);
+    Dtype_BOOL *dtype2_res = dynamic_cast <Dtype_BOOL *> (dtype2);
+
+    res->dtype.b_val = dtype1_res->dtype.b_val && dtype2_res->dtype.b_val ;
+    return res;
+}
+
+
+/* OR Operator*/
+
+OperatorOr::OperatorOr() {
+
+    opid = MATH_CPP_OR;
+    name = "or";
+    is_unary = false;
+}
+
+OperatorOr::~OperatorOr() { }
+
+
+ MexprNode * 
+ OperatorOr::clone() {
+
+    OperatorOr *obj = new OperatorOr();
+    *obj = *this;
+    obj->parent = NULL;
+    obj->left = NULL;
+    obj->right = NULL;
+    obj->lst_left = NULL;
+    obj->lst_right = NULL;
+    return obj;    
+ }
+
+mexprcpp_dtypes_t 
+ OperatorOr::ResultStorageType(
+        mexprcpp_dtypes_t did1, 
+        mexprcpp_dtypes_t did2) {
+
+    switch (did1) {
+
+        case MATH_CPP_BOOL:
+
+            switch(did2) {
+
+                case MATH_CPP_BOOL:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+
+            switch(did2) {
+
+                case MATH_CPP_BOOL:
+                    return MATH_CPP_BOOL;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_DTYPE_WILDCRAD;
+                case MATH_CPP_DTYPE_INVALID:
+                    return MATH_CPP_DTYPE_INVALID;
+            }
+
+        return MATH_CPP_DTYPE_INVALID;
+    }
+    return MATH_CPP_DTYPE_INVALID;
+}
+
+Dtype* 
+OperatorOr::compute(Dtype *dtype1, Dtype *dtype2) {
+
+    assert (dtype1->did == MATH_CPP_BOOL &&
+               dtype2->did == MATH_CPP_BOOL);
+
+    Dtype_BOOL *res = dynamic_cast<Dtype_BOOL *> (Dtype::factory(MATH_CPP_BOOL));
+    res->dtype.b_val = false;
+
+    Dtype_BOOL *dtype1_res = dynamic_cast <Dtype_BOOL *> (dtype1);
+    Dtype_BOOL *dtype2_res = dynamic_cast <Dtype_BOOL *> (dtype2);
+
+    res->dtype.b_val = dtype1_res->dtype.b_val || dtype2_res->dtype.b_val ;
+    return res;
+}
 
 
 Operator* 
@@ -1776,6 +1928,10 @@ Operator::factory (mexprcpp_operators_t opr_code) {
             return new OperatorMax();
         case MATH_CPP_MIN:
             return new OperatorMin(); 
+        case MATH_CPP_AND:
+            return new OperatorAnd();
+        case MATH_CPP_OR:
+            return new OperatorOr();            
         default:
             return NULL;
     }

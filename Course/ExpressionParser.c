@@ -70,7 +70,7 @@ static parse_rc_t T() ;
 static parse_rc_t T_dash() ;
 static parse_rc_t F() ;
 parse_rc_t Q() ;
-parse_rc_t INEQ() ;
+static parse_rc_t INEQ() ;
 static parse_rc_t G() ;
 static parse_rc_t P() ;
 

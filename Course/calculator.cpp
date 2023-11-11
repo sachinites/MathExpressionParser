@@ -7,6 +7,7 @@
 
 extern parse_rc_t E();   // to Parse MathExpressions
 extern parse_rc_t Q();  // to Parse Inequality
+extern parse_rc_t S(); // to parse Logical Expressions
 
 extern lex_data_t **mexpr_convert_infix_to_postfix (
                                  lex_data_t *infix, 
@@ -93,19 +94,32 @@ main (int argc, char **argv) {
         lex_set_scan_buffer (lex_buffer);
         Parser_stack_reset();
 
-        /* Check if the user has entered inequality expression eg : a + b + c + d < e*/
-        err = Q();
+        /* We must check the validity of the expression in the order as we discussed in the lecture:
+            S() // extract longest valid logical expressions from input string
+            Q() // extract longest valid Inequality from input string
+            E() // extract longest valid math expression from input string
+            
+        */
+
+        /* check if the user has entered logical expression : eg : a + b < 3 and c = 4*/
+        err = S();
 
         if (err == PARSE_ERR) {
 
-            /* If the user has not entered inequality, then fallback to check
-                if the user has entered the Math Expression eg : a + b + c + d */
-            err = E();
+            /* Check if the user has entered inequality expression eg : a + b + c + d < e*/
+            err = Q();
 
             if (err == PARSE_ERR) {
 
-                printf ("Error : Parsing Error, Invalid Expression\n");
-                continue;
+                /* If the user has not entered inequality, then fallback to check
+                    if the user has entered the Math Expression eg : a + b + c + d */
+                err = E();
+
+                if (err == PARSE_ERR) {
+
+                    printf ("Error : Parsing Error, Invalid Expression\n");
+                    continue;
+                }
             }
         }
 
