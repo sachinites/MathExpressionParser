@@ -13,3 +13,4 @@ g++ -g -c Dtype.cpp -o Dtype.o
 g++ -g -c calculator.cpp -o calculator.o
 g++ -g infix_to_postfix_test.o MexprTree.o Operators.o Dtype.o -o infix_to_postfix_test.exe
 g++ -g lex.yy.o calculator.o EnumConvertor.o ExpressionParser.o MexprTree.o Operators.o Dtype.o -o calculator.exe -lfl
+ar rcs libMexpr.a ExpressionParser.o Operators.o Dtype.o MexprTree.o EnumConvertor.o
