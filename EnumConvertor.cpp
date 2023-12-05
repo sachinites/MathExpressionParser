@@ -6,7 +6,7 @@
 #include "../RDBMSImplementation/SqlParser/ParserExport.h"
 #include "MExprcppEnums.h"
 #include "Dtype.h"
-#include "../RDBMSImplementation/SqlParser/SqlParserStruct.h"
+#include "../RDBMSImplementation/SqlParser/SqlEnums.h"
 #include "../RDBMSImplementation/core/sql_utils.h"
 #include "MiniStack.cpp"
 
