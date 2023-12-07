@@ -40,8 +40,8 @@ typedef enum {
     MATH_CPP_BRACKET_START,
     MATH_CPP_BRACKET_END,
     MATH_CPP_COMMA,
+    MATH_CPP_OPR_INVALID,
     MATH_CPP_OPR_MAX,
-    MATH_CPP_OPR_INVALID
 
 } mexprcpp_operators_t;
 
