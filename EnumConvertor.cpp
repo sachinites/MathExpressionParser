@@ -10,11 +10,6 @@
 #include "../RDBMSImplementation/core/sql_utils.h"
 #include "MiniStack.cpp"
 
-static int 
-RDBMS_to_Mexpr_Enum_Convertor (int external_code, 
-                                          mexprcpp_operators_t *opr_code, 
-                                          mexprcpp_dtypes_t *dtype_code) ;
-                                        
 static lex_data_t **
 mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
 
@@ -44,18 +39,8 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
             continue;
         }
 
-        rc = RDBMS_to_Mexpr_Enum_Convertor (
-                                                infix_lex_data->token_code,
-                                                &opr_code, &dtype_code);
-
-        if (rc == 0) {
-            error = true;
-            printf ("Error : %s(%d) : Non-Convertible Token Found\n", __FUNCTION__, __LINE__);
-            break;
-        }
-
         lex_out = (lex_data_t *) calloc (1, sizeof (lex_data_t));
-        lex_out->token_code = (rc == MEXPR_OPR)  ? (int) opr_code : (int)dtype_code;
+        lex_out->token_code = infix_lex_data->token_code;
         lex_out->token_len = infix_lex_data->token_len;
         lex_out->token_val = infix_lex_data->token_val;
         lex_data_arr_out[j++] = lex_out;
@@ -246,133 +231,6 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 }
 
 
-/* Returns 1 For operator
-    Returns -1 for Operands 
-    Returns 0 for None
-*/
-int 
-RDBMS_to_Mexpr_Enum_Convertor (int external_code, 
-                                          mexprcpp_operators_t *opr_code, 
-                                          mexprcpp_dtypes_t *dtype_code) {
-
-    *opr_code = MATH_CPP_OPR_MAX;
-    *dtype_code = MATH_CPP_DTYPE_INVALID;
-
-    switch (external_code) {
-
-        /* Operators */
-        case SQL_MATH_MINUS:
-            *opr_code = MATH_CPP_MINUS;
-            return MEXPR_OPR;
-
-        case SQL_MATH_PLUS:
-             *opr_code = MATH_CPP_PLUS;
-              return MEXPR_OPR;
-
-        case SQL_MATH_MOD:
-            *opr_code = MATH_CPP_MOD;
-            return MEXPR_OPR;
-
-        case SQL_MATH_MUL:
-            *opr_code = MATH_CPP_MUL;
-            return MEXPR_OPR;
-
-        case SQL_MATH_DIV:
-            *opr_code = MATH_CPP_DIV;
-            return MEXPR_OPR;
-            
-        case SQL_EQ:
-            *opr_code = MATH_CPP_EQ;
-            return MEXPR_OPR;
-
-        case SQL_NOT_EQ:
-            *opr_code = MATH_CPP_NEQ;
-             return MEXPR_OPR;
-
-        case SQL_LESS_THAN:
-            *opr_code = MATH_CPP_LESS_THAN;
-             return MEXPR_OPR;
-
-        case SQL_GREATER_THAN:
-            *opr_code = MATH_CPP_GREATER_THAN;
-            return MEXPR_OPR;
-
-        case SQL_IN:
-            *opr_code = MATH_CPP_IN;
-            return MEXPR_OPR;
-        case SQL_LIKE:
-            *opr_code = MATH_CPP_LIKE;
-            return MEXPR_OPR;
-
-            
-        case SQL_BRACKET_START:
-            *opr_code = MATH_CPP_BRACKET_START;
-            return MEXPR_OPR;
-        case SQL_BRACKET_END:
-            *opr_code = MATH_CPP_BRACKET_END;
-             return MEXPR_OPR;
-
-        case SQL_OR:
-            *opr_code = MATH_CPP_OR;
-            return MEXPR_OPR;
-        case SQL_AND:
-             *opr_code = MATH_CPP_AND;
-                return MEXPR_OPR;
-
-        case SQL_MATH_SQR:
-            *opr_code = MATH_CPP_SQR;
-            return MEXPR_OPR;
-        case SQL_MATH_SQRT:
-            *opr_code = MATH_CPP_SQRT;
-             return MEXPR_OPR;
-
-        case SQL_MATH_MAX:
-            *opr_code = MATH_CPP_MAX;
-            return MEXPR_OPR;
-        case SQL_MATH_MIN:
-            *opr_code = MATH_CPP_MIN;
-            return MEXPR_OPR;
-
-
-
-        /* Operands*/
-        case SQL_INTEGER_VALUE:
-            *dtype_code = MATH_CPP_INT;
-            return MEXPR_OPND;
-
-        case SQL_DOUBLE_VALUE:
-            *dtype_code = MATH_CPP_DOUBLE;
-            return MEXPR_OPND;
-
-        case SQL_STRING_VALUE:
-            *dtype_code = MATH_CPP_STRING;
-             return MEXPR_OPND;
-
-        case SQL_IPV4_ADDR_VALUE:
-            *dtype_code = MATH_CPP_IPV4;
-            return MEXPR_OPND;
-
-        case SQL_IDENTIFIER:
-        case SQL_IDENTIFIER_IDENTIFIER:
-            *dtype_code =  MATH_CPP_VARIABLE;
-            return MEXPR_OPND;
-
-        case SQL_INTERVAL_VALUE:
-            *dtype_code = MATH_CPP_INTERVAL;
-             return MEXPR_OPND;
-
-        /* Extras */
-        case SQL_COMMA:
-            *opr_code = MATH_CPP_COMMA;
-             return MEXPR_OPR;
-
-        default:
-            return 0;
-    }
-    assert(0);
-    return 0;
-}
-
 mexprcpp_dtypes_t
 sql_to_mexpr_dtype_converter (sql_dtype_t sql_dtype) {
 
@@ -433,10 +291,3 @@ sql_to_mexpr_agg_fn_converter (sql_agg_fn_t agg_fn) {
     }
     return MATH_CPP_AGG_MAXX;
 }
-
-
-
-/* Register the library the converter fn */
-int (*Mexpr_Enum_Convertor_fn_ptr) ( int external_code, 
-                                          mexprcpp_operators_t *opr_code, 
-                                          mexprcpp_dtypes_t *dtype_code)  = RDBMS_to_Mexpr_Enum_Convertor;

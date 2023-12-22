@@ -9,6 +9,15 @@ extern parse_rc_t E();   // to Parse MathExpressions
 extern parse_rc_t Q();  // to Parse Inequality
 extern parse_rc_t S(); // to parse Logical Expressions
 
+int 
+Appln_to_Mexpr_enum_converter (int token_code) ;
+
+int 
+Appln_to_Mexpr_enum_converter (int token_code) {
+
+    return token_code;
+}
+
 extern lex_data_t **mexpr_convert_infix_to_postfix (
                                  lex_data_t *infix, 
                                  int sizein, 

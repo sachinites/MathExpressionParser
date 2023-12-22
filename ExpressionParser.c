@@ -112,29 +112,20 @@ Rules for Grammar Parsing :
 #include <assert.h>
 
 // Must include ParserExport.h
-#include "UserParserL.h"
+#include "ParserExport.h"
 
 // must include application specific hdr file which contains token IDs.
 // This file need tobe included in Parser.l file as well.
 #include "MExprcppEnums.h"
 
-extern int (*Mexpr_Enum_Convertor_fn_ptr) (int external_code,
-                                          mexprcpp_operators_t *opr_code, 
-                                          mexprcpp_dtypes_t *dtype_code) ;
-
-static mexprcpp_operators_t opr_code;
-static mexprcpp_dtypes_t dtype_code;
+extern int
+Appln_to_Mexpr_enum_converter (int token_code);
 
 /* Wrapper for Ease */
 static int 
 cnvrt (int external_code) {
 
-    int rc = Mexpr_Enum_Convertor_fn_ptr (external_code,
-                        &opr_code, &dtype_code);
-
-    if (rc == MEXPR_OPR) return (int) opr_code;
-    if (rc == MEXPR_OPND)  return (int)dtype_code;
-    return PARSER_INVALID_CODE;
+    return Appln_to_Mexpr_enum_converter  (external_code);
 }
 
 parse_rc_t INCLAUSE () ;
