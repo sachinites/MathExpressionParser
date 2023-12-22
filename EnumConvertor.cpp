@@ -10,6 +10,9 @@
 #include "../RDBMSImplementation/core/sql_utils.h"
 #include "MiniStack.cpp"
 
+extern int
+Appln_to_Mexpr_enum_converter (int token_code);
+
 static lex_data_t **
 mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
 
@@ -40,7 +43,7 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
         }
 
         lex_out = (lex_data_t *) calloc (1, sizeof (lex_data_t));
-        lex_out->token_code = infix_lex_data->token_code;
+        lex_out->token_code = Appln_to_Mexpr_enum_converter(infix_lex_data->token_code);
         lex_out->token_len = infix_lex_data->token_len;
         lex_out->token_val = infix_lex_data->token_val;
         lex_data_arr_out[j++] = lex_out;
