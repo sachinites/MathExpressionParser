@@ -14,6 +14,9 @@ lex_data_dup (lex_data_t *lex_data) {
     return lex_data_new;
 }
 
+extern int 
+Appln_to_Mexpr_enum_converter(int token_code);
+
 lex_data_t **
 mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
 
@@ -23,6 +26,18 @@ mexpr_convert_infix_to_postfix (lex_data_t *infix, int sizein, int *size_out) {
     lex_data_t *lex_data_cpy;
     lex_data_t **lex_data_arr_out;
     std::stack <lex_data_t *> stack;
+
+    // replace all token codes in infix array with the MeprcppEnums.h Enums
+    for (i = 0; i < sizein; i++) {
+
+        lex_data = &infix[i];
+        if (lex_data->token_code == PARSER_EOL ||
+             lex_data->token_code == PARSER_WHITE_SPACE) continue;
+
+        /* Convert SqlEnums to Mexpr Enums*/
+        lex_data->token_code = Appln_to_Mexpr_enum_converter(lex_data->token_code);
+        assert (lex_data->token_code != -1);
+     }
 
     lex_data_arr_out = 
         (lex_data_t**)calloc(sizein, sizeof(lex_data_t *));

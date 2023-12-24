@@ -62,7 +62,14 @@ Overall Grammar will be :
 8. LOP -> and | or
 */
 
+extern int
+Appln_to_Mexpr_enum_converter (int token_code);
 
+static int 
+cnvrt (int token_code) {
+
+    return Appln_to_Mexpr_enum_converter (token_code);
+}
 
 parse_rc_t E() ;
 static parse_rc_t E_dash() ;
@@ -90,7 +97,7 @@ G() {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     switch (token_code) {
 
@@ -109,7 +116,7 @@ P() {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     switch (token_code) {
 
@@ -135,7 +142,7 @@ F() {
 
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
@@ -143,7 +150,7 @@ F() {
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -160,7 +167,7 @@ F() {
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
@@ -168,7 +175,7 @@ F() {
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_COMMA) break;
 
@@ -176,7 +183,7 @@ F() {
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -193,13 +200,13 @@ F() {
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
         err = E();
 
-         token_code = cyylex();
+         token_code = cnvrt(cyylex());
 
          if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -212,7 +219,7 @@ F() {
 
     // F --> INTEGER | DECIMAL | VAR | STRING
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     switch (token_code) {
 
@@ -241,7 +248,7 @@ T_dash() {
 
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_MUL) break;
 
@@ -262,7 +269,7 @@ T_dash() {
     // T' = / F T'
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_DIV) break;
 
@@ -316,7 +323,7 @@ E_dash() {
     // E’  ->  + T E'
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
         if (token_code != MATH_CPP_PLUS) break;
         err = T();
         if (err == PARSE_ERR) break;
@@ -330,7 +337,7 @@ E_dash() {
     // E’  -> - T E'
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
         if (token_code != MATH_CPP_MINUS) break;
         err = T();
         if (err == PARSE_ERR) break;
@@ -392,7 +399,7 @@ INEQ() {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     switch(token_code) {
 
@@ -417,7 +424,7 @@ D () {
 
     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     if (token_code != MATH_CPP_OR &&
             token_code != MATH_CPP_AND) {
@@ -438,7 +445,7 @@ K_dash () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     if (token_code != MATH_CPP_AND &&
         token_code != MATH_CPP_OR) {
@@ -476,7 +483,7 @@ K () {
     //  (S) K'
     do {
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
@@ -484,7 +491,7 @@ K () {
 
         if (err == PARSE_ERR) break;
 
-        token_code = cyylex();
+        token_code = cnvrt(cyylex());
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -519,7 +526,7 @@ K () {
 
     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     if (token_code != MATH_CPP_OR &&
         token_code != MATH_CPP_AND) {
@@ -544,7 +551,7 @@ J_dash () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     if (token_code != MATH_CPP_AND) {
         yyrewind(1);
@@ -586,7 +593,7 @@ S_dash () {
 
     parse_init();
 
-    token_code = cyylex();
+    token_code = cnvrt(cyylex());
 
     if (token_code != MATH_CPP_OR) {
         yyrewind(1);
