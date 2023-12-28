@@ -1417,6 +1417,8 @@ OperatorMax::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
                     return MATH_CPP_INT;
                 case MATH_CPP_DOUBLE:
                     return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_INT;
                 default:
                     return MATH_CPP_DTYPE_INVALID;
             }
@@ -1432,6 +1434,8 @@ OperatorMax::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
                     case MATH_CPP_INT:
                     case MATH_CPP_DOUBLE:
                         return MATH_CPP_DOUBLE;
+                    case MATH_CPP_DTYPE_WILDCRAD:
+                        return MATH_CPP_DOUBLE;
                     default:
                          return MATH_CPP_DTYPE_INVALID;
             }
@@ -1445,11 +1449,25 @@ OperatorMax::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
                 case MATH_CPP_STRING:
                     return MATH_CPP_STRING;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_STRING;
                 default:
                     return MATH_CPP_DTYPE_INVALID;
             }
         }
         break;
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+        {
+            switch(did2) {
+
+                case MATH_CPP_INT:
+                case  MATH_CPP_DOUBLE:
+                case MATH_CPP_STRING:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return did2;
+            }
+        }
 
     }
 
@@ -1598,6 +1616,8 @@ OperatorMin::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
                     return MATH_CPP_INT;
                 case MATH_CPP_DOUBLE:
                     return MATH_CPP_DOUBLE;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_INT;
                 default:
                     return MATH_CPP_DTYPE_INVALID;
             }
@@ -1613,6 +1633,8 @@ OperatorMin::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
                     case MATH_CPP_INT:
                     case MATH_CPP_DOUBLE:
                         return MATH_CPP_DOUBLE;
+                    case MATH_CPP_DTYPE_WILDCRAD:
+                        return MATH_CPP_DOUBLE;
                     default:
                          return MATH_CPP_DTYPE_INVALID;
             }
@@ -1626,11 +1648,25 @@ OperatorMin::ResultStorageType(mexprcpp_dtypes_t did1, mexprcpp_dtypes_t did2) {
 
                 case MATH_CPP_STRING:
                     return MATH_CPP_STRING;
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return MATH_CPP_STRING;
                 default:
                     return MATH_CPP_DTYPE_INVALID;
             }
         }
         break;
+
+        case MATH_CPP_DTYPE_WILDCRAD:
+        {
+            switch(did2) {
+
+                case MATH_CPP_INT:
+                case  MATH_CPP_DOUBLE:
+                case MATH_CPP_STRING:
+                case MATH_CPP_DTYPE_WILDCRAD:
+                    return did2;
+            }
+        }
 
     }
 

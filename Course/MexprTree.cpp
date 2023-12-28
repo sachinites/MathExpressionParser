@@ -108,9 +108,14 @@ MexprTree::MexprTree(lex_data_t **postfix_lex_data_array, int size) {
 void 
 MexprTree::destroy() {
 
-    // Implement to destroy and free Expression Tree
+    // implement to destroy and free expression tree
 }
 
+void 
+MexprTree::destroy(MexprNode *root) {
+
+    // implement to destroy and free expression tree
+}
 
 Dtype *
 MexprTree::evaluate_internal(MexprNode *root) {

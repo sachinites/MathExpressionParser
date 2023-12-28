@@ -46,6 +46,7 @@ class MexprTree {
         bool validate (MexprNode *root);
         Dtype *evaluate(MexprNode *root);
         void destroy();
+        void destroy(MexprNode *root);
 } ; 
 
 
