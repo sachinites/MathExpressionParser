@@ -25,8 +25,15 @@ lex_pop () {
     assert (undo_stack.top > -1);
     lex_data_t res = undo_stack.data[undo_stack.top];
     undo_stack.top--;
-    lex_curr_token = ( char *)res.token_val;
-    lex_curr_token_len = res.token_len;
+    if (undo_stack.top > -1) {
+        lex_data_t stck_top_lexd = undo_stack.data[undo_stack.top];
+        lex_curr_token = (char *)stck_top_lexd.token_val;
+        lex_curr_token_len = stck_top_lexd.token_len;
+    }
+    else {
+        lex_curr_token = NULL;
+        lex_curr_token_len = 0;
+    }
     return res;
 }
 
@@ -79,11 +86,6 @@ yyrewind (int n) {
     }
     curr_ptr -= data_len;
     yy_scan_string(curr_ptr);
-    if (undo_stack.top >= 0) {
-        lex_data = undo_stack.data[undo_stack.top];
-        lex_curr_token = lex_data.token_val;
-        lex_curr_token_len = lex_data.token_len;
-    }
 }
 
 void
@@ -104,11 +106,6 @@ RESTORE_CHKP(int a) {
     }
     curr_ptr -= data_len;
     yy_scan_string(curr_ptr);
-    if (undo_stack.top >= 0) {
-        lex_data = undo_stack.data[undo_stack.top];
-        lex_curr_token = lex_data.token_val;
-        lex_curr_token_len = lex_data.token_len;
-    }
 }
 
 void 
