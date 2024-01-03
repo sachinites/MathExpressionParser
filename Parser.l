@@ -10,8 +10,10 @@
 
 #include "ParserExport.h"
 
-unsigned char lex_buffer[MAX_STRING_SIZE] = {0};
-unsigned char *curr_ptr = lex_buffer;
+char lex_buffer[MAX_STRING_SIZE] = {0};
+char *curr_ptr = lex_buffer;
+char *lex_curr_token;
+int lex_curr_token_len;
 
 stack_t undo_stack = {-1, {0, 0, 0}};
 
@@ -19,6 +21,8 @@ void
 lex_push(lex_data_t lex_data) {
     assert (undo_stack.top < MAX_MEXPR_LEN -1);
     undo_stack.data[++undo_stack.top] = lex_data;
+    lex_curr_token = (char *)lex_data.token_val;
+    lex_curr_token_len = lex_data.token_len;
 }
 
 lex_data_t
@@ -26,6 +30,15 @@ lex_pop() {
     assert (undo_stack.top > -1);
     lex_data_t res = undo_stack.data[undo_stack.top] ;
     undo_stack.top--;
+    if (undo_stack.top > -1) {
+        lex_data_t stck_top_lexd = undo_stack.data[undo_stack.top] ;
+        lex_curr_token = (char *)stck_top_lexd.token_val;
+        lex_curr_token_len = stck_top_lexd.token_len;
+    }
+    else {
+        lex_curr_token = NULL;
+        lex_curr_token_len = 0;
+    }
     return res;
 }
 
@@ -52,11 +65,6 @@ yyrewind (int n) {
     }
     curr_ptr -= data_len;
     yy_scan_string(curr_ptr);
-    if (undo_stack.top >= 0) {
-        lex_data = undo_stack.data[undo_stack.top];
-        lex_curr_token = lex_data.token_val;
-        lex_curr_token_len = lex_data.token_len;
-    }    
 }
 
 void
@@ -77,11 +85,6 @@ RESTORE_CHKP(int a) {
     }
     curr_ptr -= data_len;
     yy_scan_string(curr_ptr);
-    if (undo_stack.top >= 0) {
-        lex_data = undo_stack.data[undo_stack.top];
-        lex_curr_token = lex_data.token_val;
-        lex_curr_token_len = lex_data.token_len;
-    }
 }
 
 unsigned char *
@@ -170,7 +173,7 @@ lex_set_scan_buffer (const char *buffer) {
 
 
 /* User specific header files */
-#include "MexprEnums.h"
+#include "MExprcppEnums.h"
 
 
 %}
@@ -178,87 +181,87 @@ lex_set_scan_buffer (const char *buffer) {
 %%
 
 "(" {
-    return MATH_BRACKET_START;
+    return MATH_CPP_BRACKET_START;
 }
 
 ")" {
-    return MATH_BRACKET_END;
+    return MATH_CPP_BRACKET_END;
 }
 
 "<=" {
-    return MATH_LESS_THAN_EQ;
+    return MATH_CPP_LESS_THAN_EQ;
 }
 
 "<" {
-    return MATH_LESS_THAN;
+    return MATH_CPP_LESS_THAN;
 }
 
 ">" {
-    return MATH_GREATER_THAN;
+    return MATH_CPP_GREATER_THAN;
 }
 
 "=" {
-    return MATH_EQ;
+    return MATH_CPP_EQ;
 }
 
 "!=" {
-    return MATH_NOT_EQ;
+    return MATH_CPP_NEQ;
 }
 
 "and" {
-    return MATH_AND;
+    return MATH_CPP_AND;
 }
 
 "or" {
-    return MATH_OR;
+    return MATH_CPP_OR;
 }
 
 "*" {
-    return MATH_MUL;
+    return MATH_CPP_MUL;
 }
 
 "+" {
-    return MATH_PLUS;
+    return MATH_CPP_PLUS;
 }
 
 "-" {
-    return  MATH_MINUS;
+    return  MATH_CPP_MINUS;
 }
 
 "/" {
-    return MATH_DIV;
+    return MATH_CPP_DIV;
 }
 
 "," {
-    return MATH_COMMA;
+    return MATH_CPP_COMMA;
 }
 
 "sqrt" {
-    return MATH_SQRT;
+    return MATH_CPP_SQRT;
 }
 
 "sqr" {
-    return MATH_SQR;
+    return MATH_CPP_SQR;
 }
 
 "mmax" {
-    return MATH_MAX;
+    return MATH_CPP_MAX;
 }
 
 "mmin" {
-    return MATH_MIN;
+    return MATH_CPP_MIN;
 }
 
 "sin" {
-    return MATH_SIN;
+    return MATH_CPP_SIN;
 }
 
 "cos" {
-    return MATH_COS;
+    return MATH_CPP_COS;
 }
 
 "pow" {
-    return MATH_POW;
+    return MATH_CPP_POW;
 }
 
 \n {
@@ -284,29 +287,29 @@ lex_set_scan_buffer (const char *buffer) {
 }
 
 0|-?[1-9][0-9]* {
-    return MATH_INTEGER_VALUE;
+    return MATH_CPP_INT;
 }
 
 -?[0-9]*\.[0-9]+ {
-    return MATH_DOUBLE_VALUE;
+    return MATH_CPP_DOUBLE;
 }
 
 [a-zA-Z0-9_]+ {
-    return MATH_IDENTIFIER;
+    return MATH_CPP_VARIABLE;
 }
 
 [a-zA-Z0-9_]+\.[a-zA-Z0-9_]+ {
-    return MATH_IDENTIFIER_IDENTIFIER;
+    return MATH_CPP_VARIABLE;
 }
 
 '[^']*' {
     // string enclosed within single quotes
-    return MATH_STRING_VALUE;
+    return MATH_CPP_STRING;
 }
 
 \"[^"]*\" {
     // string enclosed within double quotes
-    return MATH_STRING_VALUE;
+    return MATH_CPP_STRING;
 }
 
 
