@@ -38,6 +38,7 @@ extern void yyrewind (int n) ;
 extern unsigned char *parser_alloc_token_value_default (uint16_t token_id);
 extern int cyylex ();
 extern void process_white_space(int n) ;
+extern void RESTORE_CHKP(int a);
 
 #define parse_init()             \
     int token_code = 0;          \
@@ -45,7 +46,7 @@ extern void process_white_space(int n) ;
     parse_rc_t err = PARSE_SUCCESS
 
 #define RETURN_PARSE_ERROR      \
-    {yyrewind(undo_stack.top - _lchkp);     \
+    {RESTORE_CHKP(_lchkp);     \
     return PARSE_ERR;}
 
 #define RETURN_PARSE_SUCCESS    \
@@ -57,9 +58,6 @@ extern void process_white_space(int n) ;
 #define CHECKPOINT(a)    \
     a = undo_stack.top
 
-#define RESTORE_CHKP(a) \
-    yyrewind(undo_stack.top - a)
-    
 #define CHECK_FOR_EOL                \
     {token_code = cyylex();                   \
     if (token_code == EOL) {                \
