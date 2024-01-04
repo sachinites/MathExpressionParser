@@ -33,7 +33,13 @@ class MexprTree {
     private:
     mexprcpp_dtypes_t validate_internal  (MexprNode *root);
     Dtype *evaluate_internal(MexprNode *root);
-
+    void destroy_internal(MexprNode *root);
+    void NodeRemoveFromList (MexprNode *node);
+    void CloneNodesRecursively  (      MexprNode *src_node, 
+                                                             MexprNode *new_node, int child);
+    void CreateOperandList ();
+    void CreateOperandList (MexprNode *node);
+    
     protected:
 
     public:
@@ -47,6 +53,9 @@ class MexprTree {
         Dtype *evaluate(MexprNode *root);
         void destroy();
         void destroy(MexprNode *root);
+        bool IsLoneVariableOperandNode();
+        bool concatenate (MexprNode *leaf_node, MexprTree *child_tree);
+        MexprTree *clone(MexprNode *root);
 } ; 
 
 
