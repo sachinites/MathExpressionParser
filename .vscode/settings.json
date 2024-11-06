@@ -6,7 +6,7 @@ bitmap{
     "terminal.integrated.fontFamily": "courier new",
     "terminal.integrated.drawBoldTextInBrightColors": false,
     "terminal.integrated.minimumContrastRatio": 4.5,
-    "workbench.colorTheme": "Default High Contrast",
+    //"workbench.colorTheme": "Default High Contrast",
     "terminal.integrated.rightClickBehavior": "paste",
     "terminal.integrated.copyOnSelection": true,
     "git.ignoreLegacyWarning": true,
@@ -14,7 +14,7 @@ bitmap{
     "editor.rulers": [
         120
     ],
-    "editor.fontFamily": "comicsans, serif, 'Courier New', Consolas, monospace",
+   // "editor.fontFamily": "comicsans, serif, 'Courier New', Consolas, monospace",
     "workbench.editor.untitled.hint": "hidden",
     "editor.fontSize": 18,
     "editor.wordWrap": "on",
