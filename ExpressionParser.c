@@ -128,47 +128,47 @@ cnvrt (int external_code) {
     return Appln_to_Mexpr_enum_converter  (external_code);
 }
 
-parse_rc_t INCLAUSE () ;
-parse_rc_t IDENT_LST () ;  // ("abc" , "def" , "ghi")
+parse_rc_t INCLAUSE (pinst_t *inst) ;
+parse_rc_t IDENT_LST (pinst_t *inst) ;  // ("abc" , "def" , "ghi")
 
-parse_rc_t Ineq () ;
-parse_rc_t G ();
-parse_rc_t P ();
-parse_rc_t F ();
-parse_rc_t T_dash () ;
-parse_rc_t T () ;
-parse_rc_t E_dash () ;
-parse_rc_t E () ;
+parse_rc_t Ineq (pinst_t *inst) ;
+parse_rc_t G (pinst_t *inst);
+parse_rc_t P (pinst_t *inst);
+parse_rc_t F (pinst_t *inst);
+parse_rc_t T_dash (pinst_t *inst) ;
+parse_rc_t T (pinst_t *inst) ;
+parse_rc_t E_dash (pinst_t *inst) ;
+parse_rc_t E (pinst_t *inst) ;
 
-parse_rc_t Q () ;
+parse_rc_t Q (pinst_t *inst) ;
 
-parse_rc_t D ();
-parse_rc_t K ();
-parse_rc_t K_dash ();
-parse_rc_t J_dash () ;
-parse_rc_t J () ;
-parse_rc_t  S_dash () ;
-parse_rc_t  S () ;
+parse_rc_t D (pinst_t *inst);
+parse_rc_t K (pinst_t *inst);
+parse_rc_t K_dash (pinst_t *inst);
+parse_rc_t J_dash (pinst_t *inst) ;
+parse_rc_t J (pinst_t *inst) ;
+parse_rc_t  S_dash (pinst_t *inst) ;
+parse_rc_t  S (pinst_t *inst) ;
 
 parse_rc_t 
-IDENT_LST () {
+IDENT_LST (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
-    if (token_code != MATH_CPP_STRING ) RETURN_PARSE_ERROR;
+    if (token_code != MATH_CPP_STRING ) RETURN_PARSE_ERROR(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_COMMA) {
-        yyrewind(1);
+        yyrewind(inst, 1);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(IDENT_LST);
+    err = PARSER_CALL(inst, IDENT_LST);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -178,33 +178,33 @@ IDENT_LST () {
     IDENT_LST -> "Word(s)" | "Word(s)" , IDENT_LST
 */
 parse_rc_t 
-INCLAUSE () {
+INCLAUSE (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
     int initial_chkp;
 
     //  INCALUSE ->  Identifier in (IDENT_LST)
     do {
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
-        if (token_code != MATH_CPP_VARIABLE)  RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_VARIABLE)  RETURN_PARSE_ERROR(inst);
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
-        if (token_code != MATH_CPP_IN) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_IN) RETURN_PARSE_ERROR(inst);
 
-        CHECKPOINT(initial_chkp);
+        CHECKPOINT(inst, initial_chkp);
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(IDENT_LST);
+        err = PARSER_CALL(inst, IDENT_LST);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -212,12 +212,12 @@ INCLAUSE () {
 
     } while (0);
 
-    RESTORE_CHKP(initial_chkp);
+    RESTORE_CHKP(inst, initial_chkp);
 
     //  INCALUSE ->  Identifier in [<integer>,<integer>]
     do {
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_INTERVAL) break;
 
@@ -225,16 +225,16 @@ INCLAUSE () {
         
     } while (0);
 
-    RETURN_PARSE_ERROR;
+    RETURN_PARSE_ERROR(inst);
 }
 
 
 parse_rc_t
-Ineq () {
+Ineq (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     switch(token_code) {
         case MATH_CPP_LESS_THAN:
@@ -245,7 +245,7 @@ Ineq () {
         case MATH_CPP_LIKE:
             break;
         default:
-            RETURN_PARSE_ERROR;
+            RETURN_PARSE_ERROR(inst);
     }
 
     RETURN_PARSE_SUCCESS;
@@ -253,11 +253,11 @@ Ineq () {
 
 /* Parse the Binary Math functions */
 parse_rc_t
-G () {
+G (pinst_t *inst) {
 
-     parse_init();
+     parse_init(inst);
 
-     token_code = cnvrt (cyylex() );
+     token_code = cnvrt (cyylex(inst) );
 
      switch (token_code) {
 
@@ -266,18 +266,18 @@ G () {
         case MATH_CPP_POW:
             RETURN_PARSE_SUCCESS;
         default:
-            RETURN_PARSE_ERROR;
+            RETURN_PARSE_ERROR(inst);
      }
 
 }
 
 /* Parse the unary Math functions */
 parse_rc_t
-P () {
+P (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     switch (token_code) {
 
@@ -287,31 +287,31 @@ P () {
 	    case MATH_CPP_COS:
             RETURN_PARSE_SUCCESS;
         default:
-            RETURN_PARSE_ERROR;
+            RETURN_PARSE_ERROR(inst);
     }
 }
 
 /* F  ->   ( E ) |  P ( E ) | INTEGER | DECIMAL | VAR | IPV4 | G ( E, E) */
 parse_rc_t
-F () {
+F (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
     int initial_chkp;
-    CHECKPOINT(initial_chkp);
+    CHECKPOINT(inst, initial_chkp);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     // ( E )
     do {
         
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -319,12 +319,12 @@ F () {
 
     } while (0);
 
-    RESTORE_CHKP(initial_chkp);
+    RESTORE_CHKP(inst, initial_chkp);
 
     // INTEGER | DECIMAL | VAR | 'SENTENCE' | IPV4
     do {
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         switch (token_code) {
             
@@ -339,24 +339,24 @@ F () {
         }
     } while (0);
 
-    RESTORE_CHKP(initial_chkp);
+    RESTORE_CHKP(inst, initial_chkp);
 
     // P ( E ) 
     do {
 
-        err = PARSER_CALL(P);
+        err = PARSER_CALL(inst, P);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -364,35 +364,35 @@ F () {
 
     } while (0);
 
-    RESTORE_CHKP(initial_chkp);
+    RESTORE_CHKP(inst, initial_chkp);
 
     // G ( E, E)
 
     do {
 
-        err = PARSER_CALL(G);
+        err = PARSER_CALL(inst, G);
 
-        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
-        if (token_code != MATH_CPP_BRACKET_START) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_BRACKET_START) RETURN_PARSE_ERROR(inst);
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
-        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
-        if (token_code != MATH_CPP_COMMA) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_COMMA) RETURN_PARSE_ERROR(inst);
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
-        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
-        if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR(inst);
 
         RETURN_PARSE_SUCCESS;
 
@@ -401,35 +401,35 @@ F () {
 
 /* T' ->   * F T' |   / F T'  |  $ */
 parse_rc_t
-T_dash () {
+T_dash (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
     int initial_chkp;
-    CHECKPOINT(initial_chkp);
+    CHECKPOINT(inst, initial_chkp);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_MUL &&
             token_code != MATH_CPP_DIV) {
         
-        RESTORE_CHKP(initial_chkp);
+        RESTORE_CHKP(inst, initial_chkp);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(F);
+    err = PARSER_CALL(inst, F);
 
     if (err == PARSE_ERR) {
 
-        RESTORE_CHKP(initial_chkp);
+        RESTORE_CHKP(inst, initial_chkp);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(T_dash);
+    err = PARSER_CALL(inst, T_dash);
 
     if (err == PARSE_ERR) {
 
-        RESTORE_CHKP(initial_chkp);
+        RESTORE_CHKP(inst, initial_chkp);
         RETURN_PARSE_SUCCESS;        
     }
 
@@ -438,52 +438,52 @@ T_dash () {
 
 // 4. T  ->   F T'
 parse_rc_t
-T () {
+T (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    err = PARSER_CALL(F);
+    err = PARSER_CALL(inst, F);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(T_dash);
+    err = PARSER_CALL(inst, T_dash);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
 
 //  E'  ->  + T E' | - T E' |  $
 parse_rc_t
-E_dash () {
+E_dash (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
     int initial_chkp;
-    CHECKPOINT(initial_chkp);
+    CHECKPOINT(inst, initial_chkp);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_PLUS &&
             token_code !=  MATH_CPP_MINUS) {
         
-        RESTORE_CHKP(initial_chkp);
+        RESTORE_CHKP(inst, initial_chkp);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(T);
+    err = PARSER_CALL(inst, T);
 
     if (err == PARSE_ERR) {
 
-        RESTORE_CHKP(initial_chkp);
+        RESTORE_CHKP(inst, initial_chkp);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(E_dash);
+    err = PARSER_CALL(inst, E_dash);
 
     if (err == PARSE_ERR) {
 
-        RESTORE_CHKP(initial_chkp);
+        RESTORE_CHKP(inst, initial_chkp);
         RETURN_PARSE_SUCCESS;        
     }
 
@@ -492,17 +492,17 @@ E_dash () {
 
 /* E  ->   T E' */
 parse_rc_t
-E () {
+E (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    err = PARSER_CALL(T);
+    err = PARSER_CALL(inst, T);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(E_dash);
+    err = PARSER_CALL(inst, E_dash);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -510,25 +510,25 @@ E () {
 /* Q  ->   E Ineq E  | ( Q ) |  INCLAUSE */
 
 parse_rc_t
-Q () {
+Q (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
     int chkp_initial;
     
-    CHECKPOINT(chkp_initial);
+    CHECKPOINT(inst, chkp_initial);
 
      // Q -> (Q)
     do {
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(Q);
+        err = PARSER_CALL(inst, Q);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
@@ -536,19 +536,19 @@ Q () {
 
     } while (0);
 
-    RESTORE_CHKP(chkp_initial);
+    RESTORE_CHKP(inst, chkp_initial);
 
     do {
         // E Ineq E
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
-        err = PARSER_CALL(Ineq);
+        err = PARSER_CALL(inst, Ineq);
 
         if (err == PARSE_ERR) break;
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
@@ -556,12 +556,12 @@ Q () {
 
     } while (0);
 
-    RESTORE_CHKP(chkp_initial);
+    RESTORE_CHKP(inst, chkp_initial);
 
     //INCLAUSE
-    err = PARSER_CALL( INCLAUSE);
+    err = PARSER_CALL(inst,  INCLAUSE);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -569,55 +569,55 @@ Q () {
 
 // D -> Q lop Q
 parse_rc_t
-D () {
+D (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_OR &&
             token_code != MATH_CPP_AND) {
 
-        RETURN_PARSE_ERROR;
+        RETURN_PARSE_ERROR(inst);
     }
 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
-     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
      RETURN_PARSE_SUCCESS;
 }
 
 // K' -> lop Q K' | $
 parse_rc_t
-K_dash () {
+K_dash (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_AND &&
         token_code != MATH_CPP_OR) {
 
-        yyrewind(1);
+        yyrewind(inst, 1);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
     if (err == PARSE_ERR) {
-        yyrewind(1);
+        yyrewind(inst, 1);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(K_dash);
+    err = PARSER_CALL(inst, K_dash);
 
     if (err == PARSE_ERR) {
-        yyrewind(1);
+        yyrewind(inst, 1);
         RETURN_PARSE_SUCCESS;
     }
 
@@ -626,29 +626,29 @@ K_dash () {
 
 /* K -> (S) K' | D K'  | Q lop K K'  */
 parse_rc_t
-K () {
+K (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
     int initial_chkp;
-    CHECKPOINT(initial_chkp);
+    CHECKPOINT(inst, initial_chkp);
 
     //  (S) K'
     do {
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(S);
+        err = PARSER_CALL(inst, S);
 
         if (err == PARSE_ERR) break;
 
-        token_code = cnvrt (cyylex() );
+        token_code = cnvrt (cyylex(inst) );
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
-        err = PARSER_CALL(K_dash);
+        err = PARSER_CALL(inst, K_dash);
 
         if (err == PARSE_ERR) break;
 
@@ -656,15 +656,15 @@ K () {
 
     } while (0);
 
-    RESTORE_CHKP(initial_chkp);
+    RESTORE_CHKP(inst, initial_chkp);
     // D K' 
     do {
 
-        err = PARSER_CALL(D);
+        err = PARSER_CALL(inst, D);
 
         if (err == PARSE_ERR) break;
 
-        err = PARSER_CALL(K_dash);
+        err = PARSER_CALL(inst, K_dash);
 
         if (err == PARSE_ERR) break;
 
@@ -672,50 +672,50 @@ K () {
 
     } while (0);
 
-    RESTORE_CHKP(initial_chkp);
+    RESTORE_CHKP(inst, initial_chkp);
 
     // Q lop K K' 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_OR &&
         token_code != MATH_CPP_AND) {
 
-        RETURN_PARSE_ERROR;
+        RETURN_PARSE_ERROR(inst);
     }
 
-    err = PARSER_CALL(K);
+    err = PARSER_CALL(inst, K);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(K_dash);
+    err = PARSER_CALL(inst, K_dash);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
 
 /*  J' -> and K J' | $ */
 parse_rc_t
-J_dash () {
+J_dash (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_AND) {
-        yyrewind(1);
+        yyrewind(inst, 1);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(K);
+    err = PARSER_CALL(inst, K);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
-    err = PARSER_CALL(J_dash);
+    err = PARSER_CALL(inst, J_dash);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
@@ -724,17 +724,17 @@ J_dash () {
 
 /* J -> K J' */
 parse_rc_t
-J () {
+J (pinst_t *inst) {
 
-    parse_init();
+    parse_init(inst);
 
-    err = PARSER_CALL(K);
+    err = PARSER_CALL(inst, K);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(J_dash);
+    err = PARSER_CALL(inst, J_dash);
 
-     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
      RETURN_PARSE_SUCCESS;
 }
@@ -742,22 +742,22 @@ J () {
 
 /* S' -> or J S' | $ */
 parse_rc_t
-S_dash () {   
+S_dash (pinst_t *inst) {   
 
-    parse_init();
+    parse_init(inst);
 
-    token_code = cnvrt (cyylex() );
+    token_code = cnvrt (cyylex(inst) );
 
     if (token_code != MATH_CPP_OR) {
-        yyrewind(1);
+        yyrewind(inst, 1);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(J);
+    err = PARSER_CALL(inst, J);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
-    err = PARSER_CALL(S_dash);
+    err = PARSER_CALL(inst, S_dash);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
@@ -766,17 +766,17 @@ S_dash () {
 
  /*S -> J S'  */
 parse_rc_t
-S () {     
+S (pinst_t *inst) {     
 
-    parse_init();
+    parse_init(inst);
 
-   err = PARSER_CALL(J);
+   err = PARSER_CALL(inst, J);
 
-   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-   err = PARSER_CALL(S_dash);
+   err = PARSER_CALL(inst, S_dash);
 
-   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }

@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <map>
-#include "ParserExport.h"
+#include "../ParserExport.h"
 #include "Dtype.h"
 #include "MexprTree.h"
 
-extern parse_rc_t E();   // to Parse MathExpressions
-extern parse_rc_t Q();  // to Parse Inequality
-extern parse_rc_t S(); // to parse Logical Expressions
+extern parse_rc_t E(pinst_t *inst);   // to Parse MathExpressions
+extern parse_rc_t Q(pinst_t *inst);  // to Parse Inequality
+extern parse_rc_t S(pinst_t *inst); // to parse Logical Expressions
 
 int 
 Appln_to_Mexpr_enum_converter (int token_code) ;
@@ -88,20 +88,22 @@ main (int argc, char **argv) {
 
     parse_rc_t err;
     int token_code;
-    
+    pinst_t inst;
+
+    pinst_init (&inst);
+
     while (1) {
 
         printf ("Input -> ");
 
-        fgets (lex_buffer, sizeof (lex_buffer), stdin);
+        fgets (inst.lex_buffer, sizeof (inst.lex_buffer), stdin);
 
-        if (lex_buffer [0] == '\n') {
-            lex_buffer[0] = 0;
+        if (inst.lex_buffer [0] == '\n') {
+            inst.lex_buffer[0] = 0;
             continue;
         }
 
-        lex_set_scan_buffer (lex_buffer);
-        Parser_stack_reset();
+        Parser_stack_reset(&inst);
 
         /* We must check the validity of the expression in the order as we discussed in the lecture:
             S() // extract longest valid logical expressions from input string
@@ -111,18 +113,18 @@ main (int argc, char **argv) {
         */
 
         /* check if the user has entered logical expression : eg : a + b < 3 and c = 4*/
-        err = S();
+        err = S(&inst);
 
         if (err == PARSE_ERR) {
 
             /* Check if the user has entered inequality expression eg : a + b + c + d < e*/
-            err = Q();
+            err = Q(&inst);
 
             if (err == PARSE_ERR) {
 
                 /* If the user has not entered inequality, then fallback to check
                     if the user has entered the Math Expression eg : a + b + c + d */
-                err = E();
+                err = E(&inst);
 
                 if (err == PARSE_ERR) {
 
@@ -135,7 +137,7 @@ main (int argc, char **argv) {
         /* Check if our parser has scanned the entire Input string, and not 
             picked up just the longest valid expression */
 
-        token_code = cyylex ();
+        token_code = cyylex (&inst);
 
         if (token_code != PARSER_EOL) {
 
@@ -147,7 +149,7 @@ main (int argc, char **argv) {
 
         int size_out = 0;
         lex_data_t **postfix = mexpr_convert_infix_to_postfix (
-                                             undo_stack.data, undo_stack.top + 1, &size_out);
+                                             inst.undo_stack.data, inst.undo_stack.top + 1, &size_out);
 
         MexprTree *tree = new MexprTree (postfix, size_out);
 

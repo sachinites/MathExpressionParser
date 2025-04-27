@@ -1,5 +1,6 @@
 rm -f  libMexpr.a
 rm *.o
+lex Parser.l
 g++ -g -c -fpermissive ExpressionParser.c -o ExpressionParser.o
 g++ -g -c Operators.cpp -o Operators.o
 g++ -g -c Dtype.cpp -o Dtype.o

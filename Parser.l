@@ -1,3 +1,6 @@
+%option reentrant
+%option header-file="lex.yy.h"
+
 %{
 
 #include <stdio.h>
@@ -10,47 +13,41 @@
 
 #include "ParserExport.h"
 
-char lex_buffer[MAX_STRING_SIZE] = {0};
-char *curr_ptr = lex_buffer;
-char *lex_curr_token;
-int lex_curr_token_len;
-
-stack_t undo_stack = {-1, {0, 0, 0}};
-
 void 
-lex_push(lex_data_t lex_data) {
-    assert (undo_stack.top < MAX_MEXPR_LEN -1);
-    undo_stack.data[++undo_stack.top] = lex_data;
-    lex_curr_token = (char *)lex_data.token_val;
-    lex_curr_token_len = lex_data.token_len;
+lex_push(pinst_t *inst, lex_data_t lex_data) {
+
+    assert (inst->undo_stack.top < MAX_MEXPR_LEN -1);
+    inst->undo_stack.data[++inst->undo_stack.top] = lex_data;
+    inst->lex_curr_token = (char *)lex_data.token_val;
+    inst->lex_curr_token_len = lex_data.token_len;
 }
 
 lex_data_t
-lex_pop() {
-    assert (undo_stack.top > -1);
-    lex_data_t res = undo_stack.data[undo_stack.top] ;
-    undo_stack.top--;
-    if (undo_stack.top > -1) {
-        lex_data_t stck_top_lexd = undo_stack.data[undo_stack.top] ;
-        lex_curr_token = (char *)stck_top_lexd.token_val;
-        lex_curr_token_len = stck_top_lexd.token_len;
+lex_pop(pinst_t *inst) {
+    assert (inst->undo_stack.top > -1);
+    lex_data_t res = inst->undo_stack.data[inst->undo_stack.top] ;
+    inst->undo_stack.top--;
+    if (inst->undo_stack.top > -1) {
+        lex_data_t stck_top_lexd = inst->undo_stack.data[inst->undo_stack.top] ;
+        inst->lex_curr_token = (char *)stck_top_lexd.token_val;
+        inst->lex_curr_token_len = stck_top_lexd.token_len;
     }
     else {
-        lex_curr_token = NULL;
-        lex_curr_token_len = 0;
+        inst->lex_curr_token = NULL;
+        inst->lex_curr_token_len = 0;
     }
     return res;
 }
 
 void 
-yyrewind (int n) {
+yyrewind (pinst_t *inst, int n) {
 
     if (n <= 0) return;
-    if (curr_ptr == lex_buffer) return;
+    if (inst->curr_ptr == inst->lex_buffer) return;
     int data_len = 0;
     lex_data_t lex_data;
     while (n)  {
-        lex_data = lex_pop();
+        lex_data = lex_pop(inst);
         data_len += lex_data.token_len;
         if (lex_data.token_code == PARSER_WHITE_SPACE) {
             continue;
@@ -63,19 +60,19 @@ yyrewind (int n) {
             lex_data.token_val = NULL;
         }
     }
-    curr_ptr -= data_len;
-    yy_scan_string(curr_ptr);
+    inst->curr_ptr -= data_len;
+    fseek (inst->yyin, -1 * data_len, SEEK_CUR);
 }
 
 void
-RESTORE_CHKP(int a) {
+RESTORE_CHKP(pinst_t *inst, int a) {
 
     lex_data_t lex_data;
     int data_len = 0;
 
-    while (undo_stack.top > a) {
+    while (inst->undo_stack.top > a) {
         
-        lex_data =  lex_pop();
+        lex_data =  lex_pop(inst);
         data_len += lex_data.token_len;
 
         if (lex_data.token_val) { 
@@ -83,66 +80,69 @@ RESTORE_CHKP(int a) {
             lex_data.token_val = NULL;
         }
     }
-    curr_ptr -= data_len;
-    yy_scan_string(curr_ptr);
+    inst->curr_ptr -= data_len;
+    fseek (inst->yyin, -1 * data_len, SEEK_CUR);
 }
 
 unsigned char *
-parser_alloc_token_value_default (uint16_t token_id) {
+parser_alloc_token_value_default (pinst_t *inst, uint16_t token_id) {
 
-    unsigned char *ptr = (unsigned char *)(calloc (1, yyleng + 1));
-    strncpy (ptr, yytext, yyleng);
-    ptr [yyleng] = '\0';
+    unsigned char *ptr = (unsigned char *)(calloc (1, inst->lex_curr_token_len + 1));
+    strncpy (ptr, inst->lex_curr_token, inst->lex_curr_token_len);
+    ptr [inst->lex_curr_token_len] = '\0';
     return (void *)ptr;
 }
 
 int 
-cyylex () {
+cyylex (pinst_t *inst) {
 
-    int token_code =  yylex();
-    curr_ptr += yyleng;
+    int token_code =  yylex(inst->scanner);
+    inst->lex_curr_token = yyget_text (inst->scanner);
+    inst->lex_curr_token_len = yyget_leng (inst->scanner) ;
+    inst->curr_ptr += inst->lex_curr_token_len ;
     lex_data_t lex_data;
     lex_data.token_code = token_code;
-    lex_data.token_len = yyleng;
-    lex_data.token_val = parser_alloc_token_value_default  (token_code);
-    lex_push(lex_data);
+    lex_data.token_len = inst->lex_curr_token_len;
+    lex_data.token_val = parser_alloc_token_value_default  (inst, token_code);
+    lex_push(inst, lex_data);
     return token_code;
 }
 
 void 
-process_white_space(int n) {
+process_white_space(pinst_t *inst, int n) {
 
     lex_data_t lex_data;
-    curr_ptr += n;
+    inst->curr_ptr += n;
     lex_data.token_code = PARSER_WHITE_SPACE;
     lex_data.token_len = n;
     lex_data.token_val = NULL;
-    lex_push(lex_data);
+    fseek(inst->yyin, n, SEEK_CUR);
+    lex_push(inst, lex_data);
 }
 
-int cyylexlh() {
+int cyylexlh(pinst_t *inst) {
 
-    int token_code = cyylex();
-    yyrewind(1);
+    int token_code = cyylex(inst);
+    yyrewind(inst, 1);
     return token_code;
 }
 
-int cyylexlb() {
+int cyylexlb(pinst_t *inst) {
 
-    yyrewind(1);
-    int token_code = cyylex();
-    yyrewind(1);
+    yyrewind(inst, 1);
+    int token_code = cyylex(inst);
+    yyrewind(inst, 1);
     return token_code;
 }
 
 void 
-Parser_stack_reset () {
+Parser_stack_reset (pinst_t *inst) {
 
     int i;
     lex_data_t *lex_data;
 
-    for (i = 0; i < undo_stack.top; i++) {
-        lex_data = &undo_stack.data[i];
+    for (i = 0; i < inst->undo_stack.top; i++) {
+        lex_data = &inst->undo_stack.data[i];
         lex_data->token_code = 0;
         lex_data->token_len = 0;
         if (lex_data->token_val) {
@@ -150,19 +150,14 @@ Parser_stack_reset () {
             lex_data->token_val = NULL;
         }
     }
-    undo_stack.top = -1;
-    curr_ptr = lex_buffer;
+    inst->undo_stack.top = -1;
+    inst->curr_ptr = inst->lex_buffer;
+    fseek (inst->yyin, 0, SEEK_SET);
 }
 
 int 
-Parser_get_current_stack_index () {
-    return undo_stack.top;
-}
-
-void 
-lex_set_scan_buffer (const char *buffer) {
-
-    yy_scan_string (buffer);
+Parser_get_current_stack_index (pinst_t *inst) {
+    return inst->undo_stack.top;
 }
 
 /* ========================================
@@ -274,12 +269,12 @@ lex_set_scan_buffer (const char *buffer) {
 
 [ ] {
     /* Ignore */
-    process_white_space(1);
+    //process_white_space(1);
 }
 
 [\t] {
     /*ignore*/
-    process_white_space(4);
+    //process_white_space(4);
 }
 
 "\\q" {
