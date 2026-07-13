@@ -1,7 +1,6 @@
 %top{
 #include "ParserExport.h"
 }
-
 %option reentrant
 %option noyywrap
 %option extra-type="mexpr_parser_t *"
@@ -16,21 +15,23 @@
 #include <assert.h>
 #include <arpa/inet.h>
 
-void 
-lex_push(mexpr_parser_t *p, lex_data_t lex_data) {
-    assert (p->undo_stack.top < MAX_MEXPR_LEN -1);
+void
+lex_push (mexpr_parser_t *p, lex_data_t lex_data) {
+
+    assert (p->undo_stack.top < MAX_MEXPR_LEN - 1);
     p->undo_stack.data[++p->undo_stack.top] = lex_data;
     p->lex_curr_token = (char *)lex_data.token_val;
     p->lex_curr_token_len = lex_data.token_len;
 }
 
-lex_data_t
-lex_pop(mexpr_parser_t *p) {
+static lex_data_t
+lex_pop (mexpr_parser_t *p) {
+
     assert (p->undo_stack.top > -1);
-    lex_data_t res = p->undo_stack.data[p->undo_stack.top] ;
+    lex_data_t res = p->undo_stack.data[p->undo_stack.top];
     p->undo_stack.top--;
     if (p->undo_stack.top > -1) {
-        lex_data_t stck_top_lexd = p->undo_stack.data[p->undo_stack.top] ;
+        lex_data_t stck_top_lexd = p->undo_stack.data[p->undo_stack.top];
         p->lex_curr_token = (char *)stck_top_lexd.token_val;
         p->lex_curr_token_len = stck_top_lexd.token_len;
     }
@@ -41,7 +42,7 @@ lex_pop(mexpr_parser_t *p) {
     return res;
 }
 
-void 
+void
 yyrewind (mexpr_parser_t *p, int n) {
 
     if (n <= 0) return;
@@ -70,17 +71,17 @@ yyrewind (mexpr_parser_t *p, int n) {
 }
 
 void
-RESTORE_CHKP(mexpr_parser_t *p, int a) {
+RESTORE_CHKP (mexpr_parser_t *p, int a) {
 
     lex_data_t lex_data;
     int data_len = 0;
 
     while (p->undo_stack.top > a) {
-        
-        lex_data =  lex_pop(p);
+
+        lex_data = lex_pop(p);
         data_len += lex_data.token_len;
 
-        if (lex_data.token_val) { 
+        if (lex_data.token_val) {
             free (lex_data.token_val);
             lex_data.token_val = NULL;
         }
@@ -103,10 +104,10 @@ parser_alloc_token_value_default (mexpr_parser_t *p, uint16_t token_id) {
     return ptr;
 }
 
-int 
+int
 cyylex (mexpr_parser_t *p) {
 
-    int token_code =  yylex(p->scanner);
+    int token_code = yylex(p->scanner);
     p->curr_ptr += yyget_leng (p->scanner);
     lex_data_t lex_data;
     lex_data.token_code = token_code;
@@ -116,8 +117,8 @@ cyylex (mexpr_parser_t *p) {
     return token_code;
 }
 
-void 
-process_white_space(mexpr_parser_t *p, int n) {
+void
+process_white_space (mexpr_parser_t *p, int n) {
 
     lex_data_t lex_data;
     p->curr_ptr += n;
@@ -127,14 +128,14 @@ process_white_space(mexpr_parser_t *p, int n) {
     lex_push(p, lex_data);
 }
 
-int cyylexlh(mexpr_parser_t *p) {
+int cyylexlh (mexpr_parser_t *p) {
 
     int token_code = cyylex(p);
     yyrewind(p, 1);
     return token_code;
 }
 
-int cyylexlb(mexpr_parser_t *p) {
+int cyylexlb (mexpr_parser_t *p) {
 
     yyrewind(p, 1);
     int token_code = cyylex(p);
@@ -142,7 +143,7 @@ int cyylexlb(mexpr_parser_t *p) {
     return token_code;
 }
 
-void 
+void
 Parser_stack_reset (mexpr_parser_t *p) {
 
     int i;
@@ -159,26 +160,32 @@ Parser_stack_reset (mexpr_parser_t *p) {
     }
     p->undo_stack.top = -1;
     p->curr_ptr = p->lex_buffer;
+    p->lex_curr_token = NULL;
+    p->lex_curr_token_len = 0;
 }
 
-int 
+int
 Parser_get_current_stack_index (mexpr_parser_t *p) {
     return p->undo_stack.top;
 }
 
-void 
+void
 lex_set_scan_buffer (mexpr_parser_t *p, const char *buffer) {
 
     if (p->buf_state) {
         yy_delete_buffer ((YY_BUFFER_STATE)p->buf_state, p->scanner);
     }
     p->buf_state = (void *) yy_scan_string (buffer, p->scanner);
+    p->curr_ptr = p->lex_buffer;
 }
 
 /* ========================================
             Warning : Do  Not Modify this file above this line 
     ======================================= */
             /* User specific parsing logic starts below */
+
+
+/* User specific parsing logic starts below */
 
 
 
@@ -329,9 +336,6 @@ lex_set_scan_buffer (mexpr_parser_t *p, const char *buffer) {
 
 %%
 
-/* Instance lifecycle. Each call to mexpr_parser_create() produces an
-   independent, thread-safe parser instance with its own reentrant flex
-   scanner. */
 mexpr_parser_t *
 mexpr_parser_create (void) {
 
