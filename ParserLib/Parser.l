@@ -1,3 +1,11 @@
+%top{
+#include "ParserExport.h"
+}
+
+%option reentrant
+%option noyywrap
+%option extra-type="mexpr_parser_t *"
+
 %{
 
 #include <stdio.h>
@@ -8,36 +16,29 @@
 #include <assert.h>
 #include <arpa/inet.h>
 
-#include "ParserExport.h"
-
-unsigned char lex_buffer[MAX_STRING_SIZE] = {0};
-unsigned char *curr_ptr = lex_buffer;
-
-stack_t undo_stack = {-1, {0, 0, 0}};
-
 void 
-lex_push(lex_data_t lex_data) {
-    assert (undo_stack.top < MAX_MEXPR_LEN -1);
-    undo_stack.data[++undo_stack.top] = lex_data;
+lex_push(mexpr_parser_t *p, lex_data_t lex_data) {
+    assert (p->undo_stack.top < MAX_MEXPR_LEN -1);
+    p->undo_stack.data[++p->undo_stack.top] = lex_data;
 }
 
 lex_data_t
-lex_pop() {
-    assert (undo_stack.top > -1);
-    lex_data_t res = undo_stack.data[undo_stack.top] ;
-    undo_stack.top--;
+lex_pop(mexpr_parser_t *p) {
+    assert (p->undo_stack.top > -1);
+    lex_data_t res = p->undo_stack.data[p->undo_stack.top] ;
+    p->undo_stack.top--;
     return res;
 }
 
 void 
-yyrewind (int n) {
+yyrewind (mexpr_parser_t *p, int n) {
 
     if (n <= 0) return;
-    if (curr_ptr == lex_buffer) return;
+    if (p->curr_ptr == p->lex_buffer) return;
     int data_len = 0;
     lex_data_t lex_data;
     while (n)  {
-        lex_data = lex_pop();
+        lex_data = lex_pop(p);
         data_len += lex_data.token_len;
         n--;
         lex_data.token_code = 0;
@@ -47,66 +48,71 @@ yyrewind (int n) {
             lex_data.token_val = NULL;
         }
     }
-    curr_ptr -= data_len;
-    yy_scan_string(curr_ptr);
+    p->curr_ptr -= data_len;
+    if (p->buf_state) {
+        yy_delete_buffer ((YY_BUFFER_STATE)p->buf_state, p->scanner);
+    }
+    p->buf_state = (void *) yy_scan_string((const char *)p->curr_ptr, p->scanner);
 }
 
 unsigned char *
-parser_alloc_token_value_default (uint16_t token_id) {
+parser_alloc_token_value_default (mexpr_parser_t *p, uint16_t token_id) {
 
-    unsigned char *ptr = (unsigned char *)(calloc (1, yyleng + 1));
-    strncpy (ptr, yytext, yyleng);
-    ptr [yyleng] = '\0';
-    return (void *)ptr;
+    int leng = yyget_leng (p->scanner);
+    char *text = yyget_text (p->scanner);
+    unsigned char *ptr = (unsigned char *)(calloc (1, leng + 1));
+    strncpy ((char *)ptr, text, leng);
+    ptr [leng] = '\0';
+    return ptr;
 }
 
 int 
-cyylex () {
+cyylex (mexpr_parser_t *p) {
 
-    int token_code =  yylex();
-    curr_ptr += yyleng;
+    int token_code =  yylex(p->scanner);
+    p->curr_ptr += yyget_leng (p->scanner);
     lex_data_t lex_data;
     lex_data.token_code = token_code;
-    lex_data.token_len = yyleng;
-    lex_data.token_val = parser_alloc_token_value_default  (token_code);
-    lex_push(lex_data);
+    lex_data.token_len = yyget_leng (p->scanner);
+    lex_data.token_val = parser_alloc_token_value_default (p, token_code);
+    lex_push(p, lex_data);
     return token_code;
 }
 
 void 
-process_white_space(int n) {
+process_white_space(mexpr_parser_t *p, int n) {
 
     lex_data_t lex_data;
-    curr_ptr += n;
+    p->curr_ptr += n;
     lex_data.token_code = PARSER_WHITE_SPACE;
     lex_data.token_len = n;
     lex_data.token_val = NULL;
-    lex_push(lex_data);
+    lex_push(p, lex_data);
 }
 
-int cyylexlh() {
+int cyylexlh(mexpr_parser_t *p) {
 
-    int token_code = cyylex();
-    yyrewind(1);
+    int token_code = cyylex(p);
+    yyrewind(p, 1);
     return token_code;
 }
 
-int cyylexlb() {
+int cyylexlb(mexpr_parser_t *p) {
 
-    yyrewind(1);
-    int token_code = cyylex();
-    yyrewind(1);
+    yyrewind(p, 1);
+    int token_code = cyylex(p);
+    yyrewind(p, 1);
     return token_code;
 }
 
 void 
-Parser_stack_reset () {
+Parser_stack_reset (mexpr_parser_t *p) {
 
     int i;
     lex_data_t *lex_data;
 
-    for (i = 0; i < undo_stack.top; i++) {
-        lex_data = &undo_stack.data[i];
+    for (i = 0; i <= p->undo_stack.top; i++) {
+        lex_data = &p->undo_stack.data[i];
         lex_data->token_code = 0;
         lex_data->token_len = 0;
         if (lex_data->token_val) {
@@ -114,19 +120,22 @@ Parser_stack_reset () {
             lex_data->token_val = NULL;
         }
     }
-    undo_stack.top = -1;
-    curr_ptr = lex_buffer;
+    p->undo_stack.top = -1;
+    p->curr_ptr = p->lex_buffer;
 }
 
 int 
-Parser_get_current_stack_index () {
-    return undo_stack.top;
+Parser_get_current_stack_index (mexpr_parser_t *p) {
+    return p->undo_stack.top;
 }
 
 void 
-lex_set_scan_buffer (const char *buffer) {
+lex_set_scan_buffer (mexpr_parser_t *p, const char *buffer) {
 
-    yy_scan_string (buffer);
+    if (p->buf_state) {
+        yy_delete_buffer ((YY_BUFFER_STATE)p->buf_state, p->scanner);
+    }
+    p->buf_state = (void *) yy_scan_string (buffer, p->scanner);
 }
 
 /* ========================================
@@ -238,12 +247,12 @@ lex_set_scan_buffer (const char *buffer) {
 
 [ ] {
     /* Ignore */
-    process_white_space(1);
+    process_white_space(yyextra, 1);
 }
 
 [\t] {
     /*ignore*/
-    process_white_space(4);
+    process_white_space(yyextra, 4);
 }
 
 "\\q" {
@@ -283,12 +292,37 @@ lex_set_scan_buffer (const char *buffer) {
 
 %%
 
-#if 0
-int 
-main (int argc) {
+/* Instance lifecycle. Each call produces an independent, thread-safe parser
+   instance with its own reentrant flex scanner. */
+mexpr_parser_t *
+mexpr_parser_create (void) {
 
-    int token_code = cyylex();
-    printf ("token_code = %d,  token = %s \n", token_code, yytext);
-    return 0;
+    mexpr_parser_t *p = (mexpr_parser_t *) calloc (1, sizeof (mexpr_parser_t));
+    if (!p) return NULL;
+
+    if (yylex_init_extra (p, (yyscan_t *)&p->scanner) != 0) {
+        free (p);
+        return NULL;
+    }
+
+    p->buf_state = NULL;
+    p->curr_ptr = p->lex_buffer;
+    p->undo_stack.top = -1;
+    return p;
 }
-#endif
+
+void
+mexpr_parser_destroy (mexpr_parser_t *p) {
+
+    if (!p) return;
+
+    Parser_stack_reset (p);
+
+    if (p->buf_state) {
+        yy_delete_buffer ((YY_BUFFER_STATE)p->buf_state, p->scanner);
+        p->buf_state = NULL;
+    }
+
+    yylex_destroy (p->scanner);
+    free (p);
+}

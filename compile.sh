@@ -1,5 +1,12 @@
+#!/bin/bash
+# Regenerate the reentrant flex scanner. The generated lex.yy.c holds the
+# per-instance parser helpers and the flex scanner; it is compiled by the
+# consuming application (and by the multi-threaded smoke test below), not
+# archived into libMexpr.a, so that integrators can supply their own Parser.l.
+flex Parser.l
+
 rm -f  libMexpr.a
-rm *.o
+rm -f *.o
 g++ -g -c -fpermissive ExpressionParser.c -o ExpressionParser.o
 g++ -g -c Operators.cpp -o Operators.o
 g++ -g -c Dtype.cpp -o Dtype.o
