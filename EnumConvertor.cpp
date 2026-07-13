@@ -72,10 +72,10 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
                         if (lex_data_arr_out[i+1]->token_code == MATH_CPP_INTERVAL) {
                             int_lst_ptr =  new std::list<int32_t >();
                             int a = 0, b = 0;
-                            assert(sql_read_interval_values (lex_data_arr_out[i+1]->token_val, &a, &b));
+                            assert(sql_read_interval_values ((char *)lex_data_arr_out[i+1]->token_val, &a, &b));
                              int_lst_ptr->push_back(a);
                              int_lst_ptr->push_back(b);
-                             lex_data_arr_out[i+1]->token_val = (char *)int_lst_ptr;
+                             lex_data_arr_out[i+1]->token_val = (uint8_t *)int_lst_ptr;
                              lex_data_arr_out[i+1]->token_len = 0;
                             break;
                         }
@@ -102,7 +102,7 @@ mexpr_preprocess_infix_array (lex_data_t *infix, int sizein, int *size_out) {
                         lex_out = (lex_data_t *)calloc(1, sizeof(lex_data_t));
                         lex_out->token_code = MATH_CPP_STRING_LST;
                         lex_out->token_len = 0;
-                        lex_out->token_val = (char *)str_lst_ptr;
+                        lex_out->token_val = (uint8_t *)str_lst_ptr;
                         lex_data_arr_out[i + 1] = lex_out;
                         i++;
                     }

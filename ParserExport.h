@@ -2,8 +2,6 @@
 #define __PARSER_EXPORT__
 
 #include <stdint.h>
-#include <assert.h>
-#include "lex.yy.h" // dynamically generated
 
 #define MAX_MEXPR_LEN  512
 
@@ -23,17 +21,11 @@ typedef struct lex_data_ {
 
 #define MAX_STRING_SIZE 512
 
-typedef struct pinst_ {
+typedef struct stack_ {
 
-    char lex_buffer[MAX_STRING_SIZE];
-    char *curr_ptr ;
-    char *lex_curr_token;
-    int lex_curr_token_len;
-    
-    struct {
-        int top;
-        lex_data_t data[MAX_MEXPR_LEN];
-    } undo_stack;
+    int top;
+    lex_data_t data[MAX_MEXPR_LEN];
+} stack_t;
 
 /* Per-instance parser context.
    Every piece of state that used to live in file-scope globals now lives

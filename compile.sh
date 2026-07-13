@@ -14,3 +14,5 @@ g++ -g -c MexprTree.cpp -o MexprTree.o
 g++ -g -c EnumConvertor.cpp -o EnumConvertor.o
 g++ -g -c Aggregators.cpp -o Aggregators.o
 ar rcs libMexpr.a ExpressionParser.o Operators.o Dtype.o MexprTree.o Aggregators.o EnumConvertor.o
+g++ -g -c mt_thread_test.cpp -o mt_thread_test.o
+g++ -g -fpermissive lex.yy.c ExpressionParser.o mt_thread_test.o -o mt_test -lpthread
