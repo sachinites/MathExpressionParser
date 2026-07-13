@@ -157,7 +157,7 @@ IDENT_LST (mexpr_parser_t *p) {
 
     token_code = cnvrt (p, cyylex(p) );
 
-    if (token_code != MATH_CPP_STRING ) RETURN_PARSE_ERROR;
+    if (token_code != MATH_CPP_STRING ) RETURN_PARSE_ERROR(inst);
 
     token_code = cnvrt (p, cyylex(p) );
 
@@ -166,9 +166,9 @@ IDENT_LST (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(IDENT_LST);
+    err = PARSER_CALL(inst, IDENT_LST);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -188,11 +188,11 @@ INCLAUSE (mexpr_parser_t *p) {
 
         token_code = cnvrt (p, cyylex(p) );
 
-        if (token_code != MATH_CPP_VARIABLE)  RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_VARIABLE)  RETURN_PARSE_ERROR(inst);
 
         token_code = cnvrt (p, cyylex(p) );
 
-        if (token_code != MATH_CPP_IN) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_IN) RETURN_PARSE_ERROR(inst);
 
         CHECKPOINT(p, initial_chkp);
 
@@ -200,7 +200,7 @@ INCLAUSE (mexpr_parser_t *p) {
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(IDENT_LST);
+        err = PARSER_CALL(inst, IDENT_LST);
 
         if (err == PARSE_ERR) break;
 
@@ -225,7 +225,7 @@ INCLAUSE (mexpr_parser_t *p) {
         
     } while (0);
 
-    RETURN_PARSE_ERROR;
+    RETURN_PARSE_ERROR(inst);
 }
 
 
@@ -245,7 +245,7 @@ Ineq (mexpr_parser_t *p) {
         case MATH_CPP_LIKE:
             break;
         default:
-            RETURN_PARSE_ERROR;
+            RETURN_PARSE_ERROR(inst);
     }
 
     RETURN_PARSE_SUCCESS;
@@ -266,7 +266,7 @@ G (mexpr_parser_t *p) {
         case MATH_CPP_POW:
             RETURN_PARSE_SUCCESS;
         default:
-            RETURN_PARSE_ERROR;
+            RETURN_PARSE_ERROR(inst);
      }
 
 }
@@ -287,7 +287,7 @@ P (mexpr_parser_t *p) {
 	    case MATH_CPP_COS:
             RETURN_PARSE_SUCCESS;
         default:
-            RETURN_PARSE_ERROR;
+            RETURN_PARSE_ERROR(inst);
     }
 }
 
@@ -307,7 +307,7 @@ F (mexpr_parser_t *p) {
         
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
@@ -344,7 +344,7 @@ F (mexpr_parser_t *p) {
     // P ( E ) 
     do {
 
-        err = PARSER_CALL(P);
+        err = PARSER_CALL(inst, P);
 
         if (err == PARSE_ERR) break;
 
@@ -352,7 +352,7 @@ F (mexpr_parser_t *p) {
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
@@ -370,29 +370,29 @@ F (mexpr_parser_t *p) {
 
     do {
 
-        err = PARSER_CALL(G);
+        err = PARSER_CALL(inst, G);
 
-        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
-
-        token_code = cnvrt (p, cyylex(p) );
-
-        if (token_code != MATH_CPP_BRACKET_START) RETURN_PARSE_ERROR;
-
-        err = PARSER_CALL(E);
-
-        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
         token_code = cnvrt (p, cyylex(p) );
 
-        if (token_code != MATH_CPP_COMMA) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_BRACKET_START) RETURN_PARSE_ERROR(inst);
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
-        if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
         token_code = cnvrt (p, cyylex(p) );
 
-        if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR;
+        if (token_code != MATH_CPP_COMMA) RETURN_PARSE_ERROR(inst);
+
+        err = PARSER_CALL(inst, E);
+
+        if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
+
+        token_code = cnvrt (p, cyylex(p) );
+
+        if (token_code != MATH_CPP_BRACKET_END) RETURN_PARSE_ERROR(inst);
 
         RETURN_PARSE_SUCCESS;
 
@@ -417,7 +417,7 @@ T_dash (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(F);
+    err = PARSER_CALL(inst, F);
 
     if (err == PARSE_ERR) {
 
@@ -425,7 +425,7 @@ T_dash (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(T_dash);
+    err = PARSER_CALL(inst, T_dash);
 
     if (err == PARSE_ERR) {
 
@@ -442,13 +442,13 @@ T (mexpr_parser_t *p) {
 
     parse_init(p);
 
-    err = PARSER_CALL(F);
+    err = PARSER_CALL(inst, F);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(T_dash);
+    err = PARSER_CALL(inst, T_dash);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -471,7 +471,7 @@ E_dash (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(T);
+    err = PARSER_CALL(inst, T);
 
     if (err == PARSE_ERR) {
 
@@ -479,7 +479,7 @@ E_dash (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(E_dash);
+    err = PARSER_CALL(inst, E_dash);
 
     if (err == PARSE_ERR) {
 
@@ -496,13 +496,13 @@ E (mexpr_parser_t *p) {
 
     parse_init(p);
 
-    err = PARSER_CALL(T);
+    err = PARSER_CALL(inst, T);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(E_dash);
+    err = PARSER_CALL(inst, E_dash);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -524,7 +524,7 @@ Q (mexpr_parser_t *p) {
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(Q);
+        err = PARSER_CALL(inst, Q);
 
         if (err == PARSE_ERR) break;
 
@@ -540,15 +540,15 @@ Q (mexpr_parser_t *p) {
 
     do {
         // E Ineq E
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
-        err = PARSER_CALL(Ineq);
+        err = PARSER_CALL(inst, Ineq);
 
         if (err == PARSE_ERR) break;
 
-        err = PARSER_CALL(E);
+        err = PARSER_CALL(inst, E);
 
         if (err == PARSE_ERR) break;
 
@@ -559,9 +559,9 @@ Q (mexpr_parser_t *p) {
     RESTORE_CHKP(p, chkp_initial);
 
     //INCLAUSE
-    err = PARSER_CALL( INCLAUSE);
+    err = PARSER_CALL(inst,  INCLAUSE);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -573,21 +573,21 @@ D (mexpr_parser_t *p) {
 
     parse_init(p);
 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     token_code = cnvrt (p, cyylex(p) );
 
     if (token_code != MATH_CPP_OR &&
             token_code != MATH_CPP_AND) {
 
-        RETURN_PARSE_ERROR;
+        RETURN_PARSE_ERROR(inst);
     }
 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
-     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
      RETURN_PARSE_SUCCESS;
 }
@@ -607,14 +607,14 @@ K_dash (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
     if (err == PARSE_ERR) {
         yyrewind(p, 1);
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(K_dash);
+    err = PARSER_CALL(inst, K_dash);
 
     if (err == PARSE_ERR) {
         yyrewind(p, 1);
@@ -640,7 +640,7 @@ K (mexpr_parser_t *p) {
 
         if (token_code != MATH_CPP_BRACKET_START) break;
 
-        err = PARSER_CALL(S);
+        err = PARSER_CALL(inst, S);
 
         if (err == PARSE_ERR) break;
 
@@ -648,7 +648,7 @@ K (mexpr_parser_t *p) {
 
         if (token_code != MATH_CPP_BRACKET_END) break;
 
-        err = PARSER_CALL(K_dash);
+        err = PARSER_CALL(inst, K_dash);
 
         if (err == PARSE_ERR) break;
 
@@ -660,11 +660,11 @@ K (mexpr_parser_t *p) {
     // D K' 
     do {
 
-        err = PARSER_CALL(D);
+        err = PARSER_CALL(inst, D);
 
         if (err == PARSE_ERR) break;
 
-        err = PARSER_CALL(K_dash);
+        err = PARSER_CALL(inst, K_dash);
 
         if (err == PARSE_ERR) break;
 
@@ -675,25 +675,25 @@ K (mexpr_parser_t *p) {
     RESTORE_CHKP(p, initial_chkp);
 
     // Q lop K K' 
-    err = PARSER_CALL(Q);
+    err = PARSER_CALL(inst, Q);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     token_code = cnvrt (p, cyylex(p) );
 
     if (token_code != MATH_CPP_OR &&
         token_code != MATH_CPP_AND) {
 
-        RETURN_PARSE_ERROR;
+        RETURN_PARSE_ERROR(inst);
     }
 
-    err = PARSER_CALL(K);
+    err = PARSER_CALL(inst, K);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(K_dash);
+    err = PARSER_CALL(inst, K_dash);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
@@ -711,11 +711,11 @@ J_dash (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(K);
+    err = PARSER_CALL(inst, K);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
-    err = PARSER_CALL(J_dash);
+    err = PARSER_CALL(inst, J_dash);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
@@ -728,13 +728,13 @@ J (mexpr_parser_t *p) {
 
     parse_init(p);
 
-    err = PARSER_CALL(K);
+    err = PARSER_CALL(inst, K);
 
-    if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+    if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-    err = PARSER_CALL(J_dash);
+    err = PARSER_CALL(inst, J_dash);
 
-     if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+     if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
      RETURN_PARSE_SUCCESS;
 }
@@ -753,11 +753,11 @@ S_dash (mexpr_parser_t *p) {
         RETURN_PARSE_SUCCESS;
     }
 
-    err = PARSER_CALL(J);
+    err = PARSER_CALL(inst, J);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
-    err = PARSER_CALL(S_dash);
+    err = PARSER_CALL(inst, S_dash);
 
     if (err == PARSE_ERR) RETURN_PARSE_SUCCESS;
 
@@ -770,13 +770,13 @@ S (mexpr_parser_t *p) {
 
     parse_init(p);
 
-   err = PARSER_CALL(J);
+   err = PARSER_CALL(inst, J);
 
-   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
-   err = PARSER_CALL(S_dash);
+   err = PARSER_CALL(inst, S_dash);
 
-   if (err == PARSE_ERR) RETURN_PARSE_ERROR;
+   if (err == PARSE_ERR) RETURN_PARSE_ERROR(inst);
 
     RETURN_PARSE_SUCCESS;
 }
